@@ -14,6 +14,9 @@ import TeacherDashboard from './pages/Teacher/Dashboard';
 import ManagerDashboard from './pages/Manager/Dashboard';
 import Certificate from './pages/Certificate/Certificate';
 
+import StudentProfile from "./pages/Student/StudentProfile";
+
+
 import './App.css';
 
 function App() {
@@ -33,6 +36,15 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['student', 'admin']}>
               <StudentDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/student/profile"
+          element={
+            <ProtectedRoute allowedRoles={['student', 'admin']}>
+              <StudentProfile />
             </ProtectedRoute>
           }
         />

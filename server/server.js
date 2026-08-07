@@ -6,25 +6,72 @@ const cookieParser = require("cookie-parser");
 dotenv.config();
 
 const connectDB = require("./config/db");
-const authRoutes = require("./routes/authRoutes");
 
+// ==========================
+// Route Imports
+// ==========================
+const authRoutes = require("./routes/authRoutes");
+const studentRoutes = require("./routes/studentRoutes");
+const internshipRoutes = require("./routes/internshipRoutes");
+const reportRoutes = require("./routes/reportRoutes");
+const certificateRoutes = require("./routes/certificateRoutes");
+
+// ==========================
+// Error Middleware
+// ==========================
+const { notFound, errorHandler } = require("./middleware/errorMiddleware");
+
+// ==========================
+// Connect Database
+// ==========================
 connectDB();
 
 const app = express();
 
-// Middleware
+// ==========================
+// Global Middleware
+// ==========================
 app.use(cors());
+
 app.use(express.json());
+
+app.use(express.urlencoded({ extended: true }));
+
 app.use(cookieParser());
 
-// Routes
+// Serve Uploaded Files
+app.use("/uploads", express.static("uploads"));
+
+// ==========================
+// API Routes
+// ==========================
 app.use("/api/auth", authRoutes);
 
-// Test Route
+app.use("/api/students", studentRoutes);
+
+app.use("/api/internships", internshipRoutes);
+
+app.use("/api/reports", reportRoutes);
+
+app.use("/api/certificates", certificateRoutes);
+
+// ==========================
+// Home Route
+// ==========================
 app.get("/", (req, res) => {
   res.send("InternTrack Backend Running");
 });
 
+// ==========================
+// Error Handling Middleware
+// ==========================
+app.use(notFound);
+
+app.use(errorHandler);
+
+// ==========================
+// Start Server
+// ==========================
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
