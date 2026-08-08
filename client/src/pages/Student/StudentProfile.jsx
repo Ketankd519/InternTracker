@@ -1,7 +1,6 @@
 import { useState } from "react";
 import StudentLayout from "../../layouts/StudentLayout";
 import API from "../../services/api";
-import "./StudentStyle.css";
 
 const StudentProfile = () => {
   const [formData, setFormData] = useState({

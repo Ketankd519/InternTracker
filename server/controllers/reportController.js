@@ -1,143 +1,219 @@
-const WeeklyReport = require('../models/WeeklyReport');
-const Student = require('../models/Student');
+const WeeklyReport = require("../models/WeeklyReport");
+const Student = require("../models/Student");
 
-/**
- * @desc    Submit a weekly report
- * @route   POST /api/reports
- * @access  Private (Student)
- */
+// ==========================================
+// Submit Weekly Report
+// POST /api/reports
+// Private - Student
+// ==========================================
 const submitReport = async (req, res) => {
   try {
-    // 1. Find logged-in student profile
-    const student = await Student.findOne({ user: req.user._id });
+    // Find logged-in student's profile
+    const student = await Student.findOne({
+      user: req.user._id,
+    });
+
     if (!student) {
       return res.status(404).json({
         success: false,
-        message: 'Student profile not found. Please complete profile setup first.',
+        message:
+          "Student profile not found. Please complete your profile first.",
       });
     }
 
-    const { weekNumber, taskTitle, description, attachment } = req.body;
+    const {
+      weekNumber,
+      taskTitle,
+      description,
+      submissionDate,
+    } = req.body;
 
-    // 2. Prevent duplicate report submission for the same week
+    // Validate required fields
+    if (
+      !weekNumber ||
+      !taskTitle ||
+      !description ||
+      !submissionDate
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Week number, task title, description and submission date are required.",
+      });
+    }
+
+    // Check duplicate week
     const existingReport = await WeeklyReport.findOne({
       student: student._id,
-      weekNumber,
+      weekNumber: Number(weekNumber),
     });
 
     if (existingReport) {
       return res.status(400).json({
         success: false,
-        message: `Report for Week ${weekNumber} has already been submitted.`,
+        message:
+          `Report for Week ${weekNumber} has already been submitted.`,
       });
     }
 
-    // 3. Create report entry
+    // Create report
     const report = new WeeklyReport({
       student: student._id,
-      weekNumber,
+
+      weekNumber: Number(weekNumber),
+
       taskTitle,
+
       description,
-      attachment: req.file ? req.file.path : attachment, // File upload support
+
+      submissionDate,
+
+      attachment: req.file
+        ? req.file.path
+        : null,
+
+      // Always Pending when student submits
+      status: "Pending",
+
+      managerVerified: false,
     });
 
     const savedReport = await report.save();
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
-      message: `Weekly report for Week ${weekNumber} submitted successfully`,
+      message:
+        `Weekly report for Week ${weekNumber} submitted successfully.`,
       data: savedReport,
     });
+
   } catch (error) {
-    res.status(500).json({
+    console.error("Submit Weekly Report Error:", error);
+
+    return res.status(500).json({
       success: false,
-      message: 'Error submitting weekly report',
+      message: "Error submitting weekly report",
       error: error.message,
     });
   }
 };
 
-/**
- * @desc    Get all submitted reports with total count
- * @route   GET /api/reports or GET /api/reports/student/:student
- * @access  Private (Student / Teacher / Manager)
- */
+
+// ==========================================
+// Get Student Reports
+// GET /api/reports
+// Private - Student
+// ==========================================
 const getStudentReports = async (req, res) => {
   try {
-    let student = req.params.student;
+    let studentId = req.params.studentId;
 
-    // If no student passed in params, fetch for current logged-in student
-    if (!student) {
-      const student = await Student.findOne({ user: req.user._id });
+    // If studentId is not provided,
+    // get logged-in student's profile
+    if (!studentId) {
+      const student = await Student.findOne({
+        user: req.user._id,
+      });
+
       if (!student) {
         return res.status(404).json({
           success: false,
-          message: 'Student profile not found',
+          message: "Student profile not found",
         });
       }
-      student = student._id;
+
+      studentId = student._id;
     }
 
-    // Fetch reports sorted by week number ascending
-    const reports = await WeeklyReport.find({ student }).sort({ weekNumber: 1 });
+    // Fetch reports
+    const reports = await WeeklyReport.find({
+      student: studentId,
+    }).sort({
+      weekNumber: 1,
+    });
 
-    // Count total reports submitted
-    const totalReportsCount = await WeeklyReport.countDocuments({ student });
+    // Count reports
+    const totalReportsCount =
+      await WeeklyReport.countDocuments({
+        student: studentId,
+      });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       totalSubmittedReports: totalReportsCount,
       data: reports,
     });
+
   } catch (error) {
-    res.status(500).json({
+    console.error("Get Weekly Reports Error:", error);
+
+    return res.status(500).json({
       success: false,
-      message: 'Error fetching weekly reports',
+      message: "Error fetching weekly reports",
       error: error.message,
     });
   }
 };
 
-/**
- * @desc    Verify a weekly report (Manager / Admin approval)
- * @route   PUT /api/reports/:id/verify
- * @access  Private (Manager / Teacher)
- */
+
+// ==========================================
+// Verify Weekly Report
+// PUT /api/reports/:id/verify
+// Private - Teacher / Manager / Admin
+// ==========================================
 const verifyReport = async (req, res) => {
   try {
     const { id } = req.params;
     const { managerVerified } = req.body;
 
-    const updatedReport = await WeeklyReport.findByIdAndUpdate(
-      id,
-      {
-        $set: {
-          managerVerified: managerVerified !== undefined ? managerVerified : true,
+    const updatedReport =
+      await WeeklyReport.findByIdAndUpdate(
+        id,
+        {
+          $set: {
+            managerVerified:
+              managerVerified !== undefined
+                ? managerVerified
+                : true,
+
+            status:
+              managerVerified === false
+                ? "Rejected"
+                : "Approved",
+          },
         },
-      },
-      { new: true, runValidators: true }
-    );
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
 
     if (!updatedReport) {
       return res.status(404).json({
         success: false,
-        message: 'Weekly report not found',
+        message: "Weekly report not found",
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: 'Weekly report verification status updated',
+      message:
+        "Weekly report verification status updated",
       data: updatedReport,
     });
+
   } catch (error) {
-    res.status(500).json({
+    console.error("Verify Weekly Report Error:", error);
+
+    return res.status(500).json({
       success: false,
-      message: 'Error verifying weekly report',
+      message:
+        "Error verifying weekly report",
       error: error.message,
     });
   }
 };
+
 
 module.exports = {
   submitReport,

@@ -11,7 +11,9 @@ export default function Register() {
     e.preventDefault();
     try {
       const data = await register(formData);
+      alert('Registration successful');
       navigate(`/${data.user.role}/dashboard`);
+
     } catch (err) {
       alert(err.response?.data?.message || 'Registration failed');
     }

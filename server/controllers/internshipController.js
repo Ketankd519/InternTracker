@@ -32,17 +32,21 @@ const applyInternship = async (req, res) => {
       });
     }
 
-    const {
-      companyName,
-      managerName,
-      managerId,
-      managerEmail,
-      managerPhone,
-      internshipRole,
-      startDate,
-      endDate,
-      totalWeeks,
-    } = req.body;
+  const {
+    companyName,
+    companyAddress,
+    internshipRole,
+    managerName,
+    managerId,
+    managerEmail,
+    managerPhone,
+    department,
+    startDate,
+    endDate,
+    totalWeeks,
+  } = req.body;
+
+  console.log("INTERNSHIP REQUEST BODY:", req.body);
 
     // Date Validation
     if (new Date(endDate) <= new Date(startDate)) {
@@ -61,19 +65,26 @@ const applyInternship = async (req, res) => {
     }
 
     // Create Internship
-    const internship = new Internship({
-      student: student._id,
-      companyName,
-      managerName,
-      managerId,
-      managerEmail,
-      managerPhone,
-      internshipRole,
-      startDate,
-      endDate,
-      totalWeeks,
-      status: 'pending',
-    });
+const internship = new Internship({
+  student: student._id,
+
+  companyName,
+  companyAddress,
+  internshipRole,
+
+  managerName,
+  managerId,
+  managerEmail,
+  managerPhone,
+
+  department,
+
+  startDate,
+  endDate,
+  totalWeeks,
+
+  status: "pending",
+});
 
     const savedInternship = await internship.save();
 

@@ -1,18 +1,18 @@
 import { useState } from "react";
 import StudentLayout from "../../layouts/StudentLayout";
-import "./StudentStyle.css";
+import API from "../../services/api";
 
 export default function Internship() {
   const [formData, setFormData] = useState({
     companyName: "",
+    internshipRole: "",
     companyAddress: "",
 
     managerName: "",
     managerEmail: "",
     managerPhone: "",
 
-    internshipRole: "",
-    department: "Computer Applications", // Fetch from Academic Details
+    department: "Computer Applications",
 
     startDate: "",
     endDate: "",
@@ -21,36 +21,122 @@ export default function Internship() {
     status: "Pending",
   });
 
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  // Handle input changes
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  const handleSubmit = (e) => {
+  // Submit Internship
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log(formData);
+    setLoading(true);
+    setMessage("");
+    setError("");
 
-    // API Call
+    try {
+      // Data required by backend Internship model/controller
+    const data = {
+      companyName: formData.companyName,
+      companyAddress: formData.companyAddress,
+      internshipRole: formData.internshipRole,
+
+      managerName: formData.managerName,
+      managerEmail: formData.managerEmail,
+      managerPhone: formData.managerPhone,
+
+      department: formData.department,
+
+      startDate: formData.startDate,
+      endDate: formData.endDate,
+      totalWeeks: Number(formData.totalWeeks),
+    };
+
+      const response = await API.post("/internships", data);
+
+      console.log("Internship Response:", response.data);
+
+      setMessage(
+        response.data.message ||
+          "Internship application submitted successfully."
+      );
+
+      // Reset form after successful submission
+      setFormData({
+        companyName: "",
+        internshipRole: "",
+        companyAddress: "",
+
+        managerName: "",
+        managerEmail: "",
+        managerPhone: "",
+
+        department: "Computer Applications",
+
+        startDate: "",
+        endDate: "",
+
+        totalWeeks: "",
+        status: "Pending",
+      });
+    } catch (err) {
+      console.error("Internship Error:", err);
+
+      const errorMessage =
+        err.response?.data?.message ||
+        "Unable to submit internship application.";
+
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <StudentLayout>
-
       <div className="profile-page">
 
+        {/* Header */}
         <div className="profile-header">
-          <h1>Internship Details</h1>
-          <p>Provide your internship information.</p>
+          <h1>Internship</h1>
+          <p>Enter your internship details.</p>
         </div>
 
-        <form className="profile-form" onSubmit={handleSubmit}>
+        {/* Success Message */}
+        {message && (
+          <div className="success-message">
+            {message}
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="error-message">
+            {error}
+          </div>
+        )}
+
+        <form
+          className="profile-form"
+          onSubmit={handleSubmit}
+        >
+
+          {/* =========================
+              Company Details
+          ========================== */}
 
           <div className="profile-section">
 
-            <h2>Company Information</h2>
+            <h2>Company Details</h2>
 
             <div className="profile-grid">
 
@@ -60,6 +146,7 @@ export default function Internship() {
                 placeholder="Company Name"
                 value={formData.companyName}
                 onChange={handleChange}
+                required
               />
 
               <input
@@ -68,10 +155,11 @@ export default function Internship() {
                 placeholder="Internship Role"
                 value={formData.internshipRole}
                 onChange={handleChange}
+                required
               />
 
-              <textarea
-                rows="4"
+              <input
+                type="text"
                 name="companyAddress"
                 placeholder="Company Address"
                 value={formData.companyAddress}
@@ -81,6 +169,10 @@ export default function Internship() {
             </div>
 
           </div>
+
+          {/* =========================
+              Manager Details
+          ========================== */}
 
           <div className="profile-section">
 
@@ -116,9 +208,13 @@ export default function Internship() {
 
           </div>
 
+          {/* =========================
+              Internship Duration
+          ========================== */}
+
           <div className="profile-section">
 
-            <h2>Internship Details</h2>
+            <h2>Internship Duration</h2>
 
             <div className="profile-grid">
 
@@ -134,6 +230,7 @@ export default function Internship() {
                 name="startDate"
                 value={formData.startDate}
                 onChange={handleChange}
+                required
               />
 
               <input
@@ -141,37 +238,37 @@ export default function Internship() {
                 name="endDate"
                 value={formData.endDate}
                 onChange={handleChange}
+                required
               />
 
               <input
                 type="number"
                 name="totalWeeks"
                 placeholder="Total Weeks"
+                min="1"
                 value={formData.totalWeeks}
                 onChange={handleChange}
+                required
               />
-
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-              >
-                <option>Pending</option>
-                <option>Active</option>
-                <option>Completed</option>
-              </select>
 
             </div>
 
           </div>
+
+          {/* =========================
+              Submit
+          ========================== */}
 
           <div className="profile-buttons">
 
             <button
               type="submit"
               className="profile-btn"
+              disabled={loading}
             >
-              Save Internship
+              {loading
+                ? "Submitting..."
+                : "Submit Internship"}
             </button>
 
           </div>
@@ -179,7 +276,6 @@ export default function Internship() {
         </form>
 
       </div>
-
     </StudentLayout>
   );
 }
