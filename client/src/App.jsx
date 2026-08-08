@@ -15,6 +15,9 @@ import ManagerDashboard from './pages/Manager/Dashboard';
 import Certificate from './pages/Certificate/Certificate';
 
 import StudentProfile from "./pages/Student/StudentProfile";
+import Internship from "./pages/Student/Internship";
+import WeeklyReport from './pages/Student/WeeklyReport';
+import Progress from './pages/Student/Progress';
 
 
 import './App.css';
@@ -47,6 +50,33 @@ function App() {
               <StudentProfile />
             </ProtectedRoute>
           }
+        />
+
+        <Route
+          path="/student/internship"
+          element={
+            <ProtectedRoute allowedRoles={['student', 'admin']}>
+              <Internship />
+            </ProtectedRoute>
+          }
+          />
+
+        <Route
+          path="/student/weekly-report"
+          element={
+            <ProtectedRoute allowedRoles={['student', 'admin']}>
+              <WeeklyReport />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+         path="/student/progress"
+         element={
+          <ProtectedRoute allowedRoles={['student', 'admin']}>
+              <Progress />
+          </ProtectedRoute>
+         }
         />
 
         <Route

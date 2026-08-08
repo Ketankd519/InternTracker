@@ -24,7 +24,7 @@ router
   .post(
     protect,
     authorize('student'),
-    upload.single('stdPhoto'),
+    upload.single('profilePhoto'),
     createStudentProfile
   )
   .get(
@@ -35,7 +35,7 @@ router
   .put(
     protect,
     authorize('student'),
-    upload.single('stdPhoto'),
+    upload.single('profilePhoto'),
     updateStudentProfile
   );
 
