@@ -19,6 +19,15 @@ import Internship from "./pages/Student/Internship";
 import WeeklyReport from './pages/Student/WeeklyReport';
 import Progress from './pages/Student/Progress';
 
+import TeacherLayout from "./Layouts/TeacherLayout";
+import TeacherStudents from "./pages/Teacher/Students";
+import ViewStudent from "./pages/Teacher/ViewStudent";
+
+import ManagerLayout from "./Layouts/ManagerLayout";
+
+import ManagerApprovals from "./pages/Manager/Approvals";
+import ManagerViewStudent from "./pages/Manager/ViewStudent";
+import ManagerEvaluation from "./pages/Manager/Evaluation";
 
 import './App.css';
 
@@ -88,6 +97,25 @@ function App() {
           }
         />
 
+        <Route path="/teacher" element={<TeacherLayout />}>
+
+          <Route
+            path="dashboard"
+            element={<TeacherDashboard />}
+          />
+
+          <Route
+            path="students"
+            element={<TeacherStudents />}
+          />
+
+          <Route
+            path="students/:studentId"
+            element={<ViewStudent />}
+          />
+
+        </Route>
+
         <Route
           path="/manager/dashboard"
           element={
@@ -96,6 +124,33 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/manager"
+          element={<ManagerLayout />}
+        >
+
+          <Route
+            path="dashboard"
+            element={<ManagerDashboard />}
+          />
+
+          <Route
+            path="approvals"
+            element={<ManagerApprovals />}
+          />
+
+          <Route
+            path="students/:studentId"
+            element={<ManagerViewStudent />}
+          />
+
+          <Route
+            path="evaluation"
+            element={<ManagerEvaluation />}
+          />
+
+        </Route>
 
         <Route
           path="/certificate"

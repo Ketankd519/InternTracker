@@ -16,6 +16,8 @@ const internshipRoutes = require("./routes/internshipRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const certificateRoutes = require("./routes/certificateRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const teacherRoutes = require("./routes/teacherRoutes");
+const managerRoutes = require("./routes/managerRoutes");
 
 // ==========================
 // Error Middleware
@@ -58,6 +60,9 @@ app.use("/api/certificates", certificateRoutes);
 
 app.use("/api/student-dashboard", dashboardRoutes);
 
+app.use("/api/teacher", teacherRoutes);
+
+app.use("/api/manager", managerRoutes);
 // ==========================
 // Home Route
 // ==========================

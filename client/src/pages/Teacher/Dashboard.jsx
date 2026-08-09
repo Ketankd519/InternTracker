@@ -1,36 +1,169 @@
-import Sidebar from '../../components/Sidebar';
-import Table from '../../components/Table';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../../pages/Teacher/TeacherStyle.css";
+import api from "../../services/api";
 
 export default function TeacherDashboard() {
-  const students = [
-    { name: 'Rahul', company: 'ABC Pvt Ltd', week: 4, status: 'Approved' },
-    { name: 'Priya', company: 'XYZ Tech', week: 3, status: 'Pending' }
-  ];
+  const navigate = useNavigate();
+
+  const [teacher, setTeacher] = useState(null);
+
+  const [statistics, setStatistics] = useState({
+    totalStudents: 0,
+    activeStudents: 0,
+    completedStudents: 0,
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
+
+  const fetchDashboard = async () => {
+    try {
+      setLoading(true);
+
+      const response = await api.get("/teacher/dashboard");
+
+      setTeacher(response.data.teacher);
+
+      setStatistics(response.data.statistics);
+
+    } catch (error) {
+      console.error("Dashboard Error:", error);
+
+      setError(
+        error.response?.data?.message ||
+        "Failed to load dashboard"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="teacher-page">
+        <div className="teacher-loading">
+          Loading dashboard...
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="teacher-page">
+        <div className="teacher-error">
+          {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="dashboard">
-      <Sidebar title="Teacher" items={['Dashboard', 'Students', 'Reports', 'Analytics']} />
-      <div className="content">
-        <h2>Teacher Dashboard</h2>
-        <div className="stats">
-          <div className="box"><h3>Total Students</h3><p>120</p></div>
-          <div className="box"><h3>Active</h3><p>85</p></div>
-          <div className="box"><h3>Completed</h3><p>35</p></div>
+    <div className="teacher-page">
+
+      {/* Welcome */}
+      <div className="teacher-welcome">
+        <div>
+          <h1>
+            Welcome, {teacher?.name || "Teacher"} 👋
+          </h1>
+
+          <p>
+            Here is an overview of your students and internships.
+          </p>
+        </div>
+      </div>
+
+
+      {/* Statistics */}
+      <div className="teacher-stat-grid">
+
+        <div className="teacher-stat-card">
+          <div className="teacher-stat-icon">👨‍🎓</div>
+
+          <div>
+            <p>Total Students</p>
+            <h2>{statistics.totalStudents}</h2>
+          </div>
         </div>
 
-        <Table 
-          headers={['Student', 'Company', 'Week', 'Status']}
-          data={students}
-          renderRow={(row, idx) => (
-            <tr key={idx}>
-              <td>{row.name}</td>
-              <td>{row.company}</td>
-              <td>{row.week}</td>
-              <td>{row.status}</td>
-            </tr>
-          )}
-        />
+
+        <div className="teacher-stat-card">
+          <div className="teacher-stat-icon">📚</div>
+
+          <div>
+            <p>Active Students</p>
+            <h2>{statistics.activeStudents}</h2>
+          </div>
+        </div>
+
+
+        <div className="teacher-stat-card">
+          <div className="teacher-stat-icon">✅</div>
+
+          <div>
+            <p>Completed</p>
+            <h2>{statistics.completedStudents}</h2>
+          </div>
+        </div>
+
       </div>
+
+
+      {/* Quick Actions */}
+      <div className="teacher-section">
+
+        <div className="teacher-section-header">
+          <h2>Quick Access</h2>
+        </div>
+
+        <div className="teacher-quick-grid">
+
+          <button
+            onClick={() => navigate("/teacher/students")}
+            className="teacher-quick-card"
+          >
+            <span>👨‍🎓</span>
+            <div>
+              <h3>View Students</h3>
+              <p>
+                View student profiles and internship progress.
+              </p>
+            </div>
+          </button>
+
+
+          <div className="teacher-quick-card disabled">
+            <span>📄</span>
+            <div>
+              <h3>Reports</h3>
+              <p>
+                Reports module will be available in a future update.
+              </p>
+            </div>
+          </div>
+
+
+          <div className="teacher-quick-card disabled">
+            <span>📈</span>
+            <div>
+              <h3>Analytics</h3>
+              <p>
+                Analytics module will be available in a future update.
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
+    
   );
 }
