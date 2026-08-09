@@ -2,11 +2,19 @@ const mongoose = require("mongoose");
 
 const weeklyReportSchema = new mongoose.Schema(
   {
+    // ==========================================
+    // Student
+    // ==========================================
+
     student: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Student",
       required: true,
     },
+
+    // ==========================================
+    // Weekly Report Details
+    // ==========================================
 
     weekNumber: {
       type: Number,
@@ -26,32 +34,57 @@ const weeklyReportSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // ==========================================
+    // Attachment
+    // ==========================================
+
     attachment: {
       type: String,
       default: null,
     },
 
-    // Date entered by student
+    // ==========================================
+    // Submission Date
+    // ==========================================
+
     submissionDate: {
       type: Date,
       required: true,
     },
 
-    // Date/time when report was actually submitted
+    // Actual database submission time
     submittedAt: {
       type: Date,
       default: Date.now,
     },
+
+    // ==========================================
+    // Manager Verification
+    // ==========================================
 
     managerVerified: {
       type: Boolean,
       default: false,
     },
 
+    // ==========================================
+    // Report Status
+    // ==========================================
+
     status: {
       type: String,
       enum: ["Pending", "Approved", "Rejected"],
       default: "Pending",
+    },
+
+    // ==========================================
+    // Rejection Remark
+    // ==========================================
+
+    rejectionRemark: {
+      type: String,
+      default: "",
+      trim: true,
     },
   },
   {
@@ -59,13 +92,24 @@ const weeklyReportSchema = new mongoose.Schema(
   }
 );
 
-// One report per student per week
+// ==========================================
+// One Report Per Student Per Week
+// ==========================================
+
 weeklyReportSchema.index(
-  { student: 1, weekNumber: 1 },
-  { unique: true }
+  {
+    student: 1,
+    weekNumber: 1,
+  },
+  {
+    unique: true,
+  }
 );
 
-// Count submitted reports
+// ==========================================
+// Count Submitted Reports
+// ==========================================
+
 weeklyReportSchema.statics.getSubmittedReportCount =
   async function (studentId) {
     return await this.countDocuments({

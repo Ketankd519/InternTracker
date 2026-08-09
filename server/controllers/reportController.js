@@ -161,25 +161,54 @@ const getStudentReports = async (req, res) => {
 // PUT /api/reports/:id/verify
 // Private - Teacher / Manager / Admin
 // ==========================================
+
 const verifyReport = async (req, res) => {
   try {
     const { id } = req.params;
-    const { managerVerified } = req.body;
+
+    const {
+      managerVerified,
+      rejectionRemark,
+    } = req.body;
+
+    // ==========================================
+    // Determine Verification
+    // ==========================================
+
+    const isVerified =
+      managerVerified !== undefined
+        ? managerVerified
+        : true;
+
+    // ==========================================
+    // Determine Status
+    // ==========================================
+
+    const status = isVerified
+      ? "Approved"
+      : "Rejected";
+
+    // ==========================================
+    // Rejection Remark
+    // ==========================================
+
+    const remark =
+      isVerified === false
+        ? rejectionRemark || ""
+        : "";
+
+    // ==========================================
+    // Update Report
+    // ==========================================
 
     const updatedReport =
       await WeeklyReport.findByIdAndUpdate(
         id,
         {
           $set: {
-            managerVerified:
-              managerVerified !== undefined
-                ? managerVerified
-                : true,
-
-            status:
-              managerVerified === false
-                ? "Rejected"
-                : "Approved",
+            managerVerified: isVerified,
+            status: status,
+            rejectionRemark: remark,
           },
         },
         {
@@ -188,6 +217,10 @@ const verifyReport = async (req, res) => {
         }
       );
 
+    // ==========================================
+    // Report Not Found
+    // ==========================================
+
     if (!updatedReport) {
       return res.status(404).json({
         success: false,
@@ -195,15 +228,23 @@ const verifyReport = async (req, res) => {
       });
     }
 
+    // ==========================================
+    // Response
+    // ==========================================
+
     return res.status(200).json({
       success: true,
       message:
-        "Weekly report verification status updated",
+        isVerified === false
+          ? "Weekly report rejected successfully"
+          : "Weekly report approved successfully",
       data: updatedReport,
     });
-
   } catch (error) {
-    console.error("Verify Weekly Report Error:", error);
+    console.error(
+      "Verify Weekly Report Error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
