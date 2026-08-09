@@ -1,25 +1,41 @@
-const Student = require('../models/Student');
+const Student = require("../models/Student");
+const User = require("../models/User");
 
-/**
- * @desc    Create Student Profile
- * @route   POST /api/students/profile
- * @access  Private (Student)
- */
+// ==========================================
+// Create Student Profile
+// POST /api/students/profile
+// Private - Student
+// ==========================================
 const createStudentProfile = async (req, res) => {
   try {
-    const user = req.user._id;
+    const userId = req.user._id;
 
-    // Check if student profile already exists for this user
-    let existingProfile = await Student.findOne({ user });
+    // Find logged-in user
+    const user = await User.findById(userId).select(
+      "name email role"
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    // Check existing student profile
+    const existingProfile = await Student.findOne({
+      user: userId,
+    });
+
     if (existingProfile) {
       return res.status(400).json({
         success: false,
-        message: 'Student profile already exists. Use update instead.',
+        message:
+          "Student profile already exists. Use update instead.",
       });
     }
 
     const {
-      fullName,
       phone,
       dob,
       gender,
@@ -27,7 +43,6 @@ const createStudentProfile = async (req, res) => {
       city,
       state,
       pincode,
-      profilePhoto,
       college,
       department,
       semester,
@@ -37,10 +52,16 @@ const createStudentProfile = async (req, res) => {
       cgpa,
     } = req.body;
 
-    // Create new profile
+    // ==========================================
+    // Create Student
+    // ==========================================
+
     const studentProfile = new Student({
-      user,
-      fullName,
+      user: userId,
+
+      // Name comes from USERS collection
+      fullName: user.name,
+
       phone,
       dob,
       gender,
@@ -48,108 +69,240 @@ const createStudentProfile = async (req, res) => {
       city,
       state,
       pincode,
-      profilePhoto: req.file ? req.file.path : profilePhoto, // Handles optional file upload path or URL
+
+      profilePhoto: req.file
+        ? req.file.path
+        : undefined,
+
       college,
       department,
       semester,
       rollNo,
       enrollmentNumber,
-      teacherId,
+
+      // Only store teacherId if provided
+      teacherId:
+        teacherId && teacherId.trim() !== ""
+          ? teacherId
+          : undefined,
+
       cgpa,
+
       profileCompleted: true,
+
+      // Teacher verification starts as false
+      teacherVerified: false,
     });
 
-    const savedProfile = await studentProfile.save();
+    const savedProfile =
+      await studentProfile.save();
 
-    res.status(201).json({
+    // Populate user information
+    await savedProfile.populate(
+      "user",
+      "name email role"
+    );
+
+    await savedProfile.populate(
+      "teacherId",
+      "name email"
+    );
+
+    return res.status(201).json({
       success: true,
-      message: 'Student profile created successfully',
+      profileExists: true,
+      message:
+        "Student profile created successfully.",
       data: savedProfile,
     });
   } catch (error) {
-    res.status(500).json({
+    console.error(
+      "Create Student Profile Error:",
+      error
+    );
+
+    return res.status(500).json({
       success: false,
-      message: 'Error creating student profile',
+      message:
+        "Error creating student profile",
       error: error.message,
     });
   }
 };
 
-/**
- * @desc    Get Logged-in Student Profile
- * @route   GET /api/students/profile
- * @access  Private (Student/Teacher/Admin)
- */
+// ==========================================
+// Get Logged-in Student Profile
+// GET /api/students/profile
+// Private - Student
+// ==========================================
 const getStudentProfile = async (req, res) => {
   try {
-    const user = req.user._id;
+    const userId = req.user._id;
 
-    // Find student profile and populate reference fields
-    const profile = await Student.findOne({ user })
-      .populate('user', 'name email role')
-      .populate('teacherId', 'name email');
+    // ==========================================
+    // ALWAYS get user information
+    // ==========================================
 
-    if (!profile) {
+    const user = await User.findById(userId).select(
+      "name email role"
+    );
+
+    if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'Student profile not found',
+        message: "User not found.",
       });
     }
 
-    res.status(200).json({
+    // ==========================================
+    // Find student profile
+    // ==========================================
+
+    const profile = await Student.findOne({
+      user: userId,
+    })
+      .populate("user", "name email role")
+      .populate("teacherId", "name email");
+
+    // ==========================================
+    // NEW USER
+    // No Student document yet
+    // ==========================================
+
+    if (!profile) {
+      return res.status(200).json({
+        success: true,
+        profileExists: false,
+
+        data: {
+          user: {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          },
+        },
+      });
+    }
+
+    // ==========================================
+    // EXISTING STUDENT
+    // ==========================================
+
+    return res.status(200).json({
       success: true,
+      profileExists: true,
       data: profile,
     });
   } catch (error) {
-    res.status(500).json({
+    console.error(
+      "Get Student Profile Error:",
+      error
+    );
+
+    return res.status(500).json({
       success: false,
-      message: 'Error fetching student profile',
+      message:
+        "Error fetching student profile",
       error: error.message,
     });
   }
 };
 
-/**
- * @desc    Update Student Profile
- * @route   PUT /api/students/profile
- * @access  Private (Student)
- */
+// ==========================================
+// Update Student Profile
+// PUT /api/students/profile
+// Private - Student
+// ==========================================
 const updateStudentProfile = async (req, res) => {
   try {
-    const user = req.user._id;
+    const userId = req.user._id;
 
-    let profile = await Student.findOne({ user });
+    // Find existing profile
+    let profile = await Student.findOne({
+      user: userId,
+    });
 
     if (!profile) {
       return res.status(404).json({
         success: false,
-        message: 'Student profile not found. Please create one first.',
+        message:
+          "Student profile not found. Please create one first.",
       });
     }
 
-    // Handle file upload if present
+    // ==========================================
+    // File upload
+    // ==========================================
+
     if (req.file) {
-      req.body.profilePhoto = req.file.path;
+      req.body.profilePhoto =
+        req.file.path;
     }
 
-    // Update profile fields
-    profile = await Student.findOneAndUpdate(
-      { user },
-      { $set: { ...req.body, profileCompleted: true } },
-      { new: true, runValidators: true }
-    )
-      .populate('user', 'name email role')
-      .populate('teacherId', 'name email');
+    // ==========================================
+    // Never allow frontend to change these
+    // ==========================================
 
-    res.status(200).json({
+    delete req.body.user;
+    delete req.body.fullName;
+    delete req.body.profileCompleted;
+    delete req.body.teacherVerified;
+
+    // ==========================================
+    // Remove empty teacherId
+    // ==========================================
+
+    if (
+      req.body.teacherId === ""
+    ) {
+      delete req.body.teacherId;
+    }
+
+    // ==========================================
+    // Update profile
+    // ==========================================
+
+    profile =
+      await Student.findOneAndUpdate(
+        { user: userId },
+        {
+          $set: {
+            ...req.body,
+            profileCompleted: true,
+          },
+        },
+        {
+          new: true,
+          runValidators: true,
+        }
+      )
+        .populate(
+          "user",
+          "name email role"
+        )
+        .populate(
+          "teacherId",
+          "name email"
+        );
+
+    return res.status(200).json({
       success: true,
-      message: 'Student profile updated successfully',
+      profileExists: true,
+      message:
+        "Student profile updated successfully.",
       data: profile,
     });
   } catch (error) {
-    res.status(500).json({
+    console.error(
+      "Update Student Profile Error:",
+      error
+    );
+
+    return res.status(500).json({
       success: false,
-      message: 'Error updating student profile',
+      message:
+        "Error updating student profile",
       error: error.message,
     });
   }

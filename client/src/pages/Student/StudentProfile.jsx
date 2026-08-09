@@ -1,56 +1,187 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import StudentLayout from "../../layouts/StudentLayout";
 import API from "../../services/api";
+import "./StudentStyle.css";
+
+const emptyForm = {
+  phone: "",
+  dob: "",
+  gender: "",
+
+  address: "",
+  city: "",
+  state: "",
+  pincode: "",
+
+  college: "",
+  department: "",
+  semester: "",
+
+  rollNo: "",
+  enrollmentNumber: "",
+
+  teacherId: "",
+  cgpa: "",
+
+  profilePhoto: "",
+};
 
 const StudentProfile = () => {
-  const [formData, setFormData] = useState({
-    fullName: "Tejas Dhanvijay",
-    email: "tejas@gmail.com",
+  const [formData, setFormData] =
+    useState(emptyForm);
 
-    phone: "",
-    dob: "",
-    gender: "",
-
-    address: "",
-    city: "",
-    state: "",
-    pincode: "",
-
-    college: "",
-    department: "",
-    semester: "",
-
-    rollNo: "",
-    enrollmentNumber: "",
-
-    teacherId: "",
-    cgpa: "",
-
-    profilePhoto: "",
+  // Comes ONLY from users collection
+  const [userData, setUserData] = useState({
+    name: "",
+    email: "",
   });
 
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [profileExists, setProfileExists] =
+    useState(false);
 
-  // Handle input changes
+  const [loading, setLoading] =
+    useState(false);
+
+  const [fetching, setFetching] =
+    useState(true);
+
+  const [message, setMessage] =
+    useState("");
+
+  const [error, setError] =
+    useState("");
+
+  // ==========================================
+  // Fetch Profile
+  // ==========================================
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        setFetching(true);
+        setError("");
+
+        const response =
+          await API.get("/students/profile");
+
+        const result = response.data;
+
+        console.log(
+          "Student Profile:",
+          result
+        );
+
+        const user = result.data?.user;
+
+        // ========================================
+        // USER DATA
+        // From users collection
+        // ========================================
+
+        setUserData({
+          name: user?.name || "",
+          email: user?.email || "",
+        });
+
+        // ========================================
+        // NEW USER
+        // ========================================
+
+        if (!result.profileExists) {
+          setProfileExists(false);
+          setFormData(emptyForm);
+          return;
+        }
+
+        // ========================================
+        // EXISTING PROFILE
+        // ========================================
+
+        const data = result.data;
+
+        setProfileExists(true);
+
+        setFormData({
+          phone: data.phone || "",
+
+          dob: data.dob
+            ? new Date(data.dob)
+                .toISOString()
+                .split("T")[0]
+            : "",
+
+          gender: data.gender || "",
+
+          address: data.address || "",
+          city: data.city || "",
+          state: data.state || "",
+          pincode: data.pincode || "",
+
+          college: data.college || "",
+          department:
+            data.department || "",
+
+          semester:
+            data.semester ?? "",
+
+          rollNo:
+            data.rollNo || "",
+
+          enrollmentNumber:
+            data.enrollmentNumber || "",
+
+          teacherId:
+            data.teacherId?._id ||
+            data.teacherId ||
+            "",
+
+          cgpa:
+            data.cgpa ?? "",
+
+          profilePhoto:
+            data.profilePhoto || "",
+        });
+      } catch (err) {
+        console.error(
+          "Fetch Student Profile Error:",
+          err
+        );
+
+        setError(
+          err.response?.data?.message ||
+            "Unable to fetch student profile."
+        );
+      } finally {
+        setFetching(false);
+      }
+    };
+
+    loadProfile();
+  }, []);
+
+  // ==========================================
+  // Handle Input
+  // ==========================================
+
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
+    const {
+      name,
+      value,
+      files,
+    } = e.target;
 
-    if (files) {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: files[0],
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
+    setFormData((prev) => ({
+      ...prev,
+      [name]: files
+        ? files[0]
+        : value,
+    }));
   };
 
-  // Submit Student Profile
+  // ==========================================
+  // Create / Update
+  // ==========================================
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -61,90 +192,284 @@ const StudentProfile = () => {
     try {
       const data = new FormData();
 
-      // Personal Details
-      data.append("fullName", formData.fullName);
-      data.append("phone", formData.phone);
-      data.append("dob", formData.dob);
-      data.append("gender", formData.gender);
-      data.append("address", formData.address);
-      data.append("city", formData.city);
-      data.append("state", formData.state);
-      data.append("pincode", formData.pincode);
+      // ========================================
+      // Student Details
+      // ========================================
 
-      // Academic Details
-      data.append("college", formData.college);
-      data.append("department", formData.department);
-      data.append("semester", formData.semester);
-      data.append("rollNo", formData.rollNo);
-      data.append("enrollmentNumber", formData.enrollmentNumber);
-      data.append("cgpa", formData.cgpa);
-
-      // Teacher ID - only send if entered
-      if (formData.teacherId.trim() !== "") {
-        data.append("teacherId", formData.teacherId);
-      }
-
-      // Profile Photo - only send if selected
-      if (formData.profilePhoto) {
-        data.append("profilePhoto", formData.profilePhoto);
-      }
-
-      const response = await API.post("/students/profile", data);
-
-      console.log("Student Profile Response:", response.data);
-
-      setMessage(
-        response.data.message || "Student profile created successfully."
+      data.append(
+        "phone",
+        formData.phone
       );
 
-      // Reset editable fields after successful submission
-      setFormData((prev) => ({
-        ...prev,
-        phone: "",
-        dob: "",
-        gender: "",
-        address: "",
-        city: "",
-        state: "",
-        pincode: "",
-        college: "",
-        department: "",
-        semester: "",
-        rollNo: "",
-        enrollmentNumber: "",
-        teacherId: "",
-        cgpa: "",
-        profilePhoto: "",
-      }));
+      if (formData.dob) {
+        data.append(
+          "dob",
+          formData.dob
+        );
+      }
+
+      if (formData.gender) {
+        data.append(
+          "gender",
+          formData.gender
+        );
+      }
+
+      data.append(
+        "address",
+        formData.address
+      );
+
+      data.append(
+        "city",
+        formData.city
+      );
+
+      data.append(
+        "state",
+        formData.state
+      );
+
+      data.append(
+        "pincode",
+        formData.pincode
+      );
+
+      // ========================================
+      // Academic Details
+      // ========================================
+
+      data.append(
+        "college",
+        formData.college
+      );
+
+      data.append(
+        "department",
+        formData.department
+      );
+
+      data.append(
+        "semester",
+        formData.semester
+      );
+
+      data.append(
+        "rollNo",
+        formData.rollNo
+      );
+
+      data.append(
+        "enrollmentNumber",
+        formData.enrollmentNumber
+      );
+
+      if (
+        formData.teacherId.trim() !== ""
+      ) {
+        data.append(
+          "teacherId",
+          formData.teacherId
+        );
+      }
+
+      if (formData.cgpa !== "") {
+        data.append(
+          "cgpa",
+          formData.cgpa
+        );
+      }
+
+      // ========================================
+      // Profile Photo
+      // ========================================
+
+      if (
+        formData.profilePhoto instanceof
+        File
+      ) {
+        data.append(
+          "profilePhoto",
+          formData.profilePhoto
+        );
+      }
+
+      let response;
+
+      // ========================================
+      // CREATE
+      // ========================================
+
+      if (!profileExists) {
+        response = await API.post(
+          "/students/profile",
+          data
+        );
+      }
+
+      // ========================================
+      // UPDATE
+      // ========================================
+
+      else {
+        response = await API.put(
+          "/students/profile",
+          data
+        );
+      }
+
+      console.log(
+        "Student Profile Response:",
+        response.data
+      );
+
+      setMessage(
+        response.data.message ||
+          "Profile saved successfully."
+      );
+
+      // ========================================
+      // Refresh from MongoDB
+      // ========================================
+
+      const refreshed =
+        await API.get(
+          "/students/profile"
+        );
+
+      const result = refreshed.data;
+
+      setProfileExists(
+        result.profileExists
+      );
+
+      const user =
+        result.data?.user;
+
+      setUserData({
+        name: user?.name || "",
+        email: user?.email || "",
+      });
+
+      if (result.profileExists) {
+        const profile =
+          result.data;
+
+        setFormData({
+          phone:
+            profile.phone || "",
+
+          dob: profile.dob
+            ? new Date(profile.dob)
+                .toISOString()
+                .split("T")[0]
+            : "",
+
+          gender:
+            profile.gender || "",
+
+          address:
+            profile.address || "",
+
+          city:
+            profile.city || "",
+
+          state:
+            profile.state || "",
+
+          pincode:
+            profile.pincode || "",
+
+          college:
+            profile.college || "",
+
+          department:
+            profile.department || "",
+
+          semester:
+            profile.semester ?? "",
+
+          rollNo:
+            profile.rollNo || "",
+
+          enrollmentNumber:
+            profile.enrollmentNumber ||
+            "",
+
+          teacherId:
+            profile.teacherId?._id ||
+            profile.teacherId ||
+            "",
+
+          cgpa:
+            profile.cgpa ?? "",
+
+          profilePhoto:
+            profile.profilePhoto || "",
+        });
+      }
     } catch (err) {
-      console.error("Student Profile Error:", err);
+      console.error(
+        "Student Profile Error:",
+        err
+      );
 
-      const errorMessage =
+      setError(
         err.response?.data?.message ||
-        "Unable to create student profile. Please try again.";
-
-      setError(errorMessage);
+          "Unable to save student profile."
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  // ==========================================
+  // Loading
+  // ==========================================
+
+  if (fetching) {
+    return (
+      <StudentLayout>
+        <div className="profile-page">
+          <div className="profile-header">
+            <h1>
+              Student Profile
+            </h1>
+
+            <p>
+              Loading your profile...
+            </p>
+          </div>
+        </div>
+      </StudentLayout>
+    );
+  }
+
+  // ==========================================
+  // UI
+  // ==========================================
+
   return (
     <StudentLayout>
       <div className="profile-page">
+
         <div className="profile-header">
-          <h1>Student Profile</h1>
-          <p>Complete your personal and academic information.</p>
+          <h1>
+            Student Profile
+          </h1>
+
+          <p>
+            Complete your personal and
+            academic information.
+          </p>
         </div>
 
-        {/* Success Message */}
         {message && (
           <div className="success-message">
             {message}
           </div>
         )}
 
-        {/* Error Message */}
         {error && (
           <div className="error-message">
             {error}
@@ -155,27 +480,38 @@ const StudentProfile = () => {
           className="profile-form"
           onSubmit={handleSubmit}
         >
+
           {/* =========================
               Personal Details
           ========================== */}
 
           <div className="profile-section">
-            <h2>Personal Details</h2>
+
+            <h2>
+              Personal Details
+            </h2>
 
             <div className="profile-grid">
+
+              {/* USERS collection */}
+
               <input
                 type="text"
                 name="fullName"
-                value={formData.fullName}
+                value={userData.name}
                 readOnly
+                placeholder="Full Name"
               />
 
               <input
                 type="email"
                 name="email"
-                value={formData.email}
+                value={userData.email}
                 readOnly
+                placeholder="Email"
               />
+
+              {/* STUDENTS collection */}
 
               <input
                 type="text"
@@ -198,10 +534,21 @@ const StudentProfile = () => {
                 value={formData.gender}
                 onChange={handleChange}
               >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
+                <option value="">
+                  Select Gender
+                </option>
+
+                <option value="Male">
+                  Male
+                </option>
+
+                <option value="Female">
+                  Female
+                </option>
+
+                <option value="Other">
+                  Other
+                </option>
               </select>
 
               <input
@@ -240,7 +587,10 @@ const StudentProfile = () => {
               />
 
               <div className="photo-upload">
-                <label>Profile Photo</label>
+
+                <label>
+                  Profile Photo
+                </label>
 
                 <input
                   type="file"
@@ -248,7 +598,9 @@ const StudentProfile = () => {
                   accept="image/*"
                   onChange={handleChange}
                 />
+
               </div>
+
             </div>
           </div>
 
@@ -257,9 +609,13 @@ const StudentProfile = () => {
           ========================== */}
 
           <div className="profile-section">
-            <h2>Academic Details</h2>
+
+            <h2>
+              Academic Details
+            </h2>
 
             <div className="profile-grid">
+
               <input
                 type="text"
                 name="college"
@@ -324,23 +680,34 @@ const StudentProfile = () => {
                 value={formData.cgpa}
                 onChange={handleChange}
               />
+
             </div>
           </div>
 
           {/* =========================
-              Submit Button
+              Buttons
           ========================== */}
 
           <div className="profile-buttons">
+
             <button
               type="submit"
               className="profile-btn"
               disabled={loading}
             >
-              {loading ? "Saving..." : "Save Profile"}
+              {!profileExists
+                ? loading
+                  ? "Saving..."
+                  : "Save Profile"
+                : loading
+                ? "Updating..."
+                : "Update Profile"}
             </button>
+
           </div>
+
         </form>
+
       </div>
     </StudentLayout>
   );

@@ -1,8 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import StudentLayout from "../../layouts/StudentLayout";
 import API from "../../services/api";
+import "./StudentStyle.css";
 
 export default function Internship() {
+  // ==========================================
+  // Internship Form Data
+  // ==========================================
+
   const [formData, setFormData] = useState({
     companyName: "",
     internshipRole: "",
@@ -12,22 +17,226 @@ export default function Internship() {
     managerEmail: "",
     managerPhone: "",
 
-    department: "Computer Applications",
+    // Comes automatically from Student collection
+    department: "",
 
     startDate: "",
     endDate: "",
-
     totalWeeks: "",
-    status: "Pending",
   });
 
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  // ==========================================
+  // Profile / Internship State
+  // ==========================================
 
-  // Handle input changes
+  const [profileCompleted, setProfileCompleted] =
+    useState(false);
+
+  const [internshipExists, setInternshipExists] =
+    useState(false);
+
+  // ==========================================
+  // Loading States
+  // ==========================================
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [fetching, setFetching] =
+    useState(true);
+
+  // ==========================================
+  // Messages
+  // ==========================================
+
+  const [message, setMessage] =
+    useState("");
+
+  const [error, setError] =
+    useState("");
+
+  // ==========================================
+  // Fetch Data When Page Opens
+  // ==========================================
+
+  useEffect(() => {
+    fetchInternshipData();
+  }, []);
+
+  // ==========================================
+  // Fetch Student + Internship
+  // ==========================================
+
+  const fetchInternshipData = async () => {
+    try {
+      setFetching(true);
+      setError("");
+
+      // ========================================
+      // 1. Fetch Student Profile
+      // ========================================
+
+      try {
+        const studentResponse =
+          await API.get("/students/profile");
+
+        console.log(
+          "Student Profile Response:",
+          studentResponse.data
+        );
+
+        const studentData =
+          studentResponse.data.data;
+
+        // ----------------------------------------
+        // Check whether student profile exists
+        // ----------------------------------------
+
+        if (
+          studentData &&
+          studentData.profileCompleted
+        ) {
+          setProfileCompleted(true);
+
+          // Department comes ONLY from students collection
+          setFormData((prev) => ({
+            ...prev,
+            department:
+              studentData.department || "",
+          }));
+        } else {
+          setProfileCompleted(false);
+
+          // If profile is not completed,
+          // department remains empty.
+          setFormData((prev) => ({
+            ...prev,
+            department: "",
+          }));
+        }
+      } catch (studentError) {
+        console.log(
+          "Student profile not found."
+        );
+
+        setProfileCompleted(false);
+
+        setFormData((prev) => ({
+          ...prev,
+          department: "",
+        }));
+      }
+
+      // ========================================
+      // 2. Fetch Existing Internship
+      // ========================================
+
+      try {
+        const internshipResponse =
+          await API.get("/internships/status");
+
+        console.log(
+          "Internship Response:",
+          internshipResponse.data
+        );
+
+        const internshipData =
+          internshipResponse.data.data?.internship;
+
+        // ----------------------------------------
+        // Internship exists
+        // ----------------------------------------
+
+        if (internshipData) {
+          setInternshipExists(true);
+
+          setFormData((prev) => ({
+            ...prev,
+
+            companyName:
+              internshipData.companyName || "",
+
+            internshipRole:
+              internshipData.internshipRole || "",
+
+            companyAddress:
+              internshipData.companyAddress || "",
+
+            managerName:
+              internshipData.managerName || "",
+
+            managerEmail:
+              internshipData.managerEmail || "",
+
+            managerPhone:
+              internshipData.managerPhone || "",
+
+            startDate:
+              internshipData.startDate
+                ? new Date(
+                    internshipData.startDate
+                  )
+                    .toISOString()
+                    .split("T")[0]
+                : "",
+
+            endDate:
+              internshipData.endDate
+                ? new Date(
+                    internshipData.endDate
+                  )
+                    .toISOString()
+                    .split("T")[0]
+                : "",
+
+            totalWeeks:
+              internshipData.totalWeeks || "",
+
+            // IMPORTANT:
+            // Department is NOT taken from Internship.
+            // It will continue coming from Student.
+          }));
+        } else {
+          setInternshipExists(false);
+        }
+      } catch (internshipError) {
+        // New user may not have internship yet.
+        setInternshipExists(false);
+
+        console.log(
+          "No internship found."
+        );
+      }
+    } catch (err) {
+      console.error(
+        "Fetch Internship Data Error:",
+        err
+      );
+
+      setError(
+        err.response?.data?.message ||
+          "Unable to fetch internship data."
+      );
+    } finally {
+      setFetching(false);
+    }
+  };
+
+  // ==========================================
+  // Handle Input Changes
+  // ==========================================
+
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const {
+      name,
+      value,
+    } = e.target;
+
+    // Department is read-only and
+    // should never be manually changed.
+    if (name === "department") {
+      return;
+    }
 
     setFormData((prev) => ({
       ...prev,
@@ -35,7 +244,10 @@ export default function Internship() {
     }));
   };
 
-  // Submit Internship
+  // ==========================================
+  // Submit / Update Internship
+  // ==========================================
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -44,84 +256,209 @@ export default function Internship() {
     setError("");
 
     try {
-      // Data required by backend Internship model/controller
-    const data = {
-      companyName: formData.companyName,
-      companyAddress: formData.companyAddress,
-      internshipRole: formData.internshipRole,
+      // ========================================
+      // Make sure Student Profile is completed
+      // ========================================
 
-      managerName: formData.managerName,
-      managerEmail: formData.managerEmail,
-      managerPhone: formData.managerPhone,
+      if (!profileCompleted) {
+        setError(
+          "Please complete your Student Profile before submitting an internship."
+        );
 
-      department: formData.department,
+        setLoading(false);
+        return;
+      }
 
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-      totalWeeks: Number(formData.totalWeeks),
-    };
+      // ========================================
+      // Make sure Department exists
+      // ========================================
 
-      const response = await API.post("/internships", data);
+      if (!formData.department) {
+        setError(
+          "Department not found. Please complete your Student Profile first."
+        );
 
-      console.log("Internship Response:", response.data);
+        setLoading(false);
+        return;
+      }
 
-      setMessage(
-        response.data.message ||
-          "Internship application submitted successfully."
+      // ========================================
+      // Data sent to Internship backend
+      // ========================================
+
+      const data = {
+        companyName:
+          formData.companyName,
+
+        companyAddress:
+          formData.companyAddress,
+
+        internshipRole:
+          formData.internshipRole,
+
+        managerName:
+          formData.managerName,
+
+        managerEmail:
+          formData.managerEmail,
+
+        managerPhone:
+          formData.managerPhone,
+
+        // Department comes from Student collection
+        department:
+          formData.department,
+
+        startDate:
+          formData.startDate,
+
+        endDate:
+          formData.endDate,
+
+        totalWeeks:
+          Number(formData.totalWeeks),
+      };
+
+      let response;
+
+      // ========================================
+      // CREATE INTERNSHIP
+      // ========================================
+
+      if (!internshipExists) {
+        response = await API.post(
+          "/internships",
+          data
+        );
+
+        setMessage(
+          response.data.message ||
+            "Internship application submitted successfully."
+        );
+
+        setInternshipExists(true);
+      }
+
+      // ========================================
+      // UPDATE INTERNSHIP
+      // ========================================
+
+      else {
+        response = await API.put(
+          "/internships",
+          data
+        );
+
+        setMessage(
+          response.data.message ||
+            "Internship details updated successfully."
+        );
+      }
+
+      console.log(
+        "Internship Save/Update Response:",
+        response.data
       );
 
-      // Reset form after successful submission
-      setFormData({
-        companyName: "",
-        internshipRole: "",
-        companyAddress: "",
+      // ========================================
+      // Fetch Latest Data From MongoDB
+      // ========================================
 
-        managerName: "",
-        managerEmail: "",
-        managerPhone: "",
-
-        department: "Computer Applications",
-
-        startDate: "",
-        endDate: "",
-
-        totalWeeks: "",
-        status: "Pending",
-      });
+      await fetchInternshipData();
     } catch (err) {
-      console.error("Internship Error:", err);
+      console.error(
+        "Internship Save/Update Error:",
+        err
+      );
 
-      const errorMessage =
+      setError(
         err.response?.data?.message ||
-        "Unable to submit internship application.";
-
-      setError(errorMessage);
+          "Unable to save internship details."
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  // ==========================================
+  // Loading Screen
+  // ==========================================
+
+  if (fetching) {
+    return (
+      <StudentLayout>
+        <div className="profile-page">
+
+          <div className="profile-header">
+            <h1>
+              Internship
+            </h1>
+
+            <p>
+              Loading internship details...
+            </p>
+          </div>
+
+        </div>
+      </StudentLayout>
+    );
+  }
+
+  // ==========================================
+  // Internship Page
+  // ==========================================
+
   return (
     <StudentLayout>
+
       <div className="profile-page">
 
-        {/* Header */}
+        {/* ====================================
+            Header
+        ===================================== */}
+
         <div className="profile-header">
-          <h1>Internship</h1>
-          <p>Enter your internship details.</p>
+
+          <h1>
+            Internship
+          </h1>
+
+          <p>
+            Enter your internship details.
+          </p>
+
         </div>
 
-        {/* Success Message */}
+        {/* ====================================
+            Success Message
+        ===================================== */}
+
         {message && (
           <div className="success-message">
             {message}
           </div>
         )}
 
-        {/* Error Message */}
+        {/* ====================================
+            Error Message
+        ===================================== */}
+
         {error && (
           <div className="error-message">
             {error}
+          </div>
+        )}
+
+        {/* ====================================
+            Profile Warning
+        ===================================== */}
+
+        {!profileCompleted && (
+          <div className="error-message">
+            Please complete your Student Profile
+            first. Department will automatically
+            appear here after your profile is
+            completed.
           </div>
         )}
 
@@ -130,13 +467,15 @@ export default function Internship() {
           onSubmit={handleSubmit}
         >
 
-          {/* =========================
+          {/* ==================================
               Company Details
-          ========================== */}
+          =================================== */}
 
           <div className="profile-section">
 
-            <h2>Company Details</h2>
+            <h2>
+              Company Details
+            </h2>
 
             <div className="profile-grid">
 
@@ -144,7 +483,9 @@ export default function Internship() {
                 type="text"
                 name="companyName"
                 placeholder="Company Name"
-                value={formData.companyName}
+                value={
+                  formData.companyName
+                }
                 onChange={handleChange}
                 required
               />
@@ -153,7 +494,9 @@ export default function Internship() {
                 type="text"
                 name="internshipRole"
                 placeholder="Internship Role"
-                value={formData.internshipRole}
+                value={
+                  formData.internshipRole
+                }
                 onChange={handleChange}
                 required
               />
@@ -162,21 +505,26 @@ export default function Internship() {
                 type="text"
                 name="companyAddress"
                 placeholder="Company Address"
-                value={formData.companyAddress}
+                value={
+                  formData.companyAddress
+                }
                 onChange={handleChange}
+                required
               />
 
             </div>
 
           </div>
 
-          {/* =========================
+          {/* ==================================
               Manager Details
-          ========================== */}
+          =================================== */}
 
           <div className="profile-section">
 
-            <h2>Manager Details</h2>
+            <h2>
+              Manager Details
+            </h2>
 
             <div className="profile-grid">
 
@@ -184,51 +532,72 @@ export default function Internship() {
                 type="text"
                 name="managerName"
                 placeholder="Manager Name"
-                value={formData.managerName}
+                value={
+                  formData.managerName
+                }
                 onChange={handleChange}
+                required
               />
 
               <input
                 type="email"
                 name="managerEmail"
                 placeholder="Manager Email"
-                value={formData.managerEmail}
+                value={
+                  formData.managerEmail
+                }
                 onChange={handleChange}
+                required
               />
 
               <input
                 type="text"
                 name="managerPhone"
                 placeholder="Manager Phone"
-                value={formData.managerPhone}
+                value={
+                  formData.managerPhone
+                }
                 onChange={handleChange}
+                required
               />
 
             </div>
 
           </div>
 
-          {/* =========================
+          {/* ==================================
               Internship Duration
-          ========================== */}
+          =================================== */}
 
           <div className="profile-section">
 
-            <h2>Internship Duration</h2>
+            <h2>
+              Internship Duration
+            </h2>
 
             <div className="profile-grid">
+
+              {/* =================================
+                  Department
+                  Comes from Student collection
+              ================================== */}
 
               <input
                 type="text"
                 name="department"
-                value={formData.department}
+                value={
+                  formData.department
+                }
                 readOnly
+                placeholder="Department"
               />
 
               <input
                 type="date"
                 name="startDate"
-                value={formData.startDate}
+                value={
+                  formData.startDate
+                }
                 onChange={handleChange}
                 required
               />
@@ -236,7 +605,9 @@ export default function Internship() {
               <input
                 type="date"
                 name="endDate"
-                value={formData.endDate}
+                value={
+                  formData.endDate
+                }
                 onChange={handleChange}
                 required
               />
@@ -246,7 +617,9 @@ export default function Internship() {
                 name="totalWeeks"
                 placeholder="Total Weeks"
                 min="1"
-                value={formData.totalWeeks}
+                value={
+                  formData.totalWeeks
+                }
                 onChange={handleChange}
                 required
               />
@@ -255,27 +628,53 @@ export default function Internship() {
 
           </div>
 
-          {/* =========================
-              Submit
-          ========================== */}
+          {/* ==================================
+              Buttons
+          =================================== */}
 
           <div className="profile-buttons">
 
-            <button
-              type="submit"
-              className="profile-btn"
-              disabled={loading}
-            >
-              {loading
-                ? "Submitting..."
-                : "Submit Internship"}
-            </button>
+            {/* ================================
+                Submit Internship
+            ================================= */}
+
+            {!internshipExists && (
+              <button
+                type="submit"
+                className="profile-btn"
+                disabled={
+                  loading ||
+                  !profileCompleted
+                }
+              >
+                {loading
+                  ? "Submitting..."
+                  : "Submit Internship"}
+              </button>
+            )}
+
+            {/* ================================
+                Update Internship
+            ================================= */}
+
+            {internshipExists && (
+              <button
+                type="submit"
+                className="profile-btn"
+                disabled={loading}
+              >
+                {loading
+                  ? "Updating..."
+                  : "Update Internship"}
+              </button>
+            )}
 
           </div>
 
         </form>
 
       </div>
+
     </StudentLayout>
   );
 }

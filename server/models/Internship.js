@@ -2,13 +2,18 @@ const mongoose = require("mongoose");
 
 const internshipSchema = new mongoose.Schema(
   {
+    // ==========================
+    // Student
+    // ==========================
     student: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Student",
       required: true,
     },
 
+    // ==========================
     // Company Details
+    // ==========================
     companyName: {
       type: String,
       required: true,
@@ -27,7 +32,9 @@ const internshipSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // ==========================
     // Manager Details
+    // ==========================
     managerName: {
       type: String,
       trim: true,
@@ -48,14 +55,18 @@ const internshipSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // ==========================
     // Academic
+    // ==========================
     department: {
       type: String,
       required: true,
       trim: true,
     },
 
+    // ==========================
     // Internship Duration
+    // ==========================
     startDate: {
       type: Date,
       required: true,
@@ -72,11 +83,23 @@ const internshipSchema = new mongoose.Schema(
       min: 1,
     },
 
-    // Status
+    // ==========================
+    // Internship Status
+    // ==========================
     status: {
       type: String,
       enum: ["pending", "ongoing", "completed", "rejected"],
       default: "pending",
+    },
+
+    // ==========================
+    // Manager Verification
+    // Manager verifies the
+    // student's internship
+    // ==========================
+    managerVerified: {
+      type: Boolean,
+      default: false,
     },
   },
   {
