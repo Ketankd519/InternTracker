@@ -1,7 +1,7 @@
 import { createContext, useState, useEffect } from 'react';
 import API from '../services/api';
 
-export const AuthContext = createContext();
+export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
           setUser(null);
         }
       }
-
+      
       setLoading(false);
     };
 
@@ -29,14 +29,19 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const res = await API.post('/auth/login', { email, password });
+      const res = await API.post('/auth/login', {
+        email,
+        password,
+      });
 
       localStorage.setItem('token', res.data.token);
       setUser(res.data.user);
 
       return res.data;
     } catch (error) {
-      throw error.response?.data || { message: 'Login failed' };
+      throw error.response?.data || {
+        message: 'Login failed',
+      };
     }
   };
 
@@ -49,7 +54,9 @@ export const AuthProvider = ({ children }) => {
 
       return res.data;
     } catch (error) {
-      throw error.response?.data || { message: 'Registration failed' };
+      throw error.response?.data || {
+        message: 'Registration failed',
+      };
     }
   };
 

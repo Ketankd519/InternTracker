@@ -12,21 +12,13 @@ import Certificate from "../pages/Certificate/Certificate";
 function AppRoutes() {
   return (
     <Routes>
-
       <Route path="/" element={<Home />} />
-
       <Route path="/login" element={<Login />} />
-
       <Route path="/register" element={<Register />} />
-
       <Route path="/student/dashboard" element={<StudentDashboard />} />
-
       <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
-
       <Route path="/manager/dashboard" element={<ManagerDashboard />} />
-
       <Route path="/certificate" element={<Certificate />} />
-
     </Routes>
   );
 }

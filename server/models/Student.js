@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const studentSchema = new mongoose.Schema(
   {
     // Link with User collection
@@ -10,10 +9,7 @@ const studentSchema = new mongoose.Schema(
       unique: true,
     },
 
-    // ==========================
     // Personal Details
-    // ==========================
-
     phone: {
       type: String,
       required: true,
@@ -54,12 +50,10 @@ const studentSchema = new mongoose.Schema(
 
     profilePhoto: {
       type: String,
+      default: "",
     },
 
-    // ==========================
     // Academic Details
-    // ==========================
-
     college: {
       type: String,
       required: true,
@@ -90,8 +84,9 @@ const studentSchema = new mongoose.Schema(
     },
 
     teacherId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      type: String,
+      required: true,
+      trim: true,
     },
 
     cgpa: {
@@ -100,24 +95,17 @@ const studentSchema = new mongoose.Schema(
       max: 10,
     },
 
-    // ==========================
     // Profile Status
-    // ==========================
-
     profileCompleted: {
       type: Boolean,
       default: false,
     },
 
-    // ==========================
     // Student Verification
-    // ==========================
-
     teacherVerified: {
       type: Boolean,
       default: false,
     },
-
   },
   {
     timestamps: true,

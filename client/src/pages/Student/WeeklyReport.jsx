@@ -4,10 +4,8 @@ import API from "../../services/api";
 import "./StudentStyle.css";
 
 export default function WeeklyReport() {
-  // ==========================================
-  // Form Data
-  // ==========================================
 
+  // Form Data
   const [formData, setFormData] = useState({
     weekNumber: "",
     taskTitle: "",
@@ -16,30 +14,22 @@ export default function WeeklyReport() {
     submissionDate: "",
   });
 
-  // ==========================================
   // Reports
-  // ==========================================
-
   const [reports, setReports] = useState([]);
+  const [loadingReports, setLoadingReports] = useState(true);
 
-  const [loadingReports, setLoadingReports] =
-    useState(true);
-
-  // ==========================================
   // Form State
-  // ==========================================
-
   const [loading, setLoading] = useState(false);
-
   const [message, setMessage] = useState("");
-
   const [error, setError] = useState("");
 
-  // ==========================================
   // Fetch Student Reports
-  // ==========================================
-
   useEffect(() => {
+
+    //The syntax error show because this function is colling but not using.
+    //This is because the new user register function can not fetch the data.
+    //If Already register stuent with complete profile the data is fetching and the function is using.
+    // so ignore this error.
     fetchReports();
   }, []);
 
@@ -50,13 +40,11 @@ export default function WeeklyReport() {
 
       const response = await API.get("/reports");
 
-      console.log(
-        "Weekly Reports Response:",
+      console.log("Weekly Reports Response:",
         response.data
       );
 
-      const reportData =
-        response.data.data || [];
+      const reportData = response.data.data || [];
 
       setReports(reportData);
     } catch (err) {
@@ -75,11 +63,8 @@ export default function WeeklyReport() {
       setLoadingReports(false);
     }
   };
-
-  // ==========================================
+ 
   // Handle Input Changes
-  // ==========================================
-
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
@@ -96,62 +81,31 @@ export default function WeeklyReport() {
     }
   };
 
-  // ==========================================
   // Submit Weekly Report
-  // ==========================================
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setLoading(true);
     setMessage("");
     setError("");
 
     try {
-      // ========================================
-      // FormData
-      // ========================================
 
+      // FormData
       const data = new FormData();
 
-      data.append(
-        "weekNumber",
-        formData.weekNumber
-      );
-
-      data.append(
-        "taskTitle",
-        formData.taskTitle
-      );
-
-      data.append(
-        "description",
-        formData.description
-      );
-
-      data.append(
-        "submissionDate",
-        formData.submissionDate
-      );
+      data.append("weekNumber",formData.weekNumber);
+      data.append("taskTitle",formData.taskTitle);
+      data.append("description",formData.description);
+      data.append("submissionDate",formData.submissionDate);
 
       if (formData.attachment) {
-        data.append(
-          "attachment",
-          formData.attachment
-        );
+        data.append("attachment", formData.attachment);
       }
 
-      // ========================================
       // Submit Report
-      // ========================================
+      const response = await API.post("/reports", data);
 
-      const response = await API.post(
-        "/reports",
-        data
-      );
-
-      console.log(
-        "Weekly Report Submit Response:",
+      console.log("Weekly Report Submit Response:",
         response.data
       );
 
@@ -160,10 +114,7 @@ export default function WeeklyReport() {
           "Weekly report submitted successfully."
       );
 
-      // ========================================
       // Reset Form
-      // ========================================
-
       setFormData({
         weekNumber: "",
         taskTitle: "",
@@ -175,16 +126,10 @@ export default function WeeklyReport() {
       // Reset file input
       e.target.reset();
 
-      // ========================================
       // Refresh Reports Table
-      // ========================================
-
       await fetchReports();
     } catch (err) {
-      console.error(
-        "Weekly Report Error:",
-        err
-      );
+      console.error("Weekly Report Error:", err);
 
       const errorMessage =
         err.response?.data?.message ||
@@ -196,10 +141,7 @@ export default function WeeklyReport() {
     }
   };
 
-  // ==========================================
   // Format Date
-  // ==========================================
-
   const formatDate = (date) => {
     if (!date) {
       return "-";
@@ -210,10 +152,7 @@ export default function WeeklyReport() {
     );
   };
 
-  // ==========================================
   // Status Class
-  // ==========================================
-
   const getStatusClass = (status) => {
     if (status === "Approved") {
       return "report-status approved";
@@ -226,10 +165,7 @@ export default function WeeklyReport() {
     return "report-status pending";
   };
 
-  // ==========================================
   // Attachment URL
-  // ==========================================
-
   const getAttachmentUrl = (attachment) => {
     if (!attachment) {
       return null;
@@ -246,95 +182,54 @@ export default function WeeklyReport() {
     // Your backend serves uploads using:
     // app.use("/uploads", express.static("uploads"));
 
-    return `http://localhost:5000/${attachment.replace(
-      /\\/g,
-      "/"
-    )}`;
+    return `http://localhost:5000/${attachment.replace(/\\/g, "/" )}`;
   };
 
   return (
     <StudentLayout>
       <div className="profile-page">
 
-        {/* =====================================
-            Header
-        ====================================== */}
-
+            {/* Header */}
         <div className="profile-header">
           <h1>Weekly Report</h1>
-
-          <p>
-            Submit your internship work completed
-            this week.
-          </p>
+          <p>Submit your internship work completed this week.</p>
         </div>
 
-        {/* =====================================
-            Success Message
-        ====================================== */}
-
+            {/* Success Message */}
         {message && (
-          <div className="success-message">
-            {message}
-          </div>
+          <div className="success-message">{message}</div>
         )}
 
-        {/* =====================================
-            Error Message
-        ====================================== */}
-
+            {/* Error Message */}
         {error && (
-          <div className="error-message">
-            {error}
-          </div>
+          <div className="error-message">{error}</div>
         )}
 
-        {/* =====================================
-            Submission Form
-        ====================================== */}
-
-        <form
-          className="profile-form"
-          onSubmit={handleSubmit}
-        >
+            {/* Submission Form */}
+        <form className="profile-form" onSubmit={handleSubmit}>
 
           {/* Weekly Submission */}
-
           <div className="profile-section">
-
-            <h2>
-              Weekly Submission
-            </h2>
-
+            <h2>Weekly Submission</h2>
             <div className="profile-grid">
 
               {/* Week Number */}
-
-              <input
-                type="number"
-                name="weekNumber"
-                placeholder="Week Number"
-                min="1"
+              <input type="number"name="weekNumber"
+                placeholder="Week Number" min="1"
                 value={formData.weekNumber}
                 onChange={handleChange}
                 required
               />
 
               {/* Submission Date */}
-
-              <input
-                type="date"
-                name="submissionDate"
+              <input type="date" name="submissionDate"
                 value={formData.submissionDate}
                 onChange={handleChange}
                 required
               />
 
               {/* Task Title */}
-
-              <input
-                type="text"
-                name="taskTitle"
+              <input type="text" name="taskTitle"
                 placeholder="Task Title"
                 value={formData.taskTitle}
                 onChange={handleChange}
@@ -342,10 +237,7 @@ export default function WeeklyReport() {
               />
 
               {/* Description */}
-
-              <textarea
-                rows="6"
-                name="description"
+              <textarea rows="6" name="description"
                 placeholder="Describe the work completed this week..."
                 value={formData.description}
                 onChange={handleChange}
@@ -353,126 +245,61 @@ export default function WeeklyReport() {
               />
 
               {/* Attachment */}
-
               <div className="file-upload">
-
-                <label>
-                  Attachment (Optional)
-                </label>
-
-                <input
-                  type="file"
-                  name="attachment"
+                <label> Attachment (Optional)</label>
+                <input type="file" name="attachment"
                   accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
                   onChange={handleChange}
                 />
-
               </div>
-
             </div>
-
           </div>
 
-          {/* =====================================
-              Submit Button
-          ====================================== */}
-
+              {/* Submit Button */}
           <div className="profile-buttons">
-
-            <button
-              type="submit"
-              className="profile-btn"
-              disabled={loading}
-            >
+            <button type="submit" className="profile-btn" disabled={loading}>
               {loading
                 ? "Submitting..."
                 : "Submit Report"}
             </button>
-
           </div>
-
         </form>
 
-        {/* =====================================
-            Submitted Reports
-        ====================================== */}
-
+            {/* Submitted Reports */}
         <div className="dashboard-box">
-
           <div className="box-title">
-
-            <h3>
-              Submitted Weekly Reports
-            </h3>
-
-            <span>
-              {reports.length} Reports
-            </span>
-
+            <h3>Submitted Weekly Reports</h3>
+            <span> {reports.length} Reports</span>
           </div>
 
-          {/* ===================================
-              Loading
-          ==================================== */}
-
+              {/* Loading */}
           {loadingReports ? (
             <p className="progress-text">
               Loading submitted reports...
             </p>
           ) : reports.length === 0 ? (
 
-            /* =================================
-               No Reports
-            ================================== */
-
+              //  No Reports
             <p className="progress-text">
               No weekly reports submitted yet.
             </p>
 
           ) : (
 
-            /* =================================
-               Reports Table
-            ================================== */
-
+              //  Reports Table
             <div className="table-container">
-
               <table className="reports-table">
-
                 <thead>
-
                   <tr>
-
-                    <th>
-                      Submission Date
-                    </th>
-
-                    <th>
-                      Week
-                    </th>
-
-                    <th>
-                      Task Title
-                    </th>
-
-                    <th>
-                      Description
-                    </th>
-
-                    <th>
-                      Attachment
-                    </th>
-
-                    <th>
-                      Status
-                    </th>
-
+                    <th>Submission Date</th>
+                    <th>Week</th>
+                    <th>Task Title</th>
+                    <th>Description</th>
+                    <th>Attachment</th>
+                    <th>Status</th>
                   </tr>
-
                 </thead>
-
                 <tbody>
-
                   {reports.map((report) => {
 
                     const attachmentUrl =
@@ -481,33 +308,18 @@ export default function WeeklyReport() {
                       );
 
                     return (
-                      <tr
-                        key={report._id}
-                      >
+                      <tr key={report._id}>
 
                         {/* Submission Date */}
-
-                        <td>
-                          {formatDate(
-                            report.submissionDate
-                          )}
-                        </td>
+                        <td> {formatDate( report.submissionDate )}</td>
 
                         {/* Week Number */}
-
-                        <td>
-                          Week{" "}
-                          {report.weekNumber}
-                        </td>
+                        <td> Week{" "}{report.weekNumber} </td>
 
                         {/* Task Title */}
-
-                        <td>
-                          {report.taskTitle}
-                        </td>
+                        <td> {report.taskTitle}</td>
 
                         {/* Description */}
-
                         <td>
                           <div className="report-description">
                             {report.description}
@@ -515,17 +327,10 @@ export default function WeeklyReport() {
                         </td>
 
                         {/* Attachment */}
-
                         <td>
-
                           {attachmentUrl ? (
-
-                            <a
-                              href={
-                                attachmentUrl
-                              }
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <a href={ attachmentUrl }
+                              target="_blank" rel="noopener noreferrer"
                             >
                               View File
                             </a>
@@ -533,58 +338,31 @@ export default function WeeklyReport() {
                           ) : (
                             "-"
                           )}
-
                         </td>
 
                         {/* Status */}
-
                         <td>
-
-                          <span
-                            className={getStatusClass(
-                              report.status
-                            )}
-                          >
-                            {report.status ||
-                              "Pending"}
+                          <span className={getStatusClass( report.status )}>
+                            {report.status || "Pending"}
                           </span>
 
                           {/* Rejection Remark */}
-
-                          {report.status ===
-                            "Rejected" &&
-                            (report.remark ||
-                              report.rejectionRemark) && (
-
+                          {report.status === "Rejected" &&
+                            (report.remark || report.rejectionRemark) && (
                               <div className="rejection-remark">
-
-                                <strong>
-                                  Remark:
-                                </strong>{" "}
-
-                                {report.remark ||
-                                  report.rejectionRemark}
-
+                                <strong>Remark:</strong>{" "}
+                                {report.remark || report.rejectionRemark}
                               </div>
-
                             )}
-
                         </td>
-
                       </tr>
                     );
                   })}
-
                 </tbody>
-
               </table>
-
             </div>
-
           )}
-
         </div>
-
       </div>
     </StudentLayout>
   );

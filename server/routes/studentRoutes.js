@@ -21,22 +21,9 @@ const upload = require('../middleware/uploadMiddleware');
 
 router
   .route('/profile')
-  .post(
-    protect,
-    authorize('student'),
-    upload.single('profilePhoto'),
-    createStudentProfile
-  )
-  .get(
-    protect,
-    authorize('student'),
-    getStudentProfile
-  )
-  .put(
-    protect,
-    authorize('student'),
-    upload.single('profilePhoto'),
-    updateStudentProfile
-  );
+  
+  .post(protect,authorize('student'),upload.single('profilePhoto'),createStudentProfile)
+  .get(protect,authorize('student'),getStudentProfile)
+  .put(protect,authorize('student'),upload.single('profilePhoto'),updateStudentProfile);
 
 module.exports = router;

@@ -3,18 +3,12 @@ import { NavLink } from "react-router-dom";
 export default function ManagerSidebar() {
   return (
     <aside className="manager-sidebar">
-
       <div className="manager-sidebar-header">
-
         <h2>InternTrack</h2>
-
         <p>Manager Panel</p>
-
       </div>
 
-
       <nav className="manager-sidebar-nav">
-
         <NavLink
           to="/manager/dashboard"
           className={({ isActive }) =>
@@ -27,7 +21,6 @@ export default function ManagerSidebar() {
           Dashboard
         </NavLink>
 
-
         <NavLink
           to="/manager/approvals"
           className={({ isActive }) =>
@@ -39,7 +32,6 @@ export default function ManagerSidebar() {
           <span>📋</span>
           Approvals
         </NavLink>
-
 
         <NavLink
           to="/manager/evaluation"
@@ -54,7 +46,6 @@ export default function ManagerSidebar() {
         </NavLink>
 
       </nav>
-
     </aside>
   );
 }

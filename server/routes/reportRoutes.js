@@ -16,35 +16,18 @@ const upload = require('../middleware/uploadMiddleware');
  */
 
 // Student submits weekly report
-router.post(
-  '/',
-  protect,
-  authorize('student'),
-  upload.single('attachment'),
-  submitReport
-);
+router.post('/',protect,authorize('student'),upload.single('attachment'),submitReport);
 
 // Student views own reports
-router.get(
-  '/',
-  protect,
-  authorize('student'),
-  getStudentReports
-);
+router.get('/',protect,authorize('student'),getStudentReports);
 
 // Teacher / Manager / Admin view any student's reports
-router.get(
-  '/student/:studentId',
-  protect,
-  authorize('teacher', 'manager', 'admin'),
+router.get('/student/:studentId', protect,authorize('teacher', 'manager', 'admin'),
   getStudentReports
 );
 
 // Teacher / Manager verifies report
-router.put(
-  '/:id/verify',
-  protect,
-  authorize('teacher', 'manager', 'admin'),
+router.put('/:id/verify',protect,authorize('teacher', 'manager', 'admin'),
   verifyReport
 );
 

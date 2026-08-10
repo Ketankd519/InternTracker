@@ -1,11 +1,9 @@
 const Student = require("../models/Student");
 const User = require("../models/User");
 
-// ==========================================
 // Create Student Profile
 // POST /api/students/profile
 // Private - Student
-// ==========================================
 const createStudentProfile = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -30,8 +28,7 @@ const createStudentProfile = async (req, res) => {
     if (existingProfile) {
       return res.status(400).json({
         success: false,
-        message:
-          "Student profile already exists. Use update instead.",
+        message:"Student profile already exists. Use update instead.",
       });
     }
 
@@ -43,6 +40,7 @@ const createStudentProfile = async (req, res) => {
       city,
       state,
       pincode,
+      profilePhoto,
       college,
       department,
       semester,
@@ -52,16 +50,12 @@ const createStudentProfile = async (req, res) => {
       cgpa,
     } = req.body;
 
-    // ==========================================
     // Create Student
-    // ==========================================
-
     const studentProfile = new Student({
       user: userId,
 
       // Name comes from USERS collection
       fullName: user.name,
-
       phone,
       dob,
       gender,
@@ -69,27 +63,18 @@ const createStudentProfile = async (req, res) => {
       city,
       state,
       pincode,
-
       profilePhoto: req.file
         ? req.file.path
-        : undefined,
+        : "",
 
       college,
       department,
       semester,
       rollNo,
       enrollmentNumber,
-
-      // Only store teacherId if provided
-      teacherId:
-        teacherId && teacherId.trim() !== ""
-          ? teacherId
-          : undefined,
-
+      teacherId,
       cgpa,
-
       profileCompleted: true,
-
       // Teacher verification starts as false
       teacherVerified: false,
     });
@@ -103,10 +88,10 @@ const createStudentProfile = async (req, res) => {
       "name email role"
     );
 
-    await savedProfile.populate(
-      "teacherId",
-      "name email"
-    );
+    // await savedProfile.populate(
+    //   "teacherId",
+    //   "name email"
+    // );
 
     return res.status(201).json({
       success: true,
@@ -130,19 +115,14 @@ const createStudentProfile = async (req, res) => {
   }
 };
 
-// ==========================================
 // Get Logged-in Student Profile
 // GET /api/students/profile
 // Private - Student
-// ==========================================
 const getStudentProfile = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // ==========================================
     // ALWAYS get user information
-    // ==========================================
-
     const user = await User.findById(userId).select(
       "name email role"
     );
@@ -154,26 +134,19 @@ const getStudentProfile = async (req, res) => {
       });
     }
 
-    // ==========================================
     // Find student profile
-    // ==========================================
-
     const profile = await Student.findOne({
       user: userId,
     })
       .populate("user", "name email role")
-      .populate("teacherId", "name email");
+      // .populate("teacherId", "name email");
 
-    // ==========================================
     // NEW USER
     // No Student document yet
-    // ==========================================
-
     if (!profile) {
       return res.status(200).json({
         success: true,
         profileExists: false,
-
         data: {
           user: {
             _id: user._id,
@@ -185,10 +158,7 @@ const getStudentProfile = async (req, res) => {
       });
     }
 
-    // ==========================================
     // EXISTING STUDENT
-    // ==========================================
-
     return res.status(200).json({
       success: true,
       profileExists: true,
@@ -202,18 +172,15 @@ const getStudentProfile = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message:
-        "Error fetching student profile",
+      message:"Error fetching student profile",
       error: error.message,
     });
   }
 };
 
-// ==========================================
 // Update Student Profile
 // PUT /api/students/profile
 // Private - Student
-// ==========================================
 const updateStudentProfile = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -226,43 +193,30 @@ const updateStudentProfile = async (req, res) => {
     if (!profile) {
       return res.status(404).json({
         success: false,
-        message:
-          "Student profile not found. Please create one first.",
+        message:"Student profile not found. Please create one first.",
       });
     }
 
-    // ==========================================
     // File upload
-    // ==========================================
-
     if (req.file) {
       req.body.profilePhoto =
         req.file.path;
     }
 
-    // ==========================================
     // Never allow frontend to change these
-    // ==========================================
-
     delete req.body.user;
     delete req.body.fullName;
     delete req.body.profileCompleted;
     delete req.body.teacherVerified;
 
-    // ==========================================
     // Remove empty teacherId
-    // ==========================================
-
     if (
-      req.body.teacherId === ""
+      req.body.teacherId === undefined || req.body.teacherId === ""
     ) {
       delete req.body.teacherId;
     }
 
-    // ==========================================
     // Update profile
-    // ==========================================
-
     profile =
       await Student.findOneAndUpdate(
         { user: userId },
@@ -281,10 +235,10 @@ const updateStudentProfile = async (req, res) => {
           "user",
           "name email role"
         )
-        .populate(
-          "teacherId",
-          "name email"
-        );
+        // .populate(
+        //   "teacherId",
+        //   "name email"
+        // );
 
     return res.status(200).json({
       success: true,

@@ -16,42 +16,32 @@ const { authorize } = require('../middleware/roleMiddleware');
  */
 
 // Manager approves certificate
-router.put(
-  '/:studentId/manager-approve',
-  protect,
+router.put('/:studentId/manager-approve',protect,
   authorize('manager', 'admin'),
   managerApprove
 );
 
 // Teacher approves certificate
-router.put(
-  '/:studentId/teacher-approve',
-  protect,
+router.put('/:studentId/teacher-approve',protect,
   authorize('teacher', 'admin'),
   teacherApprove
 );
 
 // Generate certificate (only after both approvals)
-router.post(
-  '/:studentId/generate',
-  protect,
+router.post('/:studentId/generate',protect,
   authorize('teacher', 'manager', 'admin'),
   generateCertificate
 );
 
 // Get certificate status
 // Student can use /me
-router.get(
-  '/me',
-  protect,
+router.get('/me',protect,
   authorize('student'),
   getCertificateStatus
 );
 
 // Teacher / Manager / Admin can view any student's certificate
-router.get(
-  '/:studentId',
-  protect,
+router.get('/:studentId',protect,
   authorize('teacher', 'manager', 'admin'),
   getCertificateStatus
 );

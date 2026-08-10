@@ -67,22 +67,17 @@ const applyInternship = async (req, res) => {
     // Create Internship
 const internship = new Internship({
   student: student._id,
-
   companyName,
   companyAddress,
   internshipRole,
-
   managerName,
   managerId,
   managerEmail,
   managerPhone,
-
   department,
-
   startDate,
   endDate,
   totalWeeks,
-
   status: "pending",
 });
 

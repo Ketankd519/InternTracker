@@ -3,16 +3,15 @@ const Student = require("../models/Student");
 const Internship = require("../models/Internship");
 const WeeklyReport = require("../models/WeeklyReport");
 
-// ==========================================
+
 // Get Student Dashboard
 // GET /api/student-dashboard
 // Private - Student
-// ==========================================
+
 const getStudentDashboard = async (req, res) => {
   try {
-    // --------------------------------------
+  
     // 1. Get logged-in user
-    // --------------------------------------
     const user = await User.findById(req.user._id).select(
       "name email role"
     );
@@ -24,9 +23,7 @@ const getStudentDashboard = async (req, res) => {
       });
     }
 
-    // --------------------------------------
     // 2. Get student profile
-    // --------------------------------------
     const student = await Student.findOne({
       user: req.user._id,
     });
@@ -39,16 +36,12 @@ const getStudentDashboard = async (req, res) => {
       });
     }
 
-    // --------------------------------------
     // 3. Get internship
-    // --------------------------------------
     const internship = await Internship.findOne({
       student: student._id,
     });
 
-    // --------------------------------------
     // 4. Get weekly report counts
-    // --------------------------------------
     const submittedReports = await WeeklyReport.countDocuments({
       student: student._id,
     });
@@ -68,16 +61,12 @@ const getStudentDashboard = async (req, res) => {
       status: "Pending",
     });
 
-    // --------------------------------------
     // 5. Total weeks
-    // --------------------------------------
     const totalWeeks = internship
       ? internship.totalWeeks
       : 0;
 
-    // --------------------------------------
     // 6. Calculate completion
-    // --------------------------------------
     const completion =
       totalWeeks > 0
         ? Math.min(
@@ -86,16 +75,12 @@ const getStudentDashboard = async (req, res) => {
           )
         : 0;
 
-    // --------------------------------------
     // 7. Internship status
-    // --------------------------------------
     const internshipStatus = internship
       ? internship.status
       : null;
 
-    // --------------------------------------
     // 8. Verification status
-    // --------------------------------------
     const teacherVerified = student.teacherVerified || false;
     const managerVerified = student.managerVerified || false;
 
@@ -107,9 +92,7 @@ const getStudentDashboard = async (req, res) => {
       verificationStatus = "PARTIALLY VERIFIED";
     }
 
-    // --------------------------------------
     // 9. Send dashboard data
-    // --------------------------------------
     return res.status(200).json({
       success: true,
 
@@ -134,7 +117,6 @@ const getStudentDashboard = async (req, res) => {
         },
 
         completion,
-
         verification: {
           teacherVerified,
           managerVerified,

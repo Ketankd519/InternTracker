@@ -9,22 +9,21 @@ import Home from './pages/Home/Home';
 import Login from './pages/Login/Login';
 import Register from './pages/Register/Register';
 
-import StudentDashboard from './pages/Student/Dashboard';
-import TeacherDashboard from './pages/Teacher/Dashboard';
-import ManagerDashboard from './pages/Manager/Dashboard';
 import Certificate from './pages/Certificate/Certificate';
 
+import StudentDashboard from './pages/Student/Dashboard';
 import StudentProfile from "./pages/Student/StudentProfile";
 import Internship from "./pages/Student/Internship";
 import WeeklyReport from './pages/Student/WeeklyReport';
 import Progress from './pages/Student/Progress';
 
 import TeacherLayout from "./Layouts/TeacherLayout";
+import TeacherDashboard from './pages/Teacher/Dashboard';
 import TeacherStudents from "./pages/Teacher/Students";
 import ViewStudent from "./pages/Teacher/ViewStudent";
 
 import ManagerLayout from "./Layouts/ManagerLayout";
-
+import ManagerDashboard from './pages/Manager/Dashboard';
 import ManagerApprovals from "./pages/Manager/Approvals";
 import ManagerViewStudent from "./pages/Manager/ViewStudent";
 import ManagerEvaluation from "./pages/Manager/Evaluation";
@@ -35,14 +34,14 @@ function App() {
   return (
     <AuthProvider>
       <Navbar />
-
       <Routes>
         <Route path="/" element={<Home />} />
-
         <Route path="/login" element={<Login />} />
-
         <Route path="/register" element={<Register />} />
 
+        <Route path="/register" element={<Register />}/>
+        {/* <Route path="/forgot-password" element={<ForgotPassword />}/> */}
+        
         <Route
           path="/student/dashboard"
           element={
@@ -98,22 +97,9 @@ function App() {
         />
 
         <Route path="/teacher" element={<TeacherLayout />}>
-
-          <Route
-            path="dashboard"
-            element={<TeacherDashboard />}
-          />
-
-          <Route
-            path="students"
-            element={<TeacherStudents />}
-          />
-
-          <Route
-            path="students/:studentId"
-            element={<ViewStudent />}
-          />
-
+          <Route path="dashboard" element={<TeacherDashboard />}/>
+          <Route path="students" element={<TeacherStudents />}/>
+          <Route path="students/:studentId" element={<ViewStudent />}/>
         </Route>
 
         <Route
@@ -125,39 +111,17 @@ function App() {
           }
         />
 
-        <Route
-          path="/manager"
-          element={<ManagerLayout />}
-        >
-
-          <Route
-            path="dashboard"
-            element={<ManagerDashboard />}
-          />
-
-          <Route
-            path="approvals"
-            element={<ManagerApprovals />}
-          />
-
-          <Route
-            path="students/:studentId"
-            element={<ManagerViewStudent />}
-          />
-
-          <Route
-            path="evaluation"
-            element={<ManagerEvaluation />}
-          />
-
+        <Route path="/manager"element={<ManagerLayout />}>
+          <Route path="dashboard" element={<ManagerDashboard />}/>
+          <Route path="approvals" element={<ManagerApprovals />}/>
+          <Route path="students/:studentId" element={<ManagerViewStudent />}/>
+          <Route path="evaluation" element={<ManagerEvaluation />}/>
         </Route>
 
         <Route
           path="/certificate"
           element={
-            <ProtectedRoute
-              allowedRoles={['student', 'teacher', 'manager', 'admin']}
-            >
+            <ProtectedRoute allowedRoles={['student', 'teacher', 'manager', 'admin']}>
               <Certificate />
             </ProtectedRoute>
           }

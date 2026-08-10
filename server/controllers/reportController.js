@@ -1,11 +1,9 @@
 const WeeklyReport = require("../models/WeeklyReport");
 const Student = require("../models/Student");
 
-// ==========================================
 // Submit Weekly Report
 // POST /api/reports
 // Private - Student
-// ==========================================
 const submitReport = async (req, res) => {
   try {
     // Find logged-in student's profile
@@ -16,8 +14,7 @@ const submitReport = async (req, res) => {
     if (!student) {
       return res.status(404).json({
         success: false,
-        message:
-          "Student profile not found. Please complete your profile first.",
+        message:"Student profile not found. Please complete your profile first.",
       });
     }
 
@@ -37,8 +34,7 @@ const submitReport = async (req, res) => {
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "Week number, task title, description and submission date are required.",
+        message:"Week number, task title, description and submission date are required.",
       });
     }
 
@@ -51,39 +47,30 @@ const submitReport = async (req, res) => {
     if (existingReport) {
       return res.status(400).json({
         success: false,
-        message:
-          `Report for Week ${weekNumber} has already been submitted.`,
+        message:`Report for Week ${weekNumber} has already been submitted.`,
       });
     }
 
     // Create report
     const report = new WeeklyReport({
       student: student._id,
-
       weekNumber: Number(weekNumber),
-
       taskTitle,
-
       description,
-
       submissionDate,
-
       attachment: req.file
         ? req.file.path
         : null,
 
       // Always Pending when student submits
       status: "Pending",
-
       managerVerified: false,
     });
 
     const savedReport = await report.save();
-
     return res.status(201).json({
       success: true,
-      message:
-        `Weekly report for Week ${weekNumber} submitted successfully.`,
+      message: `Weekly report for Week ${weekNumber} submitted successfully.`,
       data: savedReport,
     });
 
@@ -98,12 +85,9 @@ const submitReport = async (req, res) => {
   }
 };
 
-
-// ==========================================
 // Get Student Reports
 // GET /api/reports
 // Private - Student
-// ==========================================
 const getStudentReports = async (req, res) => {
   try {
     let studentId = req.params.studentId;
@@ -121,7 +105,6 @@ const getStudentReports = async (req, res) => {
           message: "Student profile not found",
         });
       }
-
       studentId = student._id;
     }
 
@@ -155,52 +138,35 @@ const getStudentReports = async (req, res) => {
   }
 };
 
-
-// ==========================================
 // Verify Weekly Report
 // PUT /api/reports/:id/verify
 // Private - Teacher / Manager / Admin
-// ==========================================
-
 const verifyReport = async (req, res) => {
   try {
     const { id } = req.params;
-
     const {
       managerVerified,
       rejectionRemark,
     } = req.body;
 
-    // ==========================================
     // Determine Verification
-    // ==========================================
-
     const isVerified =
       managerVerified !== undefined
         ? managerVerified
         : true;
 
-    // ==========================================
     // Determine Status
-    // ==========================================
-
     const status = isVerified
       ? "Approved"
       : "Rejected";
 
-    // ==========================================
     // Rejection Remark
-    // ==========================================
-
     const remark =
       isVerified === false
         ? rejectionRemark || ""
         : "";
 
-    // ==========================================
     // Update Report
-    // ==========================================
-
     const updatedReport =
       await WeeklyReport.findByIdAndUpdate(
         id,
@@ -217,10 +183,7 @@ const verifyReport = async (req, res) => {
         }
       );
 
-    // ==========================================
     // Report Not Found
-    // ==========================================
-
     if (!updatedReport) {
       return res.status(404).json({
         success: false,
@@ -228,10 +191,7 @@ const verifyReport = async (req, res) => {
       });
     }
 
-    // ==========================================
     // Response
-    // ==========================================
-
     return res.status(200).json({
       success: true,
       message:
@@ -248,13 +208,11 @@ const verifyReport = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message:
-        "Error verifying weekly report",
+      message:"Error verifying weekly report",
       error: error.message,
     });
   }
 };
-
 
 module.exports = {
   submitReport,
