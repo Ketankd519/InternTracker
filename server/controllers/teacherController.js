@@ -235,33 +235,62 @@ const getTeacherStudentDetails = async (req, res) => {
 
 // TEACHER VERIFY STUDENT
 // PUT /api/teacher/students/:studentId/verify
+
 const verifyStudentByTeacher = async (req, res) => {
   try {
     const { studentId } = req.params;
-    const student = await Student.findById(studentId);
 
+    // Find and update student
+    const student = await Student.findByIdAndUpdate(
+      studentId,
+      {
+        $set: {
+          teacherVerified: true,
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    ).select("_id teacherVerified");
+
+    // Student not found
     if (!student) {
+      console.log("Student not found");
+
       return res.status(404).json({
         success: false,
         message: "Student not found",
       });
     }
 
-    // Teacher verification
-    student.teacherVerified = true;
-    await student.save();
-    res.status(200).json({
+    console.log(
+      "Updated Student:",
+      student._id.toString()
+    );
+
+    console.log(
+      "teacherVerified:",
+      student.teacherVerified
+    );
+
+    return res.status(200).json({
       success: true,
       message: "Student verified successfully",
+
       student: {
         id: student._id,
         teacherVerified: student.teacherVerified,
       },
     });
-  } catch (error) {
-    console.error("Teacher Verification Error:", error);
 
-    res.status(500).json({
+  } catch (error) {
+    console.error(
+      "Teacher Verification Error:",
+      error
+    );
+
+    return res.status(500).json({
       success: false,
       message: "Failed to verify student",
       error: error.message,

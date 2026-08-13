@@ -6,100 +6,77 @@ const menuItems = [
     {
       name: "Dashboard",
       path: "/teacher/dashboard",
+      icon: "🏠",
+      disabled: false,
     },
     {
       name: "Profile",
       path: "/teacher/students",
+      icon: "👨‍🎓",
+      disabled: false,
     },
     {
       name: "Reports",
       path: "/teacher/reports",
+      icon: "📄",
+      disabled: true,
     },
     {
       name: "Analytics",
       path: "/teacher/analytics",
+      icon: "📊",
+      disabled: true,
     },
   ];
 
   return (
-    // <aside className="teacher-sidebar">
+    <aside className="teacher-sidebar">
 
 
 
 
-      <aside className="student-sidebar">
-        <div className="sidebar-header">
-          <h2>InternTrack</h2>
-          <p>Teacher Panel</p>
-        </div>
-      <ul className="sidebar-menu">
-        {menuItems.map((item) => (
-          <li key={item.path}>
-            <NavLink
-              to={item.path}
-              className={({ isActive }) =>
-                isActive ? "sidebar-link active-link" : "sidebar-link"
-              }
-            >
-              {item.name}
-            </NavLink>
+
+
+
+      <div className="teacher-sidebar-header">
+        <h2>InternTrack</h2>
+        <p>Teacher Panel</p>
+       </div>
+
+      <ul className="teacher-sidebar-menu">
+
+      {menuItems.map((item) => (
+          <li key={item.name}>
+
+            {item.disabled ? (
+              <div className="teacher-sidebar-link disabled">
+                <span className="teacher-sidebar-icon">
+                  {item.icon}
+                </span>
+                <span>{item.name}</span>
+                <span className="sidebar-coming-soon">
+                  Soon
+                </span>
+              </div>
+            ) : (
+              <NavLink
+                to={item.path}
+                className={({ isActive }) =>
+                  isActive
+                    ? "teacher-sidebar-link active"
+                    : "teacher-sidebar-link"
+                }
+              >
+                <span className="teacher-sidebar-icon">
+                  {item.icon}
+                </span>
+
+                <span>{item.name}</span>
+              </NavLink>
+            )}
           </li>
         ))}
       </ul>
-      </aside>
-
-
-
-
-
-
-      // <div className="teacher-sidebar-header">
-      //   <h2>InternTrack</h2>
-      //   <p>Teacher Panel</p>
-      // </div>
-
-      // <nav className="teacher-sidebar-nav">
-
-      //   <NavLink
-      //     to="/teacher/dashboard"
-      //     className={({ isActive }) =>
-      //       isActive
-      //         ? "teacher-nav-link active"
-      //         : "teacher-nav-link"
-      //     }
-      //   >
-      //     <span>📊</span>
-      //     Dashboard
-      //   </NavLink>
-
-      //   <NavLink
-      //     to="/teacher/students"
-      //     className={({ isActive }) =>
-      //       isActive
-      //         ? "teacher-nav-link active"
-      //         : "teacher-nav-link"
-      //     }
-      //   >
-      //     <span>👨‍🎓</span>
-      //     Students
-      //   </NavLink>
-
-      //   {/* Future Feature */}
-      //   <div className="teacher-nav-disabled">
-      //     <span>📄</span>
-      //     Reports
-      //     <small>Coming Soon</small>
-      //   </div>
-
-      //   {/* Future Feature */}
-      //   <div className="teacher-nav-disabled">
-      //     <span>📈</span>
-      //     Analytics
-      //     <small>Coming Soon</small>
-      //   </div>
-
-      // </nav>
-
-    // </aside>
+    </aside>
   );
 }

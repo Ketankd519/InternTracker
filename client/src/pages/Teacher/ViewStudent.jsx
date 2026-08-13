@@ -4,12 +4,10 @@ import "../../pages/Teacher/TeacherStyle.css";
 import api from "../../services/api";
 
 export default function ViewStudent() {
-
   const { studentId } = useParams();
   const navigate = useNavigate();
 
   const [data, setData] = useState(null);
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [verifying, setVerifying] = useState(false);
@@ -18,76 +16,86 @@ export default function ViewStudent() {
     fetchStudentDetails();
   }, [studentId]);
 
+  // ==========================================
+  // FETCH STUDENT DETAILS
+  // ==========================================
 
   const fetchStudentDetails = async () => {
     try {
-
       setLoading(true);
+      setError("");
 
       const response = await api.get(
         `/teacher/students/${studentId}`
       );
 
       setData(response.data.student);
-
     } catch (error) {
-
       console.error("Student Details Error:", error);
 
       setError(
         error.response?.data?.message ||
-        "Failed to load student details"
+          "Failed to load student details"
       );
-
     } finally {
-
       setLoading(false);
-
     }
   };
 
+  // ==========================================
+  // VERIFY STUDENT
+  // ==========================================
 
   const handleVerify = async () => {
+  const confirmed = window.confirm(
+    "Are you sure you want to verify this student?"
+  );
 
-    const confirmed = window.confirm(
-      "Are you sure you want to verify this student?"
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    setVerifying(true);
+
+    console.log("Verifying student:", studentId);
+
+    const response = await api.put(
+      `/teacher/students/${studentId}/verify`
     );
 
-    if (!confirmed) {
-      return;
-    }
+    console.log("Verification Response:", response.data);
 
-    try {
+    alert(
+      response.data?.message ||
+        "Student verified successfully."
+    );
 
-      setVerifying(true);
+    await fetchStudentDetails();
 
-      await api.put(
-        `/teacher/students/${studentId}/verify`
-      );
+  } catch (error) {
+    console.error("Verification Error:", error);
 
-      alert("Student verified successfully.");
+    console.log("Status:", error.response?.status);
+    console.log("Response:", error.response?.data);
+    console.log("URL:", error.config?.url);
+    console.log("Method:", error.config?.method);
 
-      await fetchStudentDetails();
-
-    } catch (error) {
-
-      console.error("Verification Error:", error);
-
-      alert(
-        error.response?.data?.message ||
+    alert(
+      error.response?.data?.message ||
         "Failed to verify student."
-      );
+    );
 
-    } finally {
+  } finally {
+    setVerifying(false);
+  }
+};
 
-      setVerifying(false);
-
-    }
-  };
-
+  // ==========================================
+  // LOADING
+  // ==========================================
 
   if (loading) {
-
     return (
       <div className="teacher-page">
         <div className="teacher-loading">
@@ -95,15 +103,15 @@ export default function ViewStudent() {
         </div>
       </div>
     );
-
   }
 
+  // ==========================================
+  // ERROR
+  // ==========================================
 
   if (error) {
-
     return (
       <div className="teacher-page">
-
         <button
           className="back-btn"
           onClick={() => navigate("/teacher/students")}
@@ -114,23 +122,34 @@ export default function ViewStudent() {
         <div className="teacher-error">
           {error}
         </div>
-
       </div>
     );
-
   }
 
+  // ==========================================
+  // DATA
+  // ==========================================
 
   const user = data?.user;
   const student = data?.student;
   const internship = data?.internship;
   const weeklyReports = data?.weeklyReports || [];
 
+  // ==========================================
+  // PROFILE PHOTO
+  // ==========================================
+
+  const profilePhoto = getProfilePhotoUrl(
+    student?.profilePhoto
+  );
 
   return (
     <div className="teacher-page">
 
-      {/* Back */}
+      {/* ======================================
+          BACK BUTTON
+      ====================================== */}
+
       <button
         className="back-btn"
         onClick={() => navigate("/teacher/students")}
@@ -139,27 +158,98 @@ export default function ViewStudent() {
       </button>
 
 
-      {/* Page Header */}
-      <div className="teacher-page-header">
+      {/* ======================================
+          PROFILE HEADER
+      ====================================== */}
 
-        <div>
+      <div className="student-profile-header">
+
+        {/* Profile Photo */}
+
+        <div className="student-profile-photo-wrapper">
+
+          {profilePhoto ? (
+            <img
+              src={profilePhoto}
+              alt={`${user?.name || "Student"} profile`}
+              className="student-profile-photo"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+                e.currentTarget.nextSibling.style.display =
+                  "flex";
+              }}
+            />
+          ) : null}
+
+          {/* Default Avatar */}
+
+          <div
+            className="student-profile-placeholder"
+            style={{
+              display: profilePhoto ? "none" : "flex",
+            }}
+          >
+            👨‍🎓
+          </div>
+
+        </div>
+
+
+        {/* Profile Information */}
+
+        <div className="student-profile-info">
 
           <h1>
-            Student Profile
+            {user?.name || "Student"}
           </h1>
 
-          <p>
-            Complete student and internship information.
+          <p className="student-profile-email">
+            {user?.email || "-"}
           </p>
+
+          <div className="student-profile-meta">
+
+            <span className="student-role-badge">
+              {user?.role || "Student"}
+            </span>
+
+            {student?.teacherVerified ? (
+              <span className="verified-badge">
+                ✓ Verified
+              </span>
+            ) : (
+              <span className="not-verified-badge">
+                Not Verified
+              </span>
+            )}
+
+          </div>
 
         </div>
 
       </div>
 
 
-      {/* =====================================
-          USER INFORMATION
-      ===================================== */}
+      {/* ======================================
+          PAGE HEADER
+      ====================================== */}
+
+      <div className="teacher-page-header">
+
+        <div>
+          <h1>Student Profile</h1>
+
+          <p>
+            Complete student and internship information.
+          </p>
+        </div>
+
+      </div>
+
+
+      {/* ======================================
+          ACCOUNT INFORMATION
+      ====================================== */}
 
       <div className="teacher-detail-card">
 
@@ -189,9 +279,9 @@ export default function ViewStudent() {
       </div>
 
 
-      {/* =====================================
+      {/* ======================================
           STUDENT INFORMATION
-      ===================================== */}
+      ====================================== */}
 
       <div className="teacher-detail-card">
 
@@ -211,15 +301,14 @@ export default function ViewStudent() {
                   "createdAt",
                   "updatedAt",
                   "teacherVerified",
+                  "profilePhoto",
                 ].includes(key)
             )
             .map(([key, value]) => (
-
               <div
                 className="detail-item"
                 key={key}
               >
-
                 <label>
                   {formatLabel(key)}
                 </label>
@@ -227,10 +316,11 @@ export default function ViewStudent() {
                 <p>
                   {formatValue(value)}
                 </p>
-
               </div>
-
             ))}
+
+
+          {/* Teacher Verification */}
 
           <div className="detail-item">
 
@@ -239,21 +329,15 @@ export default function ViewStudent() {
             </label>
 
             <p>
-
               {student?.teacherVerified ? (
-
                 <span className="verified-badge">
                   ✓ Verified
                 </span>
-
               ) : (
-
                 <span className="not-verified-badge">
                   Not Verified
                 </span>
-
               )}
-
             </p>
 
           </div>
@@ -263,14 +347,16 @@ export default function ViewStudent() {
       </div>
 
 
-      {/* =====================================
-          INTERNSHIP
-      ===================================== */}
+      {/* ======================================
+          INTERNSHIP INFORMATION
+      ====================================== */}
 
       <div className="teacher-detail-card">
 
         <div className="detail-card-header">
+
           <h2>Internship Information</h2>
+
         </div>
 
 
@@ -321,20 +407,24 @@ export default function ViewStudent() {
       </div>
 
 
-      {/* =====================================
+      {/* ======================================
           WEEKLY REPORTS
-      ===================================== */}
+      ====================================== */}
 
       <div className="teacher-detail-card">
 
         <div className="detail-card-header">
 
           <div>
-            <h2>Weekly Reports</h2>
+
+            <h2>
+              Weekly Reports
+            </h2>
 
             <p className="section-description">
               Weekly internship submissions by the student.
             </p>
+
           </div>
 
         </div>
@@ -355,12 +445,31 @@ export default function ViewStudent() {
               <thead>
 
                 <tr>
-                  <th>Submission Date</th>
-                  <th>Week</th>
-                  <th>Task Title</th>
-                  <th>Description</th>
-                  <th>Attachment</th>
-                  <th>Status</th>
+
+                  <th>
+                    Submission Date
+                  </th>
+
+                  <th>
+                    Week
+                  </th>
+
+                  <th>
+                    Task Title
+                  </th>
+
+                  <th>
+                    Description
+                  </th>
+
+                  <th>
+                    Attachment
+                  </th>
+
+                  <th>
+                    Status
+                  </th>
+
                 </tr>
 
               </thead>
@@ -375,12 +484,12 @@ export default function ViewStudent() {
                     <td>
                       {formatDate(
                         report.submissionDate ||
-                        report.createdAt
+                          report.createdAt
                       )}
                     </td>
 
                     <td>
-                      Week {report.weekNumber}
+                      Week {report.weekNumber || "-"}
                     </td>
 
                     <td>
@@ -437,9 +546,9 @@ export default function ViewStudent() {
       </div>
 
 
-      {/* =====================================
+      {/* ======================================
           TEACHER VERIFICATION
-      ===================================== */}
+      ====================================== */}
 
       <div className="teacher-verification-card">
 
@@ -473,11 +582,9 @@ export default function ViewStudent() {
             onClick={handleVerify}
             disabled={verifying}
           >
-
             {verifying
               ? "Verifying..."
               : "Verify Student"}
-
           </button>
 
         )}
@@ -489,24 +596,52 @@ export default function ViewStudent() {
 }
 
 
-/*
-====================================================
-HELPER FUNCTIONS
-====================================================
-*/
+/* =====================================================
+   HELPER FUNCTIONS
+===================================================== */
+
+
+/* PROFILE PHOTO URL */
+
+function getProfilePhotoUrl(photo) {
+
+  if (!photo) {
+    return null;
+  }
+
+  // Complete URL
+  if (
+    photo.startsWith("http://") ||
+    photo.startsWith("https://")
+  ) {
+    return photo;
+  }
+
+  // Backend uploaded image
+  return `http://localhost:5000/uploads/${photo}`;
+}
+
+
+/* FORMAT LABEL */
 
 function formatLabel(key) {
 
   return key
     .replace(/([A-Z])/g, " $1")
-    .replace(/^./, (str) => str.toUpperCase());
-
+    .replace(/^./, (str) =>
+      str.toUpperCase()
+    );
 }
 
 
+/* FORMAT VALUE */
+
 function formatValue(value) {
 
-  if (value === null || value === undefined) {
+  if (
+    value === null ||
+    value === undefined
+  ) {
     return "-";
   }
 
@@ -521,13 +656,13 @@ function formatValue(value) {
     }
 
     return JSON.stringify(value);
-
   }
 
   return value.toString();
-
 }
 
+
+/* FORMAT DATE */
 
 function formatDate(date) {
 
@@ -535,14 +670,18 @@ function formatDate(date) {
     return "-";
   }
 
-  return new Date(date).toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-
+  return new Date(date).toLocaleDateString(
+    "en-IN",
+    {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }
+  );
 }
 
+
+/* ATTACHMENT URL */
 
 function getAttachmentUrl(attachment) {
 
@@ -550,7 +689,7 @@ function getAttachmentUrl(attachment) {
     return "#";
   }
 
-  // If attachment is already a complete URL
+  // Complete URL
   if (
     attachment.startsWith("http://") ||
     attachment.startsWith("https://")
@@ -558,6 +697,6 @@ function getAttachmentUrl(attachment) {
     return attachment;
   }
 
-  // Existing backend uploads
+  // Backend uploaded attachment
   return `http://localhost:5000/uploads/${attachment}`;
 }

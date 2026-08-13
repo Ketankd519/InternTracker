@@ -87,29 +87,11 @@ function App() {
          }
         />
 
-        <Route
-          path="/teacher/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={['teacher', 'admin']}>
-              <TeacherDashboard />
-            </ProtectedRoute>
-          }
-        />
-
         <Route path="/teacher" element={<TeacherLayout />}>
           <Route path="dashboard" element={<TeacherDashboard />}/>
           <Route path="students" element={<TeacherStudents />}/>
           <Route path="students/:studentId" element={<ViewStudent />}/>
         </Route>
-
-        <Route
-          path="/manager/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={['manager', 'admin']}>
-              <ManagerDashboard />
-            </ProtectedRoute>
-          }
-        />
 
         <Route path="/manager"element={<ManagerLayout />}>
           <Route path="dashboard" element={<ManagerDashboard />}/>
