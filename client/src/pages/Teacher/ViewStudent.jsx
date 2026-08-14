@@ -91,6 +91,23 @@ export default function ViewStudent() {
   }
 };
 
+function getReportStatusClass(status) {
+  switch (status) {
+    case "Approved":
+      return "status-approved";
+
+    case "Rejected":
+      return "status-rejected";
+
+    case "Pending":
+      return "status-pending";
+
+    default:
+      return "status-default";
+  }
+}
+
+
   // ==========================================
   // LOADING
   // ==========================================
@@ -175,13 +192,18 @@ export default function ViewStudent() {
               className="student-profile-photo"
               onError={(e) => {
                 e.currentTarget.style.display = "none";
-                e.currentTarget.nextSibling.style.display =
-                  "flex";
+
+                const placeholder =
+                  e.currentTarget.parentElement.querySelector(
+                    ".student-profile-placeholder"
+                  );
+
+                if (placeholder) {
+                  placeholder.style.display = "flex";
+                }
               }}
             />
           ) : null}
-
-          {/* Default Avatar */}
 
           <div
             className="student-profile-placeholder"
@@ -314,7 +336,7 @@ export default function ViewStudent() {
                 </label>
 
                 <p>
-                  {formatValue(value)}
+                  {formatValue(value, key)}
                 </p>
               </div>
             ))}
@@ -393,7 +415,7 @@ export default function ViewStudent() {
                   </label>
 
                   <p>
-                    {formatValue(value)}
+                    {formatValue(value, key)}
                   </p>
 
                 </div>
@@ -525,7 +547,11 @@ export default function ViewStudent() {
 
                     <td>
 
-                      <span className="status-badge status-default">
+                      <span
+                        className={`status-badge ${getReportStatusClass(
+                          report.status
+                        )}`}
+                      >
                         {report.status || "Pending"}
                       </span>
 
@@ -604,12 +630,11 @@ export default function ViewStudent() {
 /* PROFILE PHOTO URL */
 
 function getProfilePhotoUrl(photo) {
-
   if (!photo) {
     return null;
   }
 
-  // Complete URL
+  // Already a complete URL
   if (
     photo.startsWith("http://") ||
     photo.startsWith("https://")
@@ -617,10 +642,32 @@ function getProfilePhotoUrl(photo) {
     return photo;
   }
 
-  // Backend uploaded image
-  return `http://localhost:5000/uploads/${photo}`;
-}
+  // Normalize Windows paths
+  let cleanPath = photo
+    .replace(/\\/g, "/")
+    .replace(/^\/+/, "");
 
+  // Remove unnecessary prefixes
+  cleanPath = cleanPath
+    .replace(/^server\/uploads\//, "")
+    .replace(/^uploads\//, "");
+
+  // If database contains:
+  // profile/filename.jpg
+  if (cleanPath.startsWith("profile/")) {
+    return `http://localhost:5000/uploads/${cleanPath}`;
+  }
+
+  // If database contains:
+  // profilePhotos/filename.jpg
+  if (cleanPath.startsWith("profilePhotos/")) {
+    return `http://localhost:5000/uploads/${cleanPath}`;
+  }
+
+  // If database contains only:
+  // filename.jpg
+  return `http://localhost:5000/uploads/profile/${cleanPath}`;
+}
 
 /* FORMAT LABEL */
 
@@ -636,11 +683,11 @@ function formatLabel(key) {
 
 /* FORMAT VALUE */
 
-function formatValue(value) {
-
+function formatValue(value, key = "") {
   if (
     value === null ||
-    value === undefined
+    value === undefined ||
+    value === ""
   ) {
     return "-";
   }
@@ -650,7 +697,6 @@ function formatValue(value) {
   }
 
   if (typeof value === "object") {
-
     if (Array.isArray(value)) {
       return value.join(", ");
     }
@@ -658,7 +704,20 @@ function formatValue(value) {
     return JSON.stringify(value);
   }
 
-  return value.toString();
+  const stringValue = value.toString();
+
+  // Convert ISO date to YYYY-MM-DD
+  // Example:
+  // 2003-09-04T00:00:00.000Z
+  // becomes:
+  // 2003-09-04
+  if (
+    /^\d{4}-\d{2}-\d{2}T/.test(stringValue)
+  ) {
+    return stringValue.substring(0, 10);
+  }
+
+  return stringValue;
 }
 
 
@@ -689,7 +748,7 @@ function getAttachmentUrl(attachment) {
     return "#";
   }
 
-  // Complete URL
+  // Already a complete URL
   if (
     attachment.startsWith("http://") ||
     attachment.startsWith("https://")
@@ -697,6 +756,23 @@ function getAttachmentUrl(attachment) {
     return attachment;
   }
 
-  // Backend uploaded attachment
-  return `http://localhost:5000/uploads/${attachment}`;
+  // Handle old Windows filesystem paths
+  if (
+    attachment.includes(":\\") ||
+    attachment.includes(":/") ||
+    attachment.includes("\\")
+  ) {
+    const filename = attachment.split(/[\\/]/).pop();
+
+    return `http://localhost:5000/uploads/reports/${filename}`;
+  }
+
+  // New database format:
+  // uploads/reports/filename.pdf
+  if (attachment.startsWith("uploads/")) {
+    return `http://localhost:5000/${attachment}`;
+  }
+
+  // If database contains only the filename
+  return `http://localhost:5000/uploads/reports/${attachment}`;
 }

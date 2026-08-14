@@ -97,19 +97,48 @@ header {
   font-size: 15px;
 }
 
+.auth-card input[readonly] {
+  background: #f1f5f9;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
 .auth-card input:focus {
   outline: none;
   border-color: #2563eb;
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
-.forgot-password {
+.login-options {
   display: flex;
-  justify-content: flex-end;
-  margin: 5px 0 15px;
+  justify-content: space-between;
+  align-items: center;
+  margin: 8px 0 18px;
 }
 
-.forgot-password button {
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #555;
+  font-size: 14px;
+}
+
+.remember-me input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  accent-color: #2563eb;
+}
+
+.remember-me span {
+  cursor: pointer;
+}
+
+.forgot-password-btn {
   border: none;
   background: transparent;
   color: #2563eb;
@@ -118,7 +147,7 @@ header {
   padding: 0;
 }
 
-.forgot-password button:hover {
+.forgot-password-btn:hover {
   text-decoration: underline;
 }
 
@@ -137,6 +166,11 @@ header {
 
 .auth-btn:hover {
   background: #1e3a8a;
+}
+
+.auth-btn:disabled {
+  background: #93c5fd;
+  cursor: not-allowed;
 }
 
 .create-account {
@@ -162,6 +196,26 @@ header {
   text-decoration: underline;
 }
 
+.register-login {
+  text-align: center;
+  margin-top: 15px;
+  color: #555;
+  font-size: 14px;
+}
+
+.register-login button {
+  border: none;
+  background: transparent;
+  color: #2563eb;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 5px;
+  font-size: 14px;
+}
+
+.register-login button:hover {
+  text-decoration: underline;
+}
 
 /* ==========================================
    LOGIN RESPONSIVE

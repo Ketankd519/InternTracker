@@ -21,6 +21,35 @@ const emptyForm = {
   profilePhoto: "",
 };
 
+const getProfilePhotoUrl = (photo) => {
+  if (!photo) return "";
+
+  // If browser already has a complete URL
+  if (
+    photo.startsWith("http://") ||
+    photo.startsWith("https://")
+  ) {
+    return photo;
+  }
+
+  // Clean Windows-style paths
+  const cleanPath = photo
+    .replace(/\\/g, "/")
+    .replace(/^\/+/, "")
+
+      // Remove possible prefixes
+    .replace(/^server\/uploads\//, "")
+    .replace(/^uploads\//, "");
+
+      // If database contains profile/filename.jpg
+    if (cleanPath.startsWith("profile/")) {
+    return `http://localhost:5000/uploads/${cleanPath}`;
+  }
+
+
+  return `http://localhost:5000/uploads/profile/${cleanPath}`;
+};
+
 const StudentProfile = () => {
   const [formData, setFormData] = useState(emptyForm);
 
@@ -102,17 +131,20 @@ const StudentProfile = () => {
 
   // Handle Input
   const handleChange = (e) => {
-    const {
-      name,
-      value,
-      files,
-    } = e.target;
+    const { name, value, files } = e.target;
+
+    if (files && files[0]) {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: files[0],
+      }));
+
+      return;
+    }
 
     setFormData((prev) => ({
       ...prev,
-      [name]: files
-        ? files[0]
-        : value,
+      [name]: value,
     }));
   };
 
@@ -292,24 +324,37 @@ const StudentProfile = () => {
                 required
               />
 
-              <input type="date" name="dob"
-                value={formData.dob}
-                onChange={handleChange}
-              />
+              <div className="profile-field">
+                <label htmlFor="dob">Date of Birth</label>
+                <input
+                  type="date"
+                  id="dob"
+                  name="dob"
+                  value={formData.dob}
+                  onChange={handleChange}
+                />
+              </div>
 
-              <select name="gender"value={formData.gender}onChange={handleChange}>
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-
-              <input type="text" name="city"
-                placeholder="City"
-                value={formData.city}
-                onChange={handleChange}
-                required
-              />
+              <div className="profile-field">
+                <label htmlFor="gender">Gender</label>
+                  <select name="gender"value={formData.gender}onChange={handleChange}>
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+              </div>
+              
+              <div className="profile-field">
+                <label htmlFor="address">Address</label>
+                  <input type="text" name="city"
+                    placeholder="City"
+                    value={formData.city}
+                    onChange={handleChange}
+                    required
+                  />
+              </div>
+              
 
               <input type="text" name="state"
                 placeholder="State"
@@ -332,19 +377,41 @@ const StudentProfile = () => {
               />
 
               <div className="photo-upload">
-                <label>Profile Photo</label>
+              <label htmlFor="profilePhoto">Profile Photo</label>
 
-                {formData.profilePhoto && typeof formData.profilePhoto ==="string" && (
-                    <div className="photo-preview">
-                      <img src={ formData.profilePhoto }
-                        alt="Student Profile"/>
-                    </div>
-                  )}
+              <div className="photo-preview">
+                {formData.profilePhoto ? (
+                  <img
+                    src={
+                      formData.profilePhoto instanceof File
+                        ? URL.createObjectURL(formData.profilePhoto)
+                        : getProfilePhotoUrl(formData.profilePhoto)
+                    }
+                    alt="Student Profile Preview"
+                    onLoad={(e) => {
+                      console.log(
+                        "Profile image loaded successfully:",
+                        e.currentTarget.src
+                      );
+                    }}
+                    onError={(e) => {
+                      console.error(
+                        "PROFILE IMAGE FAILED:",
+                        e.currentTarget.src
+                      );
+                    }}
+                  />
+                ) : (
+                  <span>No photo selected</span>
+                )}
+              </div>
 
-                <input type="file"name="profilePhoto"
-                  accept="image/*"
-                  onChange={handleChange}
-                />
+              <input type="file"
+                id="profilePhoto"
+                name="profilePhoto"
+                accept="image/*"
+                onChange={handleChange}
+              />
 
               </div>
             </div>

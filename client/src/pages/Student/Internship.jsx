@@ -398,23 +398,36 @@ export default function Internship() {
 
                   {/* Department
                   Comes from Student collection */}
+            <div className="profile-field">
+              <label htmlFor="department">Department</label>
               <input type="text" name="department"
                 value={formData.department}
                 placeholder="Department"
                 readOnly
               />
+              </div>
 
-              <input type="date" name="startDate"
-                value={formData.startDate}
-                onChange={handleChange}
-                required
-              />
+              <div className="profile-field">
+                <label htmlFor="startDate">Starting Date</label>
+                <input
+                  type="date"
+                  id="startDate"
+                  name="startDate"
+                  value={formData.startDate}
+                  onChange={handleChange}
+                />
+              </div>
 
-              <input type="date" name="endDate"
-                value={formData.endDate}
-                onChange={handleChange}
-                required
-              />
+              <div className="profile-field">
+                <label htmlFor="endDate">Ending Date</label>
+                <input
+                  type="date"
+                  id="endDate"
+                  name="endDate"
+                  value={formData.endDate}
+                  onChange={handleChange}
+                />
+              </div>
 
               <input type="number" name="totalWeeks"
                 placeholder="Total Weeks"

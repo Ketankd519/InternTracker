@@ -64,8 +64,8 @@ const createStudentProfile = async (req, res) => {
       state,
       pincode,
       profilePhoto: req.file
-        ? req.file.path
-        : "",
+        ? `profile/${req.file.filename}`
+        : null,
 
       college,
       department,

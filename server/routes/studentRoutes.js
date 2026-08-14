@@ -11,7 +11,7 @@ const {
 // Import Middleware
 const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
-const upload = require('../middleware/uploadMiddleware');
+const { profileUpload } = require('../middleware/uploadMiddleware');
 
 /**
  * @route   /api/students/profile
@@ -22,8 +22,8 @@ const upload = require('../middleware/uploadMiddleware');
 router
   .route('/profile')
   
-  .post(protect,authorize('student'),upload.single('profilePhoto'),createStudentProfile)
+  .post(protect,authorize('student'),profileUpload.single('profilePhoto'),createStudentProfile)
   .get(protect,authorize('student'),getStudentProfile)
-  .put(protect,authorize('student'),upload.single('profilePhoto'),updateStudentProfile);
+  .put(protect,authorize('student'),profileUpload.single('profilePhoto'),updateStudentProfile);
 
 module.exports = router;

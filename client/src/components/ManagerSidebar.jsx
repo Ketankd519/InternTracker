@@ -1,51 +1,58 @@
 import { NavLink } from "react-router-dom";
+import "./TMSidebar.css";
 
 export default function ManagerSidebar() {
+  const menuItems = [
+    {
+      name: "Dashboard",
+      path: "/manager/dashboard",
+      icon: "📊",
+    },
+    {
+      name: "Approvals",
+      path: "/manager/approvals",
+      icon: "📋",
+    },
+    {
+      name: "Evaluation",
+      path: "/manager/evaluation",
+      icon: "📝",
+    },
+  ];
+
   return (
-    <aside className="manager-sidebar">
-      <div className="manager-sidebar-header">
+    <aside className="teacher-sidebar">
+
+      <div className="teacher-sidebar-header">
         <h2>InternTrack</h2>
         <p>Manager Panel</p>
       </div>
 
-      <nav className="manager-sidebar-nav">
-        <NavLink
-          to="/manager/dashboard"
-          className={({ isActive }) =>
-            isActive
-              ? "manager-nav-link active"
-              : "manager-nav-link"
-          }
-        >
-          <span>📊</span>
-          Dashboard
-        </NavLink>
+      <ul className="teacher-sidebar-menu">
 
-        <NavLink
-          to="/manager/approvals"
-          className={({ isActive }) =>
-            isActive
-              ? "manager-nav-link active"
-              : "manager-nav-link"
-          }
-        >
-          <span>📋</span>
-          Approvals
-        </NavLink>
+        {menuItems.map((item) => (
+          <li key={item.name}>
 
-        <NavLink
-          to="/manager/evaluation"
-          className={({ isActive }) =>
-            isActive
-              ? "manager-nav-link active"
-              : "manager-nav-link"
-          }
-        >
-          <span>📝</span>
-          Evaluation
-        </NavLink>
+            <NavLink
+              to={item.path}
+              className={({ isActive }) =>
+                isActive
+                  ? "teacher-sidebar-link active"
+                  : "teacher-sidebar-link"
+              }
+            >
+              <span className="teacher-sidebar-icon">
+                {item.icon}
+              </span>
 
-      </nav>
+              <span>{item.name}</span>
+            </NavLink>
+
+          </li>
+        ))}
+
+      </ul>
+
     </aside>
   );
 }

@@ -396,6 +396,59 @@ width:100%;
     color:#374151;
 }
 
+.photo-preview {
+    width: 150px;
+    height: 150px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #f8fafc;
+}
+
+.photo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.photo-preview span {
+    color: #94a3b8;
+    font-size: 13px;
+    text-align: center;
+}
+
+/* DOB FIELD */
+.profile-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.profile-field label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 14px;
+}
+
+.profile-field input[type="date"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 15px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.profile-field input[type="date"]:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 5px rgba(37, 99, 235, .3);
+}
+
 .profile-buttons{
     display:flex;
     justify-content:center;

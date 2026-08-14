@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import "./TeacherSidebar.css";
+import "./TMSidebar.css";
 
 export default function TeacherSidebar() {
 const menuItems = [
@@ -11,6 +11,12 @@ const menuItems = [
     },
     {
       name: "Profile",
+      path: "/teacher/profile",
+      icon: "👤",
+      disabled: true,
+    },
+    {
+      name: "view Students",
       path: "/teacher/students",
       icon: "👨‍🎓",
       disabled: false,
@@ -31,12 +37,6 @@ const menuItems = [
 
   return (
     <aside className="teacher-sidebar">
-
-
-
-
-
-
 
       <div className="teacher-sidebar-header">
         <h2>InternTrack</h2>

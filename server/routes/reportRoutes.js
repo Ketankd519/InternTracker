@@ -9,14 +9,14 @@ const {
 
 const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
-const upload = require('../middleware/uploadMiddleware');
+const { reportUpload } = require('../middleware/uploadMiddleware');
 
 /**
  * @route   /api/reports
  */
 
 // Student submits weekly report
-router.post('/',protect,authorize('student'),upload.single('attachment'),submitReport);
+router.post('/',protect,authorize('student'),reportUpload.single('attachment'),submitReport);
 
 // Student views own reports
 router.get('/',protect,authorize('student'),getStudentReports);

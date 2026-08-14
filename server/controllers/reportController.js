@@ -1,5 +1,6 @@
 const WeeklyReport = require("../models/WeeklyReport");
 const Student = require("../models/Student");
+const Internship = require("../models/Internship");
 
 // Submit Weekly Report
 // POST /api/reports
@@ -10,13 +11,6 @@ const submitReport = async (req, res) => {
     const student = await Student.findOne({
       user: req.user._id,
     });
-
-    if (!student) {
-      return res.status(404).json({
-        success: false,
-        message:"Student profile not found. Please complete your profile first.",
-      });
-    }
 
     const {
       weekNumber,
@@ -37,6 +31,26 @@ const submitReport = async (req, res) => {
         message:"Week number, task title, description and submission date are required.",
       });
     }
+
+  // Find student's internship
+  const internship = await Internship.findOne({
+    student: student._id,
+  });
+
+  if (!internship) {
+    return res.status(404).json({
+      success: false,
+      message: "Internship record not found. Please complete your internship application first.",
+    });
+  }
+
+  // Validate week number against total internship weeks
+  if (Number(weekNumber) > internship.totalWeeks) {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid week number. Your internship is for ${internship.totalWeeks} weeks. You cannot submit a report for Week ${weekNumber}.`,
+    });
+  }
 
     // Check duplicate week
     const existingReport = await WeeklyReport.findOne({
@@ -59,7 +73,7 @@ const submitReport = async (req, res) => {
       description,
       submissionDate,
       attachment: req.file
-        ? req.file.path
+        ? `uploads/reports/${req.file.filename}`
         : null,
 
       // Always Pending when student submits
@@ -111,8 +125,20 @@ const getStudentReports = async (req, res) => {
     // Fetch reports
     const reports = await WeeklyReport.find({
       student: studentId,
-    }).sort({
-      weekNumber: 1,
+    })
+      .sort({
+        weekNumber: 1,
+      })
+      .lean();
+
+    reports.forEach((report) => {
+      if (report.attachment) {
+        // Convert old Windows filesystem path to web path
+        if (report.attachment.includes("\\") || report.attachment.includes(":")) {
+          const filename = report.attachment.split(/[\\/]/).pop();
+          report.attachment = `uploads/reports/${filename}`;
+        }
+      }
     });
 
     // Count reports

@@ -1,58 +1,36 @@
-/* =========================================
-   TEACHER SIDEBAR
-========================================= */
-
+   /* TEACHER SIDEBAR */
 .teacher-sidebar {
   width: 250px;
   min-width: 250px;
-
   min-height: 100vh;
-
   background: #0f172a;
   color: #fff;
-
   padding: 25px 20px;
-
   box-sizing: border-box;
 }
 
-
-/* =========================================
-   SIDEBAR HEADER
-========================================= */
-
+   /* SIDEBAR HEADER */
 .teacher-sidebar-header {
   text-align: center;
-
   margin-bottom: 30px;
 }
 
 .teacher-sidebar-header h2 {
   margin: 0;
-
   font-size: 24px;
-
   color: #fff;
 }
 
 .teacher-sidebar-header p {
   margin: 7px 0 0;
-
   font-size: 15px;
-
   color: #cbd5e1;
 }
 
-
-/* =========================================
-   SIDEBAR MENU
-========================================= */
-
+   /* SIDEBAR MENU */
 .teacher-sidebar-menu {
   list-style: none;
-
   padding: 0;
-
   margin: 0;
 }
 
@@ -60,150 +38,155 @@
   margin-bottom: 12px;
 }
 
-
-/* =========================================
-   SIDEBAR LINK
-========================================= */
-
+   /* SIDEBAR LINK */
 .teacher-sidebar-link {
   display: flex;
-
   align-items: center;
-
   gap: 12px;
-
   position: relative;
-
   width: 100%;
-
   box-sizing: border-box;
-
   text-decoration: none;
-
   color: #fff;
-
   padding: 12px 16px;
-
   border-radius: 8px;
-
   background: #1e293b;
-
   transition: 0.3s;
-
   font-weight: 500;
-
   cursor: pointer;
 }
 
-
 /* Hover */
-
 .teacher-sidebar-link:hover {
   background: #2563eb;
 }
 
-
 /* Active */
-
 .teacher-sidebar-link.active {
   background: #2563eb;
-
   color: #fff;
 }
 
-
-/* =========================================
-   ICON
-========================================= */
-
+   /* ICON */
 .teacher-sidebar-icon {
   width: 25px;
-
   text-align: center;
-
   font-size: 18px;
 }
 
-
-/* =========================================
-   DISABLED MENU
-========================================= */
-
+   /* DISABLED MENU */
 .teacher-sidebar-link.disabled {
   background: #1e293b;
-
   color: #64748b;
-
   cursor: not-allowed;
-
   opacity: 0.55;
 }
 
-
 /* Don't change disabled item on hover */
-
 .teacher-sidebar-link.disabled:hover {
   background: #1e293b;
-
   color: #64748b;
 }
 
-
-/* =========================================
-   COMING SOON LABEL
-========================================= */
-
+   /* COMING SOON LABEL */
 .sidebar-coming-soon {
   margin-left: auto;
-
   font-size: 10px;
-
   color: #94a3b8;
-
   background: #334155;
-
   padding: 3px 6px;
-
   border-radius: 4px;
-
   text-transform: uppercase;
 }
 
-
-/* =========================================
-   RESPONSIVE
-========================================= */
-
+   /* RESPONSIVE */
 @media (max-width: 768px) {
-
   .teacher-sidebar {
     width: 100%;
-
     min-width: 100%;
-
     min-height: auto;
-
     padding: 15px;
   }
 
   .teacher-sidebar-menu {
     display: flex;
-
     gap: 8px;
-
     overflow-x: auto;
   }
 
   .teacher-sidebar-menu li {
     margin-bottom: 0;
-
     flex-shrink: 0;
   }
 
   .teacher-sidebar-link {
     width: auto;
-
     white-space: nowrap;
   }
+}
 
+   /* MANAGER / TEACHER MAIN LAYOUT */
+.manager-layout {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  align-items: stretch;
+}
+
+   /* SIDEBAR INSIDE MANAGER LAYOUT */
+.manager-layout .teacher-sidebar {
+  width: 250px;
+  min-width: 250px;
+  height: 100vh;
+  min-height: 100vh;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+}
+
+
+   /* MANAGER MAIN CONTENT */
+.manager-content {
+  flex: 1;
+  min-width: 0;
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 30px;
+  background: #f1f5f9;
+}
+
+   /* REMOVE UNWANTED BODY SPACING */
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+}
+
+   /* MOBILE */
+@media (max-width: 768px) {
+
+  .manager-layout {
+    flex-direction: column;
+  }
+
+  .manager-layout .teacher-sidebar {
+    width: 100%;
+    min-width: 100%;
+    height: auto;
+    min-height: auto;
+    position: relative;
+  }
+
+  .manager-content {
+    width: 100%;
+    padding: 20px;
+  }
 }

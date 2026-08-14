@@ -16,6 +16,7 @@ export default function WeeklyReport() {
 
   // Reports
   const [reports, setReports] = useState([]);
+  const [totalWeeks, setTotalWeeks] = useState(null);
   const [loadingReports, setLoadingReports] = useState(true);
 
   // Form State
@@ -31,7 +32,23 @@ export default function WeeklyReport() {
     //If Already register stuent with complete profile the data is fetching and the function is using.
     // so ignore this error.
     fetchReports();
+    fetchInternship();
   }, []);
+
+    const fetchInternship = async () => {
+      try {
+        const response = await API.get("/internships/status");
+
+        const internship = response.data.data?.internship;
+
+        if (internship) {
+          setTotalWeeks(internship.totalWeeks);
+        }
+      } catch (err) {
+        console.error("Fetch Internship Error:", err);
+      }
+    };
+
 
   const fetchReports = async () => {
     try {
@@ -84,19 +101,35 @@ export default function WeeklyReport() {
   // Submit Weekly Report
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const weekNumber = Number(formData.weekNumber);
+
+    // Validate week number against internship total weeks
+    if (totalWeeks && weekNumber > totalWeeks) {
+      setError(
+        `Invalid week number. Your internship is for ${totalWeeks} weeks. You cannot submit a report for Week ${weekNumber}.`
+      );
+      return;
+    }
+
+    // Validate minimum week number
+    if (weekNumber < 1) {
+      setError("Week number must be at least 1.");
+      return;
+    }
+
     setLoading(true);
     setMessage("");
     setError("");
 
     try {
-
       // FormData
       const data = new FormData();
 
-      data.append("weekNumber",formData.weekNumber);
-      data.append("taskTitle",formData.taskTitle);
-      data.append("description",formData.description);
-      data.append("submissionDate",formData.submissionDate);
+      data.append("weekNumber", formData.weekNumber);
+      data.append("taskTitle", formData.taskTitle);
+      data.append("description", formData.description);
+      data.append("submissionDate", formData.submissionDate);
 
       if (formData.attachment) {
         data.append("attachment", formData.attachment);
@@ -105,7 +138,8 @@ export default function WeeklyReport() {
       // Submit Report
       const response = await API.post("/reports", data);
 
-      console.log("Weekly Report Submit Response:",
+      console.log(
+        "Weekly Report Submit Response:",
         response.data
       );
 
@@ -128,14 +162,19 @@ export default function WeeklyReport() {
 
       // Refresh Reports Table
       await fetchReports();
+
     } catch (err) {
-      console.error("Weekly Report Error:", err);
+      console.error(
+        "Weekly Report Error:",
+        err
+      );
 
       const errorMessage =
         err.response?.data?.message ||
         "Unable to submit weekly report. Please try again.";
 
       setError(errorMessage);
+
     } finally {
       setLoading(false);
     }
@@ -182,7 +221,7 @@ export default function WeeklyReport() {
     // Your backend serves uploads using:
     // app.use("/uploads", express.static("uploads"));
 
-    return `http://localhost:5000/${attachment.replace(/\\/g, "/" )}`;
+    return `http://localhost:5000/${attachment.replace(/\\/g, "/")}`;
   };
 
   return (
@@ -214,27 +253,51 @@ export default function WeeklyReport() {
             <div className="profile-grid">
 
               {/* Week Number */}
-              <input type="number"name="weekNumber"
-                placeholder="Week Number" min="1"
-                value={formData.weekNumber}
-                onChange={handleChange}
-                required
-              />
+              <div className="profile-field">
+                <label htmlFor="weekNumber">
+                  Week Number
+                  {totalWeeks && ` (1 - ${totalWeeks})`}
+                </label>
+
+                <input
+                  type="number"
+                  id="weekNumber"
+                  name="weekNumber"
+                  placeholder="Enter week number"
+                  min="1"
+                  max={totalWeeks || undefined}
+                  value={formData.weekNumber}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
               {/* Submission Date */}
-              <input type="date" name="submissionDate"
-                value={formData.submissionDate}
-                onChange={handleChange}
-                required
-              />
+              <div className="profile-field">
+                <label htmlFor="submissionDate">
+                  Submission Date
+                </label>
+
+                <input
+                  type="date"
+                  id="submissionDate"
+                  name="submissionDate"
+                  value={formData.submissionDate}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
               {/* Task Title */}
+              <div className="profile-field">
+                <label htmlFor="taskTitle">Task Title</label>
               <input type="text" name="taskTitle"
                 placeholder="Task Title"
                 value={formData.taskTitle}
                 onChange={handleChange}
                 required
               />
+              </div>
 
               {/* Description */}
               <textarea rows="6" name="description"

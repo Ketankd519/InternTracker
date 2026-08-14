@@ -32,8 +32,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Serve Uploaded Files
-app.use("/uploads", express.static("uploads"));
+// Serve uploaded files
+app.use("/uploads",express.static(path.join(__dirname, "uploads")));
 
 // API Routes
 app.use("/api/auth", authRoutes);

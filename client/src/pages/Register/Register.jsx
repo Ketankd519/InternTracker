@@ -32,6 +32,10 @@ export default function Register() {
           <option value="manager">Manager</option>
         </select>
         <button type="submit" className="btn">Register</button>
+        <div className="register-login">
+          <span>Already have an account?</span>
+        <button type="button" onClick={() => navigate('/login')}> Login </button>
+        </div>
       </form>
     </div>
   );

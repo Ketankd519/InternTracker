@@ -1,41 +1,29 @@
-/* =====================================================
-   MANAGER LAYOUT
-===================================================== */
-
+   /* MANAGER LAYOUT */
 .manager-layout {
   min-height: 100vh;
   background: #f1f5f9;
 }
-
 .manager-main {
   margin-left: 250px;
   min-height: 100vh;
   padding: 30px;
 }
 
-
-/* =====================================================
-   SIDEBAR
-===================================================== */
-
+   /* SIDEBAR */
 .manager-sidebar {
   width: 250px;
   min-height: 100vh;
   background: #1e293b;
   color: white;
-
   position: fixed;
   left: 0;
   top: 0;
-
   padding: 25px 15px;
-
   z-index: 1000;
 }
 
 .manager-sidebar-header {
   padding: 0 10px 25px;
-
   border-bottom:
     1px solid rgba(255, 255, 255, 0.15);
 }
@@ -52,31 +40,21 @@
 
 .manager-sidebar-nav {
   margin-top: 25px;
-
   display: flex;
   flex-direction: column;
-
   gap: 8px;
 }
 
 .manager-nav-link {
   width: 100%;
-
   padding: 13px 15px;
-
   border-radius: 8px;
-
   display: flex;
   align-items: center;
-
   gap: 12px;
-
   text-decoration: none;
-
   color: #cbd5e1;
-
   font-size: 15px;
-
   transition: 0.2s;
 }
 
@@ -90,71 +68,41 @@
   color: white;
 }
 
-
-/* =====================================================
-   PAGE
-===================================================== */
-
+   /* PAGE */
 .manager-page {
   width: 100%;
 }
 
-
-/* =====================================================
-   LOADING
-===================================================== */
-
+   /* LOADING */
 .manager-loading {
   padding: 50px;
-
   text-align: center;
-
   font-size: 18px;
-
   color: #64748b;
 }
 
-
-/* =====================================================
-   ERROR
-===================================================== */
-
+   /* ERROR */
 .manager-error {
   background: #fee2e2;
-
   color: #991b1b;
-
   border: 1px solid #fecaca;
-
   padding: 15px 18px;
-
   border-radius: 8px;
-
   margin-bottom: 20px;
 }
 
-
-/* =====================================================
-   WELCOME
-===================================================== */
-
+   /* WELCOME */
 .manager-welcome {
   background: white;
-
   padding: 25px;
-
   border-radius: 12px;
-
   margin-bottom: 25px;
-
   border: 1px solid #e2e8f0;
 }
 
 .manager-welcome h1 {
   margin-bottom: 8px;
-
   font-size: 28px;
-
   color: #0f172a;
 }
 
@@ -162,24 +110,16 @@
   color: #64748b;
 }
 
-
-/* =====================================================
-   PAGE HEADER
-===================================================== */
-
+   /* PAGE HEADER */
 .manager-page-header {
   display: flex;
-
   justify-content: space-between;
-
   align-items: center;
-
   margin-bottom: 25px;
 }
 
 .manager-page-header h1 {
   color: #0f172a;
-
   margin-bottom: 5px;
 }
 
@@ -189,94 +129,59 @@
 
 .manager-count-badge {
   background: #eff6ff;
-
   color: #2563eb;
-
   padding: 10px 15px;
-
   border-radius: 20px;
-
   font-weight: 600;
 }
 
-
-/* =====================================================
-   STUDENT STATISTICS
-===================================================== */
-
+   /* STUDENT STATISTICS */
 .manager-stat-grid {
   display: grid;
-
   grid-template-columns:
     repeat(3, 1fr);
-
   gap: 20px;
-
   margin-bottom: 30px;
 }
 
 .manager-stat-card {
   background: white;
-
   border: 1px solid #e2e8f0;
-
   border-radius: 12px;
-
   padding: 25px;
-
   display: flex;
-
   align-items: center;
-
   gap: 18px;
 }
 
 .manager-stat-icon {
   width: 55px;
-
   height: 55px;
-
   border-radius: 12px;
-
   background: #eff6ff;
-
   display: flex;
-
   align-items: center;
-
   justify-content: center;
-
   font-size: 25px;
 }
 
 .manager-stat-card p {
   color: #64748b;
-
   font-size: 14px;
-
   margin-bottom: 5px;
 }
 
 .manager-stat-card h2 {
   font-size: 30px;
-
   color: #0f172a;
 }
 
-
-/* =====================================================
-   SECTION
-===================================================== */
-
+   /* SECTION */
 .manager-section {
-  background: white;
-
+  background: hite;
   border: 1px solid #e2e8f0;
-
   border-radius: 12px;
-
   padding: 25px;
-
   margin-bottom: 25px;
 }
 
@@ -290,37 +195,24 @@
 
 .manager-section-header p {
   color: #64748b;
-
   font-size: 13px;
-
   margin-top: 5px;
 }
 
-
-/* =====================================================
-   WEEKLY REPORT STATISTICS
-===================================================== */
-
+   /* WEEKLY REPORT STATISTICS */
 .manager-report-stat-grid {
   display: grid;
-
   grid-template-columns:
     repeat(4, 1fr);
-
   gap: 15px;
 }
 
 .manager-report-card {
   border: 1px solid #e2e8f0;
-
   border-radius: 10px;
-
   padding: 18px;
-
   display: flex;
-
   align-items: center;
-
   gap: 15px;
 }
 
@@ -330,15 +222,12 @@
 
 .manager-report-card p {
   color: #64748b;
-
   font-size: 13px;
-
   margin-bottom: 5px;
 }
 
 .manager-report-card h2 {
   color: #0f172a;
-
   font-size: 25px;
 }
 
@@ -354,43 +243,28 @@
   background: #fef2f2;
 }
 
-
-/* =====================================================
-   QUICK ACCESS
-===================================================== */
-
+   /* QUICK ACCESS */
 .manager-quick-grid {
   display: grid;
-
   grid-template-columns:
     repeat(2, 1fr);
-
   gap: 15px;
 }
 
 .manager-quick-card {
   border: 1px solid #e2e8f0;
-
   border-radius: 10px;
-
   padding: 20px;
-
   display: flex;
-
   gap: 15px;
-
   text-align: left;
-
   background: white;
-
   cursor: pointer;
-
   transition: 0.2s;
 }
 
 .manager-quick-card:hover {
   border-color: #2563eb;
-
   transform: translateY(-2px);
 }
 
@@ -400,70 +274,47 @@
 
 .manager-quick-card h3 {
   margin-bottom: 5px;
-
   color: #0f172a;
 }
 
 .manager-quick-card p {
   color: #64748b;
-
   font-size: 13px;
-
   line-height: 1.5;
 }
 
-
-/* =====================================================
-   TABLE
-===================================================== */
-
+   /* TABLE */
 .manager-table-container {
   width: 100%;
-
   overflow-x: auto;
-
   background: white;
-
   border-radius: 12px;
-
   border: 1px solid #e2e8f0;
 }
 
 .manager-table {
   width: 100%;
-
   border-collapse: collapse;
-
   min-width: 1100px;
 }
 
 .manager-table th {
   background: #f8fafc;
-
   color: #475569;
-
   font-size: 13px;
-
   font-weight: 600;
-
   padding: 15px;
-
   text-align: left;
-
   border-bottom:
     1px solid #e2e8f0;
 }
 
 .manager-table td {
   padding: 15px;
-
   border-bottom:
     1px solid #e2e8f0;
-
   color: #334155;
-
   font-size: 14px;
-
   vertical-align: middle;
 }
 
@@ -477,125 +328,81 @@
 
 .manager-student-email {
   display: block;
-
   color: #94a3b8;
-
   font-size: 12px;
-
   margin-top: 4px;
 }
 
 .manager-empty-table {
   text-align: center !important;
-
   padding: 40px !important;
-
   color: #94a3b8 !important;
 }
 
-
-/* =====================================================
-   STATUS
-===================================================== */
-
+   /* STATUS */
 .manager-status-badge {
   display: inline-block;
-
   padding: 5px 10px;
-
   border-radius: 15px;
-
   font-size: 12px;
-
   font-weight: 600;
 }
 
 .manager-status-completed,
 .manager-status-approved {
   background: #dcfce7;
-
   color: #166534;
 }
 
 .manager-status-ongoing {
   background: #dbeafe;
-
   color: #1d4ed8;
 }
 
 .manager-status-pending {
   background: #fef3c7;
-
   color: #92400e;
 }
 
 .manager-status-rejected {
   background: #fee2e2;
-
   color: #991b1b;
 }
 
 .manager-status-default {
   background: #e2e8f0;
-
   color: #475569;
 }
 
-
-/* =====================================================
-   VERIFICATION
-===================================================== */
-
+   /* VERIFICATION */
 .manager-verified-badge {
   display: inline-block;
-
   background: #dcfce7;
-
   color: #166534;
-
   padding: 5px 10px;
-
   border-radius: 15px;
-
   font-size: 12px;
-
   font-weight: 600;
 }
 
 .manager-not-verified-badge {
   display: inline-block;
-
   background: #f1f5f9;
-
   color: #64748b;
-
   padding: 5px 10px;
-
   border-radius: 15px;
-
   font-size: 12px;
-
   font-weight: 600;
 }
 
-
-/* =====================================================
-   VIEW BUTTON
-===================================================== */
-
+   /* VIEW BUTTON */
 .manager-view-btn {
   background: #2563eb;
-
   color: white;
-
   border: none;
-
   border-radius: 7px;
-
   padding: 9px 13px;
-
   cursor: pointer;
-
   font-size: 13px;
 }
 
@@ -603,24 +410,14 @@
   background: #1d4ed8;
 }
 
-
-/* =====================================================
-   BACK BUTTON
-===================================================== */
-
+   /* BACK BUTTON */
 .manager-back-btn {
   background: transparent;
-
   border: none;
-
   color: #2563eb;
-
   cursor: pointer;
-
   font-size: 14px;
-
   margin-bottom: 20px;
-
   padding: 0;
 }
 
@@ -628,130 +425,89 @@
   text-decoration: underline;
 }
 
-
-/* =====================================================
-   DETAIL CARD
-===================================================== */
-
+/* DETAIL CARD */
 .manager-detail-card {
   background: white;
-
   border: 1px solid #e2e8f0;
-
   border-radius: 12px;
-
   margin-bottom: 25px;
-
   overflow: hidden;
 }
 
 .manager-detail-header {
   padding: 20px 25px;
-
   border-bottom:
     1px solid #e2e8f0;
 }
 
 .manager-detail-header h2 {
   color: #0f172a;
-
   font-size: 19px;
 }
 
 .manager-detail-grid {
   padding: 25px;
-
   display: grid;
-
   grid-template-columns:
     repeat(3, 1fr);
-
   gap: 20px;
 }
 
 .manager-detail-item label {
   display: block;
-
   color: #64748b;
-
   font-size: 12px;
-
   margin-bottom: 6px;
 }
 
 .manager-detail-item p {
   color: #0f172a;
-
   font-size: 14px;
-
   word-break: break-word;
 }
 
 .manager-empty-details {
   padding: 30px;
-
   color: #94a3b8;
-
   text-align: center;
 }
 
-
-/* =====================================================
-   MANAGER VERIFICATION CARD
-===================================================== */
-
+   /* MANAGER VERIFICATION CARD */
 .manager-verification-card {
   background: white;
-
   border: 1px solid #e2e8f0;
-
   border-radius: 12px;
-
   padding: 25px;
-
   display: flex;
-
   align-items: center;
-
   justify-content: space-between;
-
   gap: 20px;
 }
 
 .manager-verification-card h2 {
   color: #0f172a;
-
   margin-bottom: 7px;
 }
 
 .manager-verification-card p {
   color: #64748b;
-
   font-size: 14px;
-
   max-width: 650px;
-
   line-height: 1.5;
 }
 
 .manager-verify-button,
 .manager-verified-button {
   border: none;
-
   border-radius: 8px;
-
   padding: 12px 20px;
-
   font-weight: 600;
-
   cursor: pointer;
-
   white-space: nowrap;
 }
 
 .manager-verify-button {
   background: #16a34a;
-
   color: white;
 }
 
@@ -761,38 +517,28 @@
 
 .manager-verify-button:disabled {
   opacity: 0.6;
-
   cursor: not-allowed;
 }
 
 .manager-verified-button {
   background: #dcfce7;
-
   color: #166534;
-
   cursor: default;
 }
 
-
-/* =====================================================
-   EVALUATION
-===================================================== */
-
+   /* EVALUATION */
 .evaluation-table {
   min-width: 1600px;
 }
 
 .evaluation-description {
   max-width: 300px;
-
   line-height: 1.5;
 }
 
 .manager-attachment-link {
   color: #2563eb;
-
   text-decoration: none;
-
   font-weight: 500;
 }
 
@@ -802,61 +548,40 @@
 
 .manager-small-verified {
   display: block;
-
   margin-top: 5px;
-
   color: #166534;
-
   font-size: 11px;
-
   font-weight: 600;
 }
 
 .manager-existing-remark {
   margin-top: 8px;
-
   max-width: 200px;
-
   color: #991b1b;
-
   font-size: 11px;
-
   line-height: 1.4;
 }
 
-
-/* =====================================================
-   ACTION BUTTONS
-===================================================== */
-
+   /* ACTION BUTTONS */
 .manager-action-area {
   min-width: 180px;
-
   display: flex;
-
   flex-direction: column;
-
   gap: 7px;
 }
 
 .manager-approve-btn,
 .manager-reject-btn {
   border: none;
-
   border-radius: 6px;
-
   padding: 8px 12px;
-
   cursor: pointer;
-
   font-size: 12px;
-
   font-weight: 600;
 }
 
 .manager-approve-btn {
   background: #16a34a;
-
   color: white;
 }
 
@@ -866,7 +591,6 @@
 
 .manager-reject-btn {
   background: #dc2626;
-
   color: white;
 }
 
@@ -877,42 +601,26 @@
 .manager-approve-btn:disabled,
 .manager-reject-btn:disabled {
   opacity: 0.6;
-
   cursor: not-allowed;
 }
 
-
-/* =====================================================
-   REJECTION BOX
-===================================================== */
-
+   /* REJECTION BOX */
 .manager-reject-box {
   margin-top: 5px;
-
   padding: 10px;
-
   border: 1px solid #fecaca;
-
   background: #fff7f7;
-
   border-radius: 7px;
 }
 
 .manager-reject-box textarea {
   width: 100%;
-
   resize: vertical;
-
   padding: 8px;
-
   border: 1px solid #cbd5e1;
-
   border-radius: 5px;
-
   font-family: inherit;
-
   font-size: 12px;
-
   outline: none;
 }
 
@@ -922,54 +630,38 @@
 
 .manager-reject-actions {
   display: flex;
-
   gap: 6px;
-
   margin-top: 7px;
 }
 
 .manager-confirm-reject-btn,
 .manager-cancel-reject-btn {
   border: none;
-
   border-radius: 5px;
-
   padding: 7px 9px;
-
   cursor: pointer;
-
   font-size: 11px;
-
   font-weight: 600;
 }
 
 .manager-confirm-reject-btn {
   background: #dc2626;
-
   color: white;
 }
 
 .manager-cancel-reject-btn {
   background: #e2e8f0;
-
   color: #475569;
 }
 
 .manager-action-completed {
   font-size: 12px;
-
   font-weight: 600;
-
   color: #64748b;
 }
 
-
-/* =====================================================
-   RESPONSIVE
-===================================================== */
-
+   /* RESPONSIVE */
 @media (max-width: 1100px) {
-
   .manager-stat-grid {
     grid-template-columns: 1fr;
   }
@@ -983,9 +675,7 @@
     grid-template-columns:
       repeat(2, 1fr);
   }
-
 }
-
 
 @media (max-width: 768px) {
 
@@ -995,15 +685,12 @@
 
   .manager-main {
     margin-left: 200px;
-
     padding: 20px;
   }
 
   .manager-page-header {
     align-items: flex-start;
-
     flex-direction: column;
-
     gap: 15px;
   }
 
@@ -1021,8 +708,116 @@
 
   .manager-verification-card {
     flex-direction: column;
-
     align-items: flex-start;
   }
+}
 
+   /* MANAGER STUDENT PROFILE HEADER */
+.manager-student-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 30px;
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+   /* PROFILE PHOTO WRAPPER */
+.manager-student-profile-photo-wrapper {
+  width: 120px;
+  height: 120px;
+  min-width: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  border: 4px solid #e2e8f0;
+}
+
+   /* STUDENT PROFILE IMAGE */
+.manager-student-profile-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 50%;
+}
+
+   /* DEFAULT AVATAR */
+.manager-student-profile-placeholder {
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  font-size: 55px;
+  background: #f1f5f9;
+  border-radius: 50%;
+}
+
+   /* PROFILE INFORMATION */
+.manager-student-profile-info h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+}
+
+.manager-student-profile-email {
+  margin: 0 0 12px;
+  color: #64748b;
+}
+
+.manager-student-profile-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+   /* ROLE BADGE */
+.manager-student-role-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: #e0e7ff;
+  color: #3730a3;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+   /* VERIFIED BADGE */
+.manager-verified-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+   /* NOT VERIFIED BADGE */
+.manager-not-verified-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+   /* MOBILE */
+@media (max-width: 768px) {
+
+  .manager-student-profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .manager-student-profile-meta {
+    justify-content: center;
+  }
 }

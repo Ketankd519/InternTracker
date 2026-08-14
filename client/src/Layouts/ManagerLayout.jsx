@@ -6,7 +6,7 @@ export default function ManagerLayout() {
   return (
     <div className="manager-layout">
       <ManagerSidebar />
-      <main className="manager-main">
+      <main className="manager-content">
         <Outlet />
       </main>
     </div>
