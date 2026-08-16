@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import StudentLayout from "../../layouts/StudentLayout";
 import API from "../../services/api";
 import "./StudentStyle.css";
 
@@ -160,7 +159,7 @@ export default function Dashboard() {
   // Teacher + Manager
 
   let verificationStatus = "NOT VERIFIED";
-  let verificationClass = "warning";
+  let verificationClass = "danger";
 
   if (teacherVerified && managerVerified) {
     verificationStatus = "VERIFIED";
@@ -173,19 +172,16 @@ export default function Dashboard() {
   // Loading
   if (loading) {
     return (
-      <StudentLayout>
         <div className="dashboard-page">
           <div className="dashboard-header">
             <h1>Loading Dashboard...</h1>
           </div>
         </div>
-      </StudentLayout>
     );
   }
 
   // Dashboard
   return (
-    <StudentLayout>
       <div className="dashboard-page">
 
             {/* Header */}
@@ -199,7 +195,11 @@ export default function Dashboard() {
         <div className="dashboard-cards">
           <div className="status-card">
             <h3>Internship Status</h3>
-            <h2 className="active-status">
+            <h2
+              className={`internship-status ${
+                internship?.status || "none"
+              }`}
+            >
               {internshipStatus}
             </h2>
           </div>
@@ -295,6 +295,5 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-    </StudentLayout>
   );
 }

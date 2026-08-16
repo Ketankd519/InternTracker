@@ -217,6 +217,59 @@ header {
   text-decoration: underline;
 }
 
+/* CERTIFICATE STATUS BADGES */
+.certificate-status-badge {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 7px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 700;
+  background: transparent;
+}
+
+/* NOT ELIGIBLE - CRIMSON RED */
+.status-not-eligible {
+  color: #dc143c;
+  border: 2px solid #dc143c;
+  background: #fff1f2;
+}
+
+/* ELIGIBLE - YELLOW */
+.status-eligible {
+  color: #ca8a04;
+  border: 2px solid #eab308;
+  background: #fefce8;
+}
+
+/* PROCESSING - PURPLE / VIOLET */
+.status-processing {
+  color: #7c3aed;
+  border: 2px solid #8b5cf6;
+  background: #f5f3ff;
+}
+
+/* ONGOING - SKY BLUE */
+.status-ongoing {
+  color: #0284c7;
+  border: 2px solid #38bdf8;
+  background: #f0f9ff;
+}
+
+/* WAITING FOR APPROVAL - AMBER ORANGE */
+.status-waiting {
+  color: #d97706;
+  border: 2px solid #f59e0b;
+  background: #fffbeb;
+}
+
+/* APPROVED - EMERALD GREEN */
+.status-approved {
+  color: #059669;
+  border: 2px solid #10b981;
+  background: #ecfdf5;
+}
+
 /* ==========================================
    LOGIN RESPONSIVE
 ========================================== */

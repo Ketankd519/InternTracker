@@ -1,17 +1,17 @@
-import html2pdf from 'html2pdf.js';
+// import html2pdf from 'html2pdf.js';
 
 export default function Certificate() {
-  const downloadPDF = () => {
-    const element = document.getElementById('printable-certificate');
-    const opt = {
-      margin:       0.5,
-      filename:     'Internship_Certificate.pdf',
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 },
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
-    };
-    html2pdf().set(opt).from(element).save();
-  };
+  // const downloadPDF = () => {
+  //   const element = document.getElementById('printable-certificate');
+  //   const opt = {
+  //     margin:       0.5,
+  //     filename:     'Internship_Certificate.pdf',
+  //     image:        { type: 'jpeg', quality: 0.98 },
+  //     html2canvas:  { scale: 2 },
+  //     jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+  //   };
+  //   html2pdf().set(opt).from(element).save();
+  // };
 
   return (
     <div className="page active">
@@ -46,9 +46,9 @@ export default function Certificate() {
         </table>
       </div>
 
-      <div style={{ textAlign: 'center', marginTop: '20px' }}>
+      {/* <div style={{ textAlign: 'center', marginTop: '20px' }}>
         <button className="btn" onClick={downloadPDF}>Download Certificate (PDF)</button>
-      </div>
+      </div> */}
     </div>
   );
 }

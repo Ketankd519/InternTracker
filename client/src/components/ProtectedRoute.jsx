@@ -1,8 +1,8 @@
 import { useContext } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
-export default function ProtectedRoute({ children, allowedRoles }) {
+export default function ProtectedRoute({allowedRoles}) {
   const { user, loading } = useContext(AuthContext);
 
   if (loading) return <div className="loader">Loading...</div>;
@@ -15,5 +15,5 @@ export default function ProtectedRoute({ children, allowedRoles }) {
     return <Navigate to="/" replace />;
   }
 
-  return children;
+  return <Outlet/>;
 }

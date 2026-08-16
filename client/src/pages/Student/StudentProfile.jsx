@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import StudentLayout from "../../layouts/StudentLayout";
 import API from "../../services/api";
 import "./StudentStyle.css";
 
@@ -45,7 +44,6 @@ const getProfilePhotoUrl = (photo) => {
     if (cleanPath.startsWith("profile/")) {
     return `http://localhost:5000/uploads/${cleanPath}`;
   }
-
 
   return `http://localhost:5000/uploads/profile/${cleanPath}`;
 };
@@ -151,6 +149,12 @@ const StudentProfile = () => {
   // Create / Update
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!e.currentTarget.checkValidity()) {
+      alert("Please fill all required fields.");
+      return;
+    }
+
     setLoading(true);
     setMessage("");
     setError("");
@@ -212,7 +216,20 @@ const StudentProfile = () => {
 
       console.log("Student Profile Response:",response.data);
 
-      setMessage(response.data.message || "Profile saved successfully.");
+      const successMessage =
+        response.data?.message ||
+        (!profileExists
+          ? "Profile saved successfully."
+          : "Profile updated successfully.");
+
+      setMessage(successMessage);
+      alert(successMessage);
+
+      setMessage(
+        profileExists
+          ? "Profile updated successfully."
+          : "Profile saved successfully."
+      );
 
       // Refresh from MongoDB
       const refreshed = await API.get("/students/profile");
@@ -253,6 +270,13 @@ const StudentProfile = () => {
     } catch (err) {
       console.error("Student Profile Error:",err);
 
+      const errorMessage =
+        err.response?.data?.message ||
+        "Unable to save student profile.";
+
+      setError(errorMessage);
+      alert(errorMessage);
+
       setError(
         err.response?.data?.message ||
           "Unable to save student profile."
@@ -265,20 +289,17 @@ const StudentProfile = () => {
   // Loading
   if (fetching) {
     return (
-      <StudentLayout>
         <div className="profile-page">
           <div className="profile-header">
             <h1>Student Profile</h1>
             <p>Loading your profile...</p>
           </div>
         </div>
-      </StudentLayout>
     );
   }
 
   // UI
   return (
-    <StudentLayout>
       <div className="profile-page">
         <div className="profile-header">
           <h1>Student Profile</h1>
@@ -332,6 +353,7 @@ const StudentProfile = () => {
                   name="dob"
                   value={formData.dob}
                   onChange={handleChange}
+                  required
                 />
               </div>
 
@@ -355,7 +377,6 @@ const StudentProfile = () => {
                   />
               </div>
               
-
               <input type="text" name="state"
                 placeholder="State"
                 value={formData.state}
@@ -367,6 +388,7 @@ const StudentProfile = () => {
                 placeholder="Pincode"
                 value={formData.pincode}
                 onChange={handleChange}
+                required
               />
 
               <textarea rows="4" name="address"
@@ -460,6 +482,7 @@ const StudentProfile = () => {
                 placeholder="Teacher ID"
                 value={formData.teacherId}
                 onChange={handleChange}
+                required
               />
 
               <input type="number" step="0.01" name="cgpa"
@@ -467,6 +490,7 @@ const StudentProfile = () => {
                 min="0" max="10"
                 value={formData.cgpa}
                 onChange={handleChange}
+                required
               />
 
             </div>
@@ -486,7 +510,6 @@ const StudentProfile = () => {
           </div>
         </form>
       </div>
-    </StudentLayout>
   );
 };
 

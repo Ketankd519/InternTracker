@@ -1,12 +1,13 @@
+import { Outlet } from "react-router-dom";
 import StudentSidebar from "../components/StudentSidebar";
-import "../pages/Student/StudentStyle.css";
 
-export default function StudentLayout({ children }) {
+export default function StudentLayout() {
   return (
     <div className="student-layout">
       <StudentSidebar />
+
       <div className="student-content">
-        {children}
+        <Outlet />
       </div>
     </div>
   );

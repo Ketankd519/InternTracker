@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import StudentLayout from "../../layouts/StudentLayout";
 import API from "../../services/api";
 import "./StudentStyle.css";
 
 export default function WeeklyReport() {
+const today = new Date().toISOString().split("T")[0];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
   // Form Data
   const [formData, setFormData] = useState({
@@ -104,18 +105,74 @@ export default function WeeklyReport() {
 
     const weekNumber = Number(formData.weekNumber);
 
+    // Validate submission date
+    if (!formData.submissionDate) {
+      const msg = "Please select a submission date.";
+
+      setError(msg);
+      alert(msg);
+      return;
+    }
+
+    if (formData.submissionDate < today) {
+      const msg =
+        "Submission date cannot be before today.";
+
+      setError(msg);
+      alert(msg);
+      return;
+    }
+
     // Validate week number against internship total weeks
     if (totalWeeks && weekNumber > totalWeeks) {
-      setError(
-        `Invalid week number. Your internship is for ${totalWeeks} weeks. You cannot submit a report for Week ${weekNumber}.`
-      );
+      const msg = `Invalid week number. Your internship is for ${totalWeeks} weeks. You cannot submit a report for Week ${weekNumber}.`;
+
+      setError(msg);
+      alert(msg);
+
       return;
     }
 
     // Validate minimum week number
     if (weekNumber < 1) {
-      setError("Week number must be at least 1.");
+      const msg = "Week number must be at least 1.";
+
+      setError(msg);
+      alert(msg);
+
       return;
+    }
+
+    const countWords = (text) => {
+      return text.trim()
+        ? text.trim().split(/\s+/).length
+        : 0;
+    };
+
+    // Validate description word limit
+    const descriptionWordCount = countWords(
+      formData.description
+    );
+
+    if (descriptionWordCount > 200) {
+      const msg =
+        "Description cannot exceed 200 words.";
+
+      setError(msg);
+      alert(msg);
+      return;
+    }
+
+    // Validate attachment size
+    if (formData.attachment) {
+      if (formData.attachment.size > MAX_FILE_SIZE) {
+        const msg =
+          "Attachment size cannot exceed 5 MB.";
+
+        setError(msg);
+        alert(msg);
+        return;
+      }
     }
 
     setLoading(true);
@@ -143,10 +200,12 @@ export default function WeeklyReport() {
         response.data
       );
 
-      setMessage(
+      const successMessage =
         response.data.message ||
-          "Weekly report submitted successfully."
-      );
+        "Weekly report submitted successfully.";
+
+      setMessage(successMessage);
+      alert(successMessage);
 
       // Reset Form
       setFormData({
@@ -174,6 +233,7 @@ export default function WeeklyReport() {
         "Unable to submit weekly report. Please try again.";
 
       setError(errorMessage);
+      alert(errorMessage);
 
     } finally {
       setLoading(false);
@@ -225,7 +285,6 @@ export default function WeeklyReport() {
   };
 
   return (
-    <StudentLayout>
       <div className="profile-page">
 
             {/* Header */}
@@ -284,6 +343,7 @@ export default function WeeklyReport() {
                   name="submissionDate"
                   value={formData.submissionDate}
                   onChange={handleChange}
+                  min={today}
                   required
                 />
               </div>
@@ -301,7 +361,7 @@ export default function WeeklyReport() {
 
               {/* Description */}
               <textarea rows="6" name="description"
-                placeholder="Describe the work completed this week..."
+                placeholder="Describe the work completed this week... (Maximum 200 words)"
                 value={formData.description}
                 onChange={handleChange}
                 required
@@ -309,11 +369,14 @@ export default function WeeklyReport() {
 
               {/* Attachment */}
               <div className="file-upload">
-                <label> Attachment (Optional)</label>
+                <label> Attachment </label>
                 <input type="file" name="attachment"
                   accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
                   onChange={handleChange}
                 />
+                <small>
+                  Maximum file size: 5 MB
+                </small>
               </div>
             </div>
           </div>
@@ -427,6 +490,5 @@ export default function WeeklyReport() {
           )}
         </div>
       </div>
-    </StudentLayout>
   );
 }

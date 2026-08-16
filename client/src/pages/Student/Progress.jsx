@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import StudentLayout from "../../layouts/StudentLayout";
 import API from "../../services/api";
 import "./StudentStyle.css";
 
@@ -132,7 +131,6 @@ export default function Progress() {
   // Loading Screen
   if (loading) {
     return (
-      <StudentLayout>
         <div className="dashboard-page">
           <div className="dashboard-header">
             <div>
@@ -141,13 +139,11 @@ export default function Progress() {
             </div>
           </div>
         </div>
-      </StudentLayout>
     );
   }
 
   // Progress Page
   return (
-    <StudentLayout>
       <div className="dashboard-page">
 
             {/* Header */}
@@ -247,9 +243,9 @@ export default function Progress() {
               completion === 100
                 ? "success"
                 : completion >= 50
-                ? "warning"
+                ? "info"
                 : completion > 0
-                ? "danger"
+                ? "warning"
                 : "danger"
             }`}
           >
@@ -257,6 +253,5 @@ export default function Progress() {
           </div>
         </div>
       </div>
-    </StudentLayout>
   );
 }

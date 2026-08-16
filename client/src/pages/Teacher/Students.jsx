@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../pages/Teacher/TeacherStyle.css";
+import "./TeacherStyle.css";
 import api from "../../services/api";
 
 export default function TeacherStudents() {

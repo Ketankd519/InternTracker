@@ -1,6 +1,5 @@
 import { Outlet } from "react-router-dom";
 import TeacherSidebar from "../components/TeacherSidebar";
-import "../pages/Teacher/TeacherStyle.css";
 
 export default function TeacherLayout() {
   return (

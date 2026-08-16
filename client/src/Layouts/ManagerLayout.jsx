@@ -1,6 +1,5 @@
 import { Outlet } from "react-router-dom";
 import ManagerSidebar from "../components/ManagerSidebar";
-import "../pages/Manager/ManagerStyle.css";
 
 export default function ManagerLayout() {
   return (

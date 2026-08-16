@@ -24,7 +24,7 @@ export default function StudentSidebar() {
     },
     {
       name: "Certificate",
-      path: "/student/certificate",
+      path: "/certificate/certificate",
     },
   ];
 

@@ -18,36 +18,65 @@ export default function Navbar() {
       </div>
 
       <nav className="nav-bar">
+
+        {/* Home */}
         <Link to="/">
           <button>Home</button>
         </Link>
 
+
+        {/* Student */}
         {user?.role === 'student' && (
+          <>
           <Link to="/student/dashboard">
             <button>Student</button>
           </Link>
+
+          <Link to="/student/certificate-status">
+            <button>Certificate Status</button>
+          </Link>
+          </>
         )}
 
+
+        {/* Teacher */}
         {user?.role === 'teacher' && (
-          <Link to="/teacher/dashboard">
-            <button>Teacher</button>
-          </Link>
+          <>
+            <Link to="/teacher/dashboard">
+              <button>Teacher</button>
+            </Link>
+
+            <Link to="/teacher/student-certificates">
+              <button>Student Certificates</button>
+            </Link>
+          </>
         )}
 
+
+        {/* Manager */}
         {user?.role === 'manager' && (
-          <Link to="/manager/dashboard">
-            <button>Manager</button>
-          </Link>
+          <>
+            <Link to="/manager/dashboard">
+              <button>Manager</button>
+            </Link>
+
+            <Link to="/manager/student-certificates">
+              <button>Student Certificates</button>
+            </Link>
+          </>
         )}
 
-        {user && (
-          <Link to="/certificate">
-            <button>Certificate</button>
-          </Link>
-        )}
+        {/* ================================
+            Teacher / Manager certificate
+            buttons will be added later
+        ================================= */}
 
+        {/* Logout */}
         {user ? (
-          <button className="btn-logout" onClick={handleLogout}>
+          <button
+            className="btn-logout"
+            onClick={handleLogout}
+          >
             Logout ({user.name})
           </button>
         ) : (
@@ -61,6 +90,7 @@ export default function Navbar() {
             </Link>
           </>
         )}
+
       </nav>
     </header>
   );

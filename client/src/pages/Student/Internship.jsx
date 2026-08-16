@@ -1,9 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
-import StudentLayout from "../../layouts/StudentLayout";
+import {useCallback, useEffect, useState,} from "react";
 import API from "../../services/api";
 import "./StudentStyle.css";
 
@@ -210,23 +205,27 @@ export default function Internship() {
 
       // Make sure Student Profile is completed
       if (!profileCompleted) {
-        setError(
-          "Please complete your Student Profile before submitting an internship."
-        );
+        const msg =
+          "Please complete your Student Profile before submitting an internship.";
+
+        setError(msg);
+        alert(msg);
 
         setLoading(false);
         return;
       }
 
       // Make sure Department exists
-      if (!formData.department) {
-        setError(
-          "Department not found. Please complete your Student Profile first."
-        );
+    if (!formData.department) {
+      const msg =
+        "Department not found. Please complete your Student Profile first.";
 
-        setLoading(false);
-        return;
-      }
+      setError(msg);
+      alert(msg);
+
+      setLoading(false);
+      return;
+    }
 
       // Data sent to Internship backend
       const data = {
@@ -248,21 +247,28 @@ export default function Internship() {
 
       // CREATE INTERNSHIP
       if (!internshipExists) {
-        response = await API.post("/internships",data);
+        response = await API.post("/internships", data);
 
-        setMessage(response.data.message ||
-          "Internship application submitted successfully."
-        );
+        const msg =
+          response.data.message ||
+          "Internship application submitted successfully.";
+
+        setMessage(msg);
+        alert(msg);
+
         setInternshipExists(true);
       }
 
       // UPDATE INTERNSHIP
       else {
-        response = await API.put("/internships",data);
+        response = await API.put("/internships", data);
 
-        setMessage(response.data.message ||
-            "Internship details updated successfully."
-        );
+        const msg =
+          response.data.message ||
+          "Internship details updated successfully.";
+
+        setMessage(msg);
+        alert(msg);
       }
 
       console.log("Internship Save/Update Response:",
@@ -276,10 +282,13 @@ export default function Internship() {
         err
       );
 
-      setError(
+      const msg =
         err.response?.data?.message ||
-          "Unable to save internship details."
-      );
+        "Unable to save internship details.";
+
+      setError(msg);
+      alert(msg);
+
     } finally {
       setLoading(false);
     }
@@ -288,20 +297,17 @@ export default function Internship() {
   // Loading Screen
   if (fetching) {
     return (
-      <StudentLayout>
         <div className="profile-page">
           <div className="profile-header">
             <h1>Internship</h1>
             <p>Loading internship details...</p>
           </div>
         </div>
-      </StudentLayout>
     );
   }
 
   // Internship Page
   return (
-    <StudentLayout>
       <div className="profile-page">
 
             {/* Header */}
@@ -467,6 +473,5 @@ export default function Internship() {
           </div>
         </form>
       </div>
-    </StudentLayout>
   );
 }

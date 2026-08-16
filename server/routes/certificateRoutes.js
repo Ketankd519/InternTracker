@@ -1,49 +1,76 @@
-const express = require('express');
+const express = require("express");
+
 const router = express.Router();
 
 const {
-  managerApprove,
-  teacherApprove,
-  generateCertificate,
-  getCertificateStatus,
-} = require('../controllers/certificateController');
+  getMyCertificateStatus,
+  getStudentCertificate,
+  getCertificateStudentList,
+  approveCertificateByTeacher,
+  approveCertificateByManager,
+} = require("../controllers/certificateController");
 
-const { protect } = require('../middleware/authMiddleware');
-const { authorize } = require('../middleware/roleMiddleware');
+const { protect } = require("../middleware/authMiddleware");
+const { authorize } = require("../middleware/roleMiddleware");
 
-/**
- * @route   /api/certificates
- */
+// ======================================================
+// STUDENT
+// Get own certificate status
+// ======================================================
 
-// Manager approves certificate
-router.put('/:studentId/manager-approve',protect,
-  authorize('manager', 'admin'),
-  managerApprove
+router.get(
+  "/status",
+  protect,
+  authorize("student"),
+  getMyCertificateStatus
 );
 
-// Teacher approves certificate
-router.put('/:studentId/teacher-approve',protect,
-  authorize('teacher', 'admin'),
-  teacherApprove
+// ======================================================
+// TEACHER / MANAGER
+// Get certificate student list
+// ======================================================
+
+router.get(
+  "/students",
+  protect,
+  authorize("teacher", "manager"),
+  getCertificateStudentList
 );
 
-// Generate certificate (only after both approvals)
-router.post('/:studentId/generate',protect,
-  authorize('teacher', 'manager', 'admin'),
-  generateCertificate
+// ======================================================
+// TEACHER / MANAGER
+// Get particular student's certificate
+// ======================================================
+
+router.get(
+  "/student/:studentId",
+  protect,
+  authorize("teacher", "manager"),
+  getStudentCertificate
 );
 
-// Get certificate status
-// Student can use /me
-router.get('/me',protect,
-  authorize('student'),
-  getCertificateStatus
+// ======================================================
+// TEACHER
+// Approve certificate
+// ======================================================
+
+router.put(
+  "/:studentId/teacher-approve",
+  protect,
+  authorize("teacher"),
+  approveCertificateByTeacher
 );
 
-// Teacher / Manager / Admin can view any student's certificate
-router.get('/:studentId',protect,
-  authorize('teacher', 'manager', 'admin'),
-  getCertificateStatus
+// ======================================================
+// MANAGER
+// Approve certificate
+// ======================================================
+
+router.put(
+  "/:studentId/manager-approve",
+  protect,
+  authorize("manager"),
+  approveCertificateByManager
 );
 
 module.exports = router;
