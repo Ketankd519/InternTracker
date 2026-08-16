@@ -5,22 +5,27 @@ export default function StudentSidebar() {
     {
       name: "Dashboard",
       path: "/student/dashboard",
+      icon: "🏠",
     },
     {
       name: "Profile",
       path: "/student/profile",
+      icon: "👤",
     },
     {
       name: "Internship",
       path: "/student/internship",
+      icon: "📝",
     },
     {
       name: "Weekly Report",
       path: "/student/weekly-report",
+      icon: "📄",
     },
     {
       name: "Progress",
       path: "/student/progress",
+      icon: "📊",
     },
     {
       name: "Certificate",

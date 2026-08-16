@@ -9,6 +9,11 @@ export default function ManagerSidebar() {
       icon: "📊",
     },
     {
+      name: "Profile",
+      path: "/manager/profile",
+      icon: "👤",
+    },
+    {
       name: "Approvals",
       path: "/manager/approvals",
       icon: "📋",

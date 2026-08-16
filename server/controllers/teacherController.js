@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Student = require("../models/Student");
 const Internship = require("../models/Internship");
 const WeeklyReport = require("../models/WeeklyReport");
+const Teacher = require("../models/Teacher");
 
 // TEACHER DASHBOARD
 // GET /api/teacher/dashboard
@@ -298,9 +299,263 @@ const verifyStudentByTeacher = async (req, res) => {
   }
 };
 
+// GET TEACHER PROFILE
+// GET /api/teacher/profile
+const getTeacherProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+      .select("name email role")
+      .lean();
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Teacher account not found",
+      });
+    }
+
+    const teacher = await Teacher.findOne({
+      user: req.user._id,
+    }).lean();
+
+    res.status(200).json({
+      success: true,
+      profileExists: !!teacher,
+      user,
+      teacher: teacher || null,
+    });
+  } catch (error) {
+    console.error("Get Teacher Profile Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch teacher profile",
+      error: error.message,
+    });
+  }
+};
+
+
+// CREATE TEACHER PROFILE
+// POST /api/teacher/profile
+const createTeacherProfile = async (req, res) => {
+  try {
+    const {
+      course,
+      department,
+      mobileNo,
+      experience,
+      collegeName,
+    } = req.body;
+
+    // Required validation
+    if (!course || !course.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Course is required",
+      });
+    }
+
+    if (!department || !department.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Department is required",
+      });
+    }
+
+    if (!collegeName || !collegeName.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "College name is required",
+      });
+    }
+
+    // Check existing profile
+    const existingTeacher = await Teacher.findOne({
+      user: req.user._id,
+    });
+
+    if (existingTeacher) {
+      return res.status(400).json({
+        success: false,
+        message: "Teacher profile already exists",
+      });
+    }
+
+    // Current year
+    const currentYear = new Date()
+      .getFullYear()
+      .toString()
+      .slice(-2);
+
+    // Course first 2 characters
+    const courseCode = course
+      .trim()
+      .replace(/[^a-zA-Z]/g, "")
+      .substring(0, 2)
+      .toUpperCase();
+
+    // Department first 2 characters
+    const departmentCode = department
+      .trim()
+      .replace(/[^a-zA-Z]/g, "")
+      .substring(0, 2)
+      .toUpperCase();
+
+    if (courseCode.length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: "Course must contain at least 2 letters",
+      });
+    }
+
+    if (departmentCode.length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: "Department must contain at least 2 letters",
+      });
+    }
+
+    // Find next sequence for current year + course + department
+    const prefix = `${courseCode}${currentYear}`;
+
+    const lastTeacher = await Teacher.findOne({
+      teacherId: {
+        $regex: `^${prefix}\\d{3}${departmentCode}$`,
+      },
+    })
+      .sort({ teacherId: -1 })
+      .lean();
+
+    let sequence = 1;
+
+    if (lastTeacher) {
+      const sequencePart = lastTeacher.teacherId.substring(
+        prefix.length,
+        prefix.length + 3
+      );
+
+      sequence = Number(sequencePart) + 1;
+    }
+
+    const sequenceNumber = String(sequence).padStart(3, "0");
+
+    const teacherId =
+      `${courseCode}${currentYear}${sequenceNumber}${departmentCode}`;
+
+    const teacher = await Teacher.create({
+      user: req.user._id,
+      teacherId,
+      course: course.trim(),
+      department: department.trim(),
+      mobileNo: mobileNo?.trim() || "",
+      experience: experience?.trim() || "",
+      collegeName: collegeName.trim(),
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Teacher profile saved successfully.",
+      teacher,
+    });
+  } catch (error) {
+    console.error("Create Teacher Profile Error:", error);
+
+    // Handles duplicate generated ID safely
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Teacher ID already exists. Please try saving the profile again.",
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to save teacher profile",
+      error: error.message,
+    });
+  }
+};
+
+
+// UPDATE TEACHER PROFILE
+// PUT /api/teacher/profile
+const updateTeacherProfile = async (req, res) => {
+  try {
+    const {
+      course,
+      department,
+      mobileNo,
+      experience,
+      collegeName,
+    } = req.body;
+
+    const teacher = await Teacher.findOne({
+      user: req.user._id,
+    });
+
+    if (!teacher) {
+      return res.status(404).json({
+        success: false,
+        message: "Teacher profile not found",
+      });
+    }
+
+    if (!course || !course.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Course is required",
+      });
+    }
+
+    if (!department || !department.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Department is required",
+      });
+    }
+
+    if (!collegeName || !collegeName.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "College name is required",
+      });
+    }
+
+    // IMPORTANT:
+    // teacherId is NOT updated here.
+    teacher.course = course.trim();
+    teacher.department = department.trim();
+    teacher.mobileNo = mobileNo?.trim() || "";
+    teacher.experience = experience?.trim() || "";
+    teacher.collegeName = collegeName.trim();
+
+    await teacher.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Teacher profile updated successfully.",
+      teacher,
+    });
+  } catch (error) {
+    console.error("Update Teacher Profile Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to update teacher profile",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getTeacherDashboard,
   getTeacherStudents,
   getTeacherStudentDetails,
   verifyStudentByTeacher,
+
+  getTeacherProfile,
+  createTeacherProfile,
+  updateTeacherProfile,
 };

@@ -13,7 +13,6 @@ const menuItems = [
       name: "Profile",
       path: "/teacher/profile",
       icon: "👤",
-      disabled: true,
     },
     {
       name: "view Students",

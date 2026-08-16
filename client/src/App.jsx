@@ -26,6 +26,7 @@ import TeacherStudents from "./pages/Teacher/Students";
 import ViewStudent from "./pages/Teacher/ViewStudent";
 import StdCertificateList from "./pages/Teacher/stdCertificateList";
 import TCCertificate from "./pages/Certificate/TCCertificate";
+import TeacherProfile from "./pages/Teacher/profile";
 
 import ManagerLayout from "./Layouts/ManagerLayout";
 import ManagerDashboard from './pages/Manager/Dashboard';
@@ -34,6 +35,7 @@ import ManagerViewStudent from "./pages/Manager/ViewStudent";
 import ManagerEvaluation from "./pages/Manager/Evaluation";
 import ManagerCertificateList from "./pages/Manager/stdCertificateList";
 import MCCertificate from "./pages/Certificate/MCCertificate";
+import ManagerProfile from "./pages/Manager/profile";
 
 import './App.css';
 
@@ -100,6 +102,11 @@ function App() {
   />
 
   <Route
+    path="/teacher/profile"
+    element={<TeacherProfile />}
+  />
+
+  <Route
     path="students"
     element={<TeacherStudents />}
   />
@@ -129,6 +136,11 @@ function App() {
   <Route
     path="dashboard"
     element={<ManagerDashboard />}
+  />
+
+  <Route
+    path="/manager/profile"
+    element={<ManagerProfile />}
   />
 
   <Route

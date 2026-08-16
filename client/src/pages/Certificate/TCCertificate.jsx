@@ -113,39 +113,68 @@ const managerApproved = certificateData.certificate?.managerApproved === true;
 const progress = Number(certificateData.progress?.percentage) || 0;
 const internshipStatus = certificateData.internship?.status || "";
 
-  let teacherStatus = "Not Eligible";
-  let managerStatus = "Not Eligible";
+let teacherStatus = "Not Eligible";
+let managerStatus = "Not Eligible";
 
-  if (teacherVerified && managerVerified){
+/*
+  STEP 1:
+  Teacher and Manager verification
+
+  ❌ ❌ -> Not Eligible / Not Eligible
+  ✅ ❌ -> Eligible / Not Eligible
+  ❌ ✅ -> Not Eligible / Eligible
+  ✅ ✅ -> Progress-based status
+*/
+
+if (!teacherVerified && !managerVerified) {
+
+  teacherStatus = "Not Eligible";
+  managerStatus = "Not Eligible";
+
+} else if (teacherVerified && !managerVerified) {
+
+  teacherStatus = "Eligible";
+  managerStatus = "Not Eligible";
+
+} else if (!teacherVerified && managerVerified) {
+
+  teacherStatus = "Not Eligible";
+  managerStatus = "Eligible";
+
+} else if (teacherVerified && managerVerified) {
+
+  /*
+    STEP 2:
+    Both Teacher and Manager verified.
+
+    0% - 50%  -> Processing
+    51% - 99%  -> Ongoing
+    100%       -> Waiting for Approval
+  */
+
+  if (progress === 100) {
+
+    teacherStatus = "Waiting for Approval";
+    managerStatus = "Waiting for Approval";
+
+  } else if (progress > 50) {
+
+    teacherStatus = "Ongoing";
+    managerStatus = "Ongoing";
+
+  } else {
+
     teacherStatus = "Processing";
     managerStatus = "Processing";
-  } else {
-    teacherStatus = teacherVerified
-      ? "Eligible"
-      : "Not Eligible";
-
-    managerStatus = managerVerified
-      ? "Eligible"
-      : "Not Eligible";
   }
+}
 
-  const isCompleted = progress === 100 || internshipStatus.toLowerCase() === "completed";
-
-  if (!teacherApproved) {
-    if (isCompleted) {
-      teacherStatus = "Waiting for Approval";
-    } else if (progress <= 50) {
-      teacherStatus = "Ongoing";
-    }
-  }
-
-    if (!managerApproved) {
-    if (isCompleted) {
-      managerStatus = "Waiting for Approval";
-    } else if (progress <= 50) {
-      managerStatus = "Ongoing";
-    }
-  }
+  /*
+    Final certificate approval
+    certificates.teacherApproved === true
+    certificates.managerApproved === true
+    => Approved / Approved
+  */
 
   if (teacherApproved) {
     teacherStatus = "Approved";
@@ -266,18 +295,21 @@ const internshipStatus = certificateData.internship?.status || "";
             <tr>
               <td>
                 <strong>{teacherName}</strong>
+                <br></br>
                 <div
                   className={`certificate-status-badge ${getStatusClass(
                     teacherStatus
                   )}`}
                 >
                   {teacherStatus}
+                  
                 </div>
 
               </td>
               {/* MANAGER */}
               <td>
                 <strong>{managerName}</strong>
+                <br></br>
                 <div
                   className={`certificate-status-badge ${getStatusClass(
                     managerStatus

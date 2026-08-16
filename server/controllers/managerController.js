@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Student = require("../models/Student");
 const Internship = require("../models/Internship");
 const WeeklyReport = require("../models/WeeklyReport");
+const Manager = require("../models/Manager");
 
 // MANAGER DASHBOARD
 // GET /api/manager/dashboard
@@ -489,6 +490,206 @@ const rejectWeeklyReport = async (req,res) => {
   }
 };
 
+// GET MANAGER PROFILE
+// GET /api/manager/profile
+const getManagerProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+      .select("name email role")
+      .lean();
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Manager account not found",
+      });
+    }
+
+    const manager = await Manager.findOne({
+      user: req.user._id,
+    }).lean();
+
+    res.status(200).json({
+      success: true,
+      profileExists: !!manager,
+      user,
+      manager: manager || null,
+    });
+  } catch (error) {
+    console.error("Get Manager Profile Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch manager profile",
+      error: error.message,
+    });
+  }
+};
+
+
+// CREATE MANAGER PROFILE
+// POST /api/manager/profile
+const createManagerProfile = async (req, res) => {
+  try {
+    const {
+      mobileNo,
+      experience,
+      companyName,
+    } = req.body;
+
+    if (!companyName || !companyName.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Company name is required",
+      });
+    }
+
+    const existingManager = await Manager.findOne({
+      user: req.user._id,
+    });
+
+    if (existingManager) {
+      return res.status(400).json({
+        success: false,
+        message: "Manager profile already exists",
+      });
+    }
+
+    const currentYear = new Date()
+      .getFullYear()
+      .toString()
+      .slice(-2);
+
+    // First alphabet of company
+    const companyCode = companyName
+      .trim()
+      .replace(/[^a-zA-Z]/g, "")
+      .substring(0, 1)
+      .toUpperCase();
+
+    if (!companyCode) {
+      return res.status(400).json({
+        success: false,
+        message: "Company name must contain at least one letter",
+      });
+    }
+
+    const prefix = `M${currentYear}`;
+
+    const lastManager = await Manager.findOne({
+      managerId: {
+        $regex: `^${prefix}\\d{3}${companyCode}$`,
+      },
+    })
+      .sort({ managerId: -1 })
+      .lean();
+
+    let sequence = 1;
+
+    if (lastManager) {
+      const sequencePart = lastManager.managerId.substring(
+        prefix.length,
+        prefix.length + 3
+      );
+
+      sequence = Number(sequencePart) + 1;
+    }
+
+    const sequenceNumber = String(sequence).padStart(3, "0");
+
+    const managerId =
+      `M${currentYear}${sequenceNumber}${companyCode}`;
+
+    const manager = await Manager.create({
+      user: req.user._id,
+      managerId,
+      mobileNo: mobileNo?.trim() || "",
+      experience:
+        experience !== undefined && experience !== null
+          ? String(experience).trim()
+          : "",
+      companyName: companyName.trim(),
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Manager profile saved successfully.",
+      manager,
+    });
+  } catch (error) {
+    console.error("Create Manager Profile Error:", error);
+
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Manager ID already exists. Please try saving the profile again.",
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to save manager profile",
+      error: error.message,
+    });
+  }
+};
+
+
+// UPDATE MANAGER PROFILE
+// PUT /api/manager/profile
+const updateManagerProfile = async (req, res) => {
+  try {
+    const {
+      mobileNo,
+      experience,
+      companyName,
+    } = req.body;
+
+    const manager = await Manager.findOne({
+      user: req.user._id,
+    });
+
+    if (!manager) {
+      return res.status(404).json({
+        success: false,
+        message: "Manager profile not found",
+      });
+    }
+
+    if (!companyName || !companyName.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Company name is required",
+      });
+    }
+
+    // managerId is intentionally NOT changed.
+    manager.mobileNo = mobileNo?.trim() || "";
+    manager.experience =
+      experience !== undefined && experience !== null
+        ? String(experience).trim()
+        : "";
+    manager.companyName = companyName.trim();
+
+    await manager.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Manager profile updated successfully.",
+      manager,
+    });
+  } catch (error) {
+    console.error("Update Manager Profile Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to update manager profile",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getManagerDashboard,
   getManagerStudents,
@@ -497,4 +698,8 @@ module.exports = {
   getManagerEvaluationReports,
   approveWeeklyReport,
   rejectWeeklyReport,
+
+  getManagerProfile,
+  createManagerProfile,
+  updateManagerProfile,
 };

@@ -10,11 +10,36 @@ const {
   getManagerEvaluationReports,
   approveWeeklyReport,
   rejectWeeklyReport,
+  getManagerProfile,
+  createManagerProfile,
+  updateManagerProfile,
 } = require("../controllers/managerController");
 
 // Middleware
 const { protect } = require("../middleware/authMiddleware");
 const { authorize } = require("../middleware/roleMiddleware");
+
+// MANAGER PROFILE
+router.get(
+  "/profile",
+  protect,
+  authorize("manager"),
+  getManagerProfile
+);
+
+router.post(
+  "/profile",
+  protect,
+  authorize("manager"),
+  createManagerProfile
+);
+
+router.put(
+  "/profile",
+  protect,
+  authorize("manager"),
+  updateManagerProfile
+);
 
 // DASHBOARD
 router.get("/dashboard",protect,authorize("manager"),getManagerDashboard);

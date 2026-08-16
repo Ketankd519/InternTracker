@@ -6,6 +6,9 @@ const {
   getTeacherStudents,
   getTeacherStudentDetails,
   verifyStudentByTeacher,
+  getTeacherProfile,
+  createTeacherProfile,
+  updateTeacherProfile,
 } = require("../controllers/teacherController");
 
 // Authentication middleware
@@ -13,6 +16,28 @@ const { protect } = require("../middleware/authMiddleware");
 
 // Role-based access middleware
 const { authorize } = require("../middleware/roleMiddleware");
+
+// TEACHER PROFILE
+router.get(
+  "/profile",
+  protect,
+  authorize("teacher"),
+  getTeacherProfile
+);
+
+router.post(
+  "/profile",
+  protect,
+  authorize("teacher"),
+  createTeacherProfile
+);
+
+router.put(
+  "/profile",
+  protect,
+  authorize("teacher"),
+  updateTeacherProfile
+);
 
 // TEACHER DASHBOARD
 // GET /api/teacher/dashboard

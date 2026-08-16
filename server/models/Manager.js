@@ -1,0 +1,42 @@
+const mongoose = require("mongoose");
+
+const managerSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      unique: true,
+    },
+
+    managerId: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+
+    mobileNo: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    experience: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    companyName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+module.exports = mongoose.model("Manager", managerSchema);

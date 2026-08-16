@@ -1,0 +1,528 @@
+import { useEffect, useState } from "react";
+import API from "../../services/api";
+import "./ManagerStyle.css";
+
+export default function ManagerProfile() {
+
+    // FORM DATA
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    managerId: "",
+    mobileNo: "",
+    experience: "",
+    companyName: "",
+  });
+
+  // PROFILE STATE
+  const [profileSaved, setProfileSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  // FETCH MANAGER PROFILE
+  useEffect(() => {
+    fetchManagerProfile();
+  }, []);
+
+  const fetchManagerProfile = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      setMessage("");
+
+      const response = await API.get("/manager/profile");
+      console.log("MANAGER PROFILE RESPONSE:", response.data);
+      const data = response.data;
+
+      // USER COLLECTION DATA
+      const user = data.user || {};
+
+      // MANAGER COLLECTION DATA
+      const manager = data.manager || {};
+
+      // SET FORM DATA
+      setFormData({
+        name: user.name || "",
+        email: user.email || "",
+        managerId: manager.managerId || "",
+        mobileNo: manager.mobileNo || "",
+        experience:manager.experience !== undefined && manager.experience !== null
+            ? manager.experience : "",
+        companyName: manager.companyName || "",
+      });
+
+      // CHECK PROFILE EXISTS
+      if (data.profileExists && manager.managerId
+      ) {
+        setProfileSaved(true);
+      } else {
+        setProfileSaved(false);
+      }
+
+    } catch (err) {
+      console.error("Manager Profile Fetch Error:", err);
+      console.error( "Backend Response:", err.response?.data);
+
+      setError(
+        err.response?.data?.message ||
+          "Unable to load manager profile."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // HANDLE INPUT CHANGE
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+
+    setMessage("");
+    setError("");
+  };
+
+  // VALIDATION
+  const validateForm = () => {
+
+    // COMPANY NAME
+    if (!formData.companyName.trim()) {
+      setError("Company Name is required.");
+      return false;
+    }
+
+    // MOBILE NUMBER
+    if (formData.mobileNo.trim()) {
+      const mobileRegex = /^[0-9]{10}$/;
+
+      if (!mobileRegex.test(formData.mobileNo.trim())
+      ) {
+        setError("Mobile number must contain exactly 10 digits.");
+        return false;
+      }
+    }
+
+    // EXPERIENCE
+    if (formData.experience !== "") {
+      const experienceNumber = Number(
+        formData.experience
+      );
+
+      if (Number.isNaN(experienceNumber) || experienceNumber < 0
+      ) {
+        setError(
+          "Experience must be a valid number."
+        );
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // SAVE / UPDATE PROFILE
+  const handleSubmit = async () => {
+    try {
+      setSaving(true);
+      setMessage("");
+      setError("");
+
+      // VALIDATION
+      if (!validateForm()) {
+        setSaving(false);
+        return;
+      }
+
+      // REQUEST DATA
+      const requestData = {
+        mobileNo:formData.mobileNo.trim(),
+        experience:formData.experience === ""
+            ? "" : String(formData.experience).trim(),
+        companyName:formData.companyName.trim(),
+      };
+
+      let response;
+
+      // FIRST SAVE
+      // POST /api/manager/profile
+      if (!profileSaved) {
+        console.log("Creating new manager profile...");
+        response = await API.post("/manager/profile", requestData);
+      }
+
+      // UPDATE
+      // PUT /api/manager/profile
+      else {
+        console.log("Updating existing manager profile...");
+        response = await API.put("/manager/profile", requestData);
+      }
+      console.log("MANAGER PROFILE SAVE RESPONSE:", response.data);
+      const data = response.data;
+
+      // MANAGER DATA RETURNED FROM BACKEND
+      const manager = data.manager || {};
+
+      // USER DATA
+      const user = data.user || {};
+
+      // UPDATE FORM WITH SERVER DATA
+      setFormData((previous) => ({
+        ...previous,
+
+        name:user.name || previous.name,
+        email: user.email || previous.email,
+        managerId: manager.managerId || previous.managerId,
+        mobileNo: manager.mobileNo !== undefined && manager.mobileNo !== null
+            ? manager.mobileNo : "",
+        experience: manager.experience !== undefined && manager.experience !== null
+            ? manager.experience : "",
+        companyName: manager.companyName || previous.companyName,
+      }));
+
+      // PROFILE NOW EXISTS
+      setProfileSaved(true);
+
+      alert(
+        data.message ||
+          (
+            profileSaved
+              ? "Manager profile updated successfully."
+              : "Manager profile saved successfully."
+          )
+      );
+
+      // SUCCESS MESSAGE
+      setMessage(
+        data.message ||
+          (
+            profileSaved
+              ? "Manager profile updated successfully."
+              : "Manager profile saved successfully."
+          )
+      );
+
+    } catch (err) {
+      console.error("Manager Profile Save Error:", err);
+      console.error("Backend Response:", err.response?.data);
+
+      alert(
+        err.response?.data?.message ||
+          "Unable to save manager profile."
+      )
+      setError(
+        err.response?.data?.message ||
+          "Unable to save manager profile."
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // =========================================================
+  // LOADING
+  // =========================================================
+
+  if (loading) {
+    return (
+      <div className="manager-profile-page">
+
+        <div className="profile-page-header">
+
+          <h1>Manager Profile</h1>
+
+          <p>
+            Manage your manager profile information.
+          </p>
+
+        </div>
+
+        <div className="manager-profile-container">
+
+          <p>
+            Loading manager profile...
+          </p>
+
+        </div>
+
+      </div>
+    );
+  }
+
+  // =========================================================
+  // PAGE
+  // =========================================================
+
+  return (
+    <div className="manager-profile-page">
+
+      {/* =====================================================
+          PAGE HEADER
+      ====================================================== */}
+
+      <div className="profile-page-header">
+
+        <h1>Manager Profile</h1>
+
+        <p>
+          Manage your manager profile information.
+        </p>
+
+      </div>
+
+
+      {/* =====================================================
+          MAIN PROFILE CONTAINER
+      ====================================================== */}
+
+      <div className="manager-profile-container">
+
+
+        {/* ===================================================
+            BASIC INFORMATION
+        ==================================================== */}
+
+        <div className="manager-profile-section">
+
+          <h2>Basic Information</h2>
+
+          <div className="manager-profile-form-grid">
+
+
+            {/* =================================================
+                MANAGER NAME
+            ================================================== */}
+
+            <div className="manager-profile-form-group">
+
+              <label>
+                Manager Name
+              </label>
+
+              <input
+                type="text"
+                value={formData.name}
+                readOnly
+              />
+
+            </div>
+
+
+            {/* =================================================
+                MANAGER EMAIL
+            ================================================== */}
+
+            <div className="manager-profile-form-group">
+
+              <label>
+                Manager Email
+              </label>
+
+              <input
+                type="email"
+                value={formData.email}
+                readOnly
+              />
+
+            </div>
+
+
+            {/* =================================================
+                MANAGER ID
+            ================================================== */}
+
+            <div className="manager-profile-form-group">
+
+              <label>
+                Manager ID
+              </label>
+
+              <input
+                type="text"
+                className="manager-profile-id"
+                value={
+                  formData.managerId ||
+                  "Generated after saving"
+                }
+                readOnly
+              />
+
+            </div>
+
+
+            {/* =================================================
+                MOBILE NUMBER
+            ================================================== */}
+
+            <div className="manager-profile-form-group">
+
+              <label>
+                Mobile No
+
+                <span
+                  style={{
+                    fontWeight: "400",
+                    color: "#94a3b8",
+                    marginLeft: "5px",
+                  }}
+                >
+                  (Optional)
+                </span>
+              </label>
+
+              <input
+                type="tel"
+                name="mobileNo"
+                value={formData.mobileNo}
+                onChange={handleChange}
+                placeholder="Enter 10 digit mobile number"
+                maxLength="10"
+                disabled={saving}
+              />
+
+            </div>
+
+
+            {/* =================================================
+                EXPERIENCE
+            ================================================== */}
+
+            <div className="manager-profile-form-group">
+
+              <label>
+                Experience
+
+                <span
+                  style={{
+                    fontWeight: "400",
+                    color: "#94a3b8",
+                    marginLeft: "5px",
+                  }}
+                >
+                  (Optional)
+                </span>
+              </label>
+
+              <input
+                type="number"
+                name="experience"
+                value={formData.experience}
+                onChange={handleChange}
+                placeholder="Experience in years"
+                min="0"
+                step="0.1"
+                disabled={saving}
+              />
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        {/* ===================================================
+            COMPANY INFORMATION
+        ==================================================== */}
+
+        <div className="manager-profile-section">
+
+          <h2>Company Information</h2>
+
+          <div className="manager-profile-form-grid">
+
+
+            {/* =================================================
+                COMPANY NAME
+            ================================================== */}
+
+            <div className="manager-profile-form-group full-width">
+
+              <label>
+                Company Name
+              </label>
+
+              <input
+                type="text"
+                name="companyName"
+                value={formData.companyName}
+                onChange={handleChange}
+                placeholder="Enter company name"
+                disabled={saving}
+              />
+
+            </div>
+
+
+          </div>
+
+        </div>
+
+
+        {/* ===================================================
+            SUCCESS MESSAGE
+        ==================================================== */}
+
+        {message && (
+          <div
+            className="manager-profile-message"
+            style={{
+              color: "#166534",
+              background: "#dcfce7",
+              border: "1px solid #86efac",
+            }}
+          >
+            {message}
+          </div>
+        )}
+
+
+        {/* ===================================================
+            ERROR MESSAGE
+        ==================================================== */}
+
+        {error && (
+          <div
+            className="manager-profile-message"
+            style={{
+              color: "#991b1b",
+              background: "#fee2e2",
+              border: "1px solid #fca5a5",
+            }}
+          >
+            {error}
+          </div>
+        )}
+
+
+        {/* ===================================================
+            SAVE / UPDATE BUTTON
+        ==================================================== */}
+
+        <div className="manager-profile-actions">
+
+          <button
+            type="button"
+            className="manager-profile-save-btn"
+            onClick={handleSubmit}
+            disabled={saving}
+          >
+
+            {saving
+              ? "Saving..."
+              : profileSaved
+              ? "Update Profile"
+              : "Save Profile"}
+
+          </button>
+
+        </div>
+
+
+      </div>
+
+    </div>
+  );
+}

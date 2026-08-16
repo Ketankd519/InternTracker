@@ -470,6 +470,60 @@ footer {
   margin: 20px auto;
 }
 
+.teacher-back-button {
+  display: block;
+  margin: 25px auto 0;
+  padding: 10px 22px;
+  background: #475569;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.teacher-back-button:hover {
+  background: #334155;
+  transform: translateY(-2px);
+}
+
+.certificate-refresh-btn {
+  display: inline-block;
+  margin: 15px 8px 0;
+  padding: 10px 22px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.certificate-refresh-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+}
+
+.error-card {
+  text-align: center;
+  border: 1px solid #fecaca;
+  background: #fff7f7;
+}
+
+.error-card h2 {
+  color: #dc2626;
+  margin-bottom: 10px;
+}
+
+.error-card p {
+  color: #64748b;
+  margin-bottom: 10px;
+}
+
 @media(max-width: 800px) {
   .dashboard {
     grid-template-columns: 1fr;
