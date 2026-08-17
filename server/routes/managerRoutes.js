@@ -18,6 +18,7 @@ const {
 // Middleware
 const { protect } = require("../middleware/authMiddleware");
 const { authorize } = require("../middleware/roleMiddleware");
+const { managerSignatureUpload} = require("../middleware/uploadMiddleware");
 
 // MANAGER PROFILE
 router.get(
@@ -31,6 +32,7 @@ router.post(
   "/profile",
   protect,
   authorize("manager"),
+  managerSignatureUpload.single("signature"),
   createManagerProfile
 );
 
@@ -38,6 +40,7 @@ router.put(
   "/profile",
   protect,
   authorize("manager"),
+  managerSignatureUpload.single("signature"),
   updateManagerProfile
 );
 

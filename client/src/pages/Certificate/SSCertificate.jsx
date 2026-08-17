@@ -291,7 +291,7 @@ if (!teacherVerified && !managerVerified) {
               </strong>
             </p>
             <p>You can now download your certificate.</p>
-            <Link to="/certificate/certificate" className="certificate-download-link">
+            <Link to="/student/certificate" className="certificate-download-link">
               Download Certificate
             </Link>
           </div>

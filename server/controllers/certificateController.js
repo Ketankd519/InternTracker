@@ -198,6 +198,72 @@ const getMyCertificateStatus = async (req, res) => {
       });
     }
 
+      // ====================================================
+      // FETCH EXISTING CERTIFICATE
+      // ====================================================
+
+      const certificate = await Certificate.findOne({
+        student: student._id,
+      }).lean();
+
+      // Certificate has not been generated/stored yet
+      if (!certificate) {
+        return res.status(404).json({
+          success: false,
+          message: "Certificate has not been generated yet.",
+        });
+      }
+
+      // ====================================================
+      // RETURN ONLY THE STORED CERTIFICATE DATA
+      // ====================================================
+
+      return res.status(200).json({
+        success: true,
+
+        data: {
+          _id: certificate._id,
+
+          student: certificate.student,
+
+          studentName: certificate.studentName,
+
+          companyName: certificate.companyName,
+
+          internshipStartDate:
+            certificate.internshipStartDate,
+
+          internshipEndDate:
+            certificate.internshipEndDate,
+
+          teacherName: certificate.teacherName,
+
+          managerName: certificate.managerName,
+
+          issueDate: certificate.issueDate,
+
+          certificateId: certificate.certificateId,
+
+          teacherApproved:
+            certificate.teacherApproved === true,
+
+          managerApproved:
+            certificate.managerApproved === true,
+
+          isDownloadable:
+            certificate.isDownloadable === true,
+
+          generated:
+            certificate.generated === true,
+
+          generatedAt: certificate.generatedAt,
+
+          createdAt: certificate.createdAt,
+
+          updatedAt: certificate.updatedAt,
+        },
+      });
+
     const data =
       await getCertificateDataForStudent(student._id);
     return res.status(200).json({

@@ -1,54 +1,508 @@
-// import html2pdf from 'html2pdf.js';
+import { useEffect,useRef, useState } from "react";
+import API from "../../services/api";
+import html2pdf from "html2pdf.js";
+import QRCode from "qrcode";
+import "./Certificate.css";
 
 export default function Certificate() {
-  // const downloadPDF = () => {
-  //   const element = document.getElementById('printable-certificate');
-  //   const opt = {
-  //     margin:       0.5,
-  //     filename:     'Internship_Certificate.pdf',
-  //     image:        { type: 'jpeg', quality: 0.98 },
-  //     html2canvas:  { scale: 2 },
-  //     jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
-  //   };
-  //   html2pdf().set(opt).from(element).save();
-  // };
+  const certificateRef = useRef(null);
+
+  const [certificateData, setCertificateData] = useState(null);
+  const [qrCode, setQrCode] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // =========================================================
+  // FETCH CERTIFICATE DATA
+  // =========================================================
+
+  useEffect(() => {
+    fetchCertificate();
+  }, []);
+
+  const fetchCertificate = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await API.get("/certificates/status");
+
+      console.log("FINAL CERTIFICATE RESPONSE:", response.data);
+
+      const data = response.data?.data || null;
+
+      setCertificateData(data);
+
+      // -----------------------------------------------------
+      // QR CODE
+      // -----------------------------------------------------
+      //
+      // When someone scans the QR code, it opens the
+      // InternTrack Home page.
+      //
+      // Change "/" to another public verification route
+      // later if you create one.
+      //
+
+      if (
+        data?.teacherApproved === true &&
+        data?.managerApproved === true
+      ) {
+        const homeURL = `${window.location.origin}/`;
+
+        const qr = await QRCode.toDataURL(homeURL, {
+          width: 180,
+          margin: 1,
+          errorCorrectionLevel: "H",
+        });
+
+        setQrCode(qr);
+      } else {
+        setQrCode("");
+      }
+
+    } catch (err) {
+      console.error(
+        "Final Certificate Fetch Error:",
+        err
+      );
+
+      setError(
+        err.response?.data?.message ||
+          "Unable to fetch certificate information."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // =========================================================
+  // LOADING
+  // =========================================================
+
+  if (loading) {
+    return (
+      <div className="final-certificate-page">
+        <div className="certificate-loading">
+          Loading certificate...
+        </div>
+      </div>
+    );
+  }
+
+  // =========================================================
+  // ERROR
+  // =========================================================
+
+  if (error) {
+    return (
+      <div className="final-certificate-page">
+        <div className="certificate-error">
+          <h2>Certificate</h2>
+
+          <p>{error}</p>
+
+          <button
+            onClick={fetchCertificate}
+            className="certificate-refresh-btn"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // =========================================================
+  // DATA
+  // =========================================================
+
+  const data = certificateData || {};
+
+  const studentName =
+    data.studentName || "Student Name";
+
+  const companyName =
+    data.companyName || "Company Name";
+
+  const teacherName =
+    data.teacherName || "Teacher Name";
+
+  const managerName =
+    data.managerName || "Manager Name";
+
+  const startDate =
+    data.internshipStartDate || null;
+
+  const endDate =
+    data.internshipEndDate || null;
+
+  // =========================================================
+  // APPROVAL CONDITIONS
+  // =========================================================
+
+  const teacherApproved =
+    data.teacherApproved === true;
+
+  const managerApproved =
+    data.managerApproved === true;
+
+  const certificateApproved =
+    teacherApproved &&
+    managerApproved;
+
+  // =========================================================
+  // VERIFICATION CONDITIONS
+  // =========================================================
+
+  const teacherVerified =
+    data.teacherApproved === true;
+
+  const managerVerified =
+    data.managerApproved === true;
+
+  // =========================================================
+  // SIGNATURES
+  // =========================================================
+
+  const teacherSignature =
+    data.teacherSignature ||
+    data.teacherDigitalSignature ||
+    data.teacherSignatureUrl ||
+    "";
+
+  const managerSignature =
+    data.managerSignature ||
+    data.managerDigitalSignature ||
+    data.managerSignatureUrl ||
+    "";
+
+  // =========================================================
+  // CERTIFICATE NUMBER
+  // =========================================================
+
+ const certificateNumber =
+  data.certificateId || "";
+
+  // =========================================================
+  // DATE FORMAT
+  // =========================================================
+
+  const formatDate = (date) => {
+    if (!date) {
+      return "Not Available";
+    }
+
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return "Not Available";
+    }
+
+    return parsedDate.toLocaleDateString(
+      "en-GB",
+      {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      }
+    );
+  };
+
+  // =========================================================
+  // DOWNLOAD CERTIFICATE
+  // =========================================================
+
+  const downloadCertificate = () => {
+    if (!certificateApproved) {
+      return;
+    }
+
+    const element =
+      certificateRef.current;
+
+    if (!element) {
+      return;
+    }
+
+    const options = {
+      margin: 0,
+
+      filename:
+        `InternTrack-Certificate-${studentName
+          .replace(/\s+/g, "-")
+          .toLowerCase()}.pdf`,
+
+      image: {
+        type: "jpeg",
+        quality: 1,
+      },
+
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#ffffff",
+      },
+
+      jsPDF: {
+        unit: "px",
+        format: [1536, 1024],
+        orientation: "landscape",
+      },
+    };
+
+    html2pdf()
+      .set(options)
+      .from(element)
+      .save();
+  };
+
+  // =========================================================
+  // RENDER
+  // =========================================================
 
   return (
-    <div className="page active">
-      <h2 style={{ textAlign: 'center', color: '#1e3a8a' }}>
-        Internship Completion Certificate
-      </h2>
+    <div className="final-certificate-page">
 
-      <div className="certificate" id="printable-certificate">
-        <h1>Certificate of Internship Completion</h1>
-        <p>This is to certify that</p>
-        <h2>Rahul Sharma</h2>
-        <p>has successfully completed an internship at</p>
-        <h2>ABC Technologies Pvt Ltd</h2>
-        <p>Duration:</p>
-        <h3>01 June 2026 - 31 July 2026</h3>
-        <br />
-        <p>During this internship, the student worked on web development projects and successfully completed assigned tasks.</p>
-        <br /><br />
-        <table>
-          <thead>
-            <tr>
-              <th>Verified By</th>
-              <th>Approved By</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Company Manager</td>
-              <td>College Teacher</td>
-            </tr>
-          </tbody>
-        </table>
+      {/* =====================================================
+          PAGE HEADING
+      ====================================================== */}
+
+      <div className="final-certificate-heading">
+        <h2>
+          Internship Completion Certificate
+        </h2>
+
+        <p>
+          Final Certificate
+        </p>
       </div>
 
-      {/* <div style={{ textAlign: 'center', marginTop: '20px' }}>
-        <button className="btn" onClick={downloadPDF}>Download Certificate (PDF)</button>
-      </div> */}
+      {/* =====================================================
+          CERTIFICATE
+      ====================================================== */}
+
+      <div
+        ref={certificateRef}
+        id="final-certificate"
+        className={`final-certificate ${
+          certificateApproved
+            ? "certificate-unlocked"
+            : "certificate-locked"
+        }`}
+      >
+
+        {/* ---------------------------------------------------
+            BACKGROUND TEMPLATE
+        ---------------------------------------------------- */}
+
+        <img
+          src="/certificate-template.png"
+          className="certificate-template"
+          alt="InternTrack Certificate"
+          crossOrigin="anonymous"
+        />
+
+        {/* =================================================
+            STUDENT NAME
+        ================================================== */}
+
+        <div className="certificate-student-name">
+          {studentName}
+        </div>
+
+        {/* =================================================
+            COMPANY NAME
+        ================================================== */}
+
+        <div className="certificate-company-name">
+          {companyName}
+        </div>
+
+        {/* =================================================
+            START DATE
+        ================================================== */}
+
+        <div className="certificate-start-date">
+          {formatDate(startDate)}
+        </div>
+
+        {/* =================================================
+            END DATE
+        ================================================== */}
+
+        <div className="certificate-end-date">
+          {formatDate(endDate)}
+        </div>
+
+        {/* =================================================
+            TEACHER APPROVAL
+        ================================================== */}
+
+        {teacherApproved && (
+          <div className="teacher-approved-mark">
+            ✓
+          </div>
+        )}
+
+        {/* =================================================
+            MANAGER APPROVAL
+        ================================================== */}
+
+        {managerApproved && (
+          <div className="manager-approved-mark">
+            ✓
+          </div>
+        )}
+
+        {/* =================================================
+            TEACHER NAME
+        ================================================== */}
+
+        <div
+          className={
+            `certificate-teacher-name ${
+              teacherVerified
+                ? "visible"
+                : "hidden"
+            }`
+          }
+        >
+          Teacher: {teacherName}
+        </div>
+
+        {/* =================================================
+            MANAGER NAME
+        ================================================== */}
+
+        <div
+          className={
+            `certificate-manager-name ${
+              managerVerified
+                ? "visible"
+                : "hidden"
+            }`
+          }
+        >
+          Manager: {managerName}
+        </div>
+
+        {/* =================================================
+            TEACHER SIGNATURE
+        ================================================== */}
+
+        {teacherApproved &&
+          teacherSignature && (
+            <div className="teacher-signature">
+              <img
+                src={teacherSignature}
+                alt="Teacher Digital Signature"
+                crossOrigin="anonymous"
+              />
+            </div>
+          )}
+
+        {/* =================================================
+            MANAGER SIGNATURE
+        ================================================== */}
+
+        {managerApproved &&
+          managerSignature && (
+            <div className="manager-signature">
+              <img
+                src={managerSignature}
+                alt="Manager Digital Signature"
+                crossOrigin="anonymous"
+              />
+            </div>
+          )}
+
+        {/* =================================================
+            QR CODE
+        ================================================== */}
+
+        {certificateApproved &&
+          qrCode && (
+            <div className="certificate-qr-area">
+
+              <img
+                src={qrCode}
+                alt="Certificate QR Code"
+              />
+
+              {/* <span>
+                SCAN TO VERIFY
+              </span> */}
+
+            </div>
+          )}
+
+        {/* =================================================
+            CERTIFICATE NUMBER
+        ================================================== */}
+
+        {certificateApproved &&
+          certificateNumber && (
+            <div className="certificate-number">
+              {/* <span>
+                ★
+              </span> */}
+
+              {/* <strong>
+                CERTIFICATE NO.:
+              </strong> */}
+
+              <span>
+                {certificateNumber}
+              </span>
+
+              {/* <span>
+                ★
+              </span> */}
+            </div>
+          )}
+
+      </div>
+
+      {/* =====================================================
+          DOWNLOAD SECTION
+      ====================================================== */}
+
+      <div className="certificate-download-section">
+
+        {!certificateApproved && (
+          <p className="certificate-download-disabled-message">
+            Certificate download will be available after
+            both Teacher and Manager approvals.
+          </p>
+        )}
+
+        {certificateApproved && (
+          <p className="certificate-download-ready-message">
+            ✓ Certificate approved by Teacher and Manager.
+          </p>
+        )}
+
+        <button
+          type="button"
+          className={
+            `certificate-download-btn ${
+              certificateApproved
+                ? "enabled"
+                : "disabled"
+            }`
+          }
+          disabled={!certificateApproved}
+          onClick={downloadCertificate}
+        >
+          {certificateApproved
+            ? "Download Certificate"
+            : "Certificate Not Approved"}
+        </button>
+
+      </div>
+
     </div>
   );
 }

@@ -14,6 +14,7 @@ export default function TeacherProfile() {
     mobileNo: "",
     experience: "",
     collegeName: "",
+    signature: "",
   });
 
   // PROFILE STATE
@@ -102,6 +103,7 @@ export default function TeacherProfile() {
             ? teacher.experience
             : "",
         collegeName: teacher.collegeName || "",
+        signature: teacher.signature || "",
       });
 
       // CHECK WHETHER TEACHER PROFILE EXISTS
@@ -128,11 +130,11 @@ export default function TeacherProfile() {
   // HANDLE INPUT CHANGE
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, files } = e.target;
 
     setFormData((previous) => ({
       ...previous,
-      [name]: value,
+      [name]: files ? files[0] : value,
     }));
 
     setMessage("");
@@ -190,111 +192,229 @@ export default function TeacherProfile() {
   };
 
   // SAVE / UPDATE PROFILE
-  const handleSubmit = async () => {
-    try {
-      setSaving(true);
-      setMessage("");
-      setError("");
+const handleSubmit = async () => {
+  try {
+    setSaving(true);
+    setMessage("");
+    setError("");
 
-      // VALIDATION
-      if (!validateForm()) {
-        setSaving(false);
-        return;
-      }
-
-      // REQUEST DATA
-      const requestData = {
-        course: formData.course.trim(),
-        department: formData.department.trim(),
-        mobileNo: formData.mobileNo.trim(),
-        experience: formData.experience === "" ? "" : String(formData.experience).trim(),
-        collegeName: formData.collegeName.trim(),
-      };
-
-      let response;
-
-      // FIRST SAVE
-      // POST /api/teacher/profile
-      if (!profileSaved) {
-        console.log(
-          "Creating new teacher profile..."
-        );
-
-        response = await API.post(
-          "/teacher/profile",
-          requestData
-        );
-      }
-
-      // UPDATE
-      // PUT /api/teacher/profile
-      else {
-        console.log("Updating existing teacher profile...");
-        response = await API.put( "/teacher/profile", requestData);
-      }
-
-      console.log( "TEACHER PROFILE SAVE RESPONSE:", response.data);
-      const data = response.data;
-
-      // TEACHER DATA RETURNED BY BACKEND
-      const teacher = data.teacher || {};
-
-      // USER DATA
-      const user = data.user || {};
-
-      // UPDATE FORM WITH SERVER DATA
-      setFormData((previous) => ({
-        ...previous,
-
-        name:user.name || previous.name,
-        email:user.email || previous.email,
-        teacherId:teacher.teacherId || previous.teacherId,
-        course:teacher.course || previous.course,
-        department:teacher.department || previous.department,
-        mobileNo:teacher.mobileNo !== undefined && teacher.mobileNo !== null
-            ? teacher.mobileNo : "",
-        experience: teacher.experience !== undefined && teacher.experience !== null
-            ? teacher.experience : "",
-        collegeName: teacher.collegeName || previous.collegeName,
-      }));
-
-      // PROFILE NOW EXISTS
-      setProfileSaved(true);
-
-      // SUCCESS MESSAGE
-      setMessage(
-        data.message ||
-          (
-            profileSaved
-              ? "Teacher profile updated successfully."
-              : "Teacher profile saved successfully."
-          )
-      );
-      // SUCCESS ALERT
-      alert(
-        data.message ||
-          (
-            profileSaved
-              ? "Teacher profile updated successfully."
-              : "Teacher profile saved successfully."
-          )
-      );
-    } catch (err) {
-      console.error("Teacher Profile Save Error:", err);
-      console.error("Backend Response:", err.response?.data);
-
-    setError(
-      err.response?.data?.message ||
-        "Unable to save teacher profile."
-    );  
-    alert(
-      err.response?.data?.message ||
-        "Unable to save teacher profile."
-    );
-    } finally {
+    // VALIDATION
+    if (!validateForm()) {
       setSaving(false);
+      return;
     }
-  };
+
+    // ==========================================
+    // CREATE FORM DATA
+    // ==========================================
+
+    const data = new FormData();
+
+    data.append(
+      "course",
+      formData.course.trim()
+    );
+
+    data.append(
+      "department",
+      formData.department.trim()
+    );
+
+    data.append(
+      "mobileNo",
+      formData.mobileNo.trim()
+    );
+
+    data.append(
+      "experience",
+      formData.experience === ""
+        ? ""
+        : String(formData.experience).trim()
+    );
+
+    data.append(
+      "collegeName",
+      formData.collegeName.trim()
+    );
+
+    // ==========================================
+    // TEACHER SIGNATURE
+    // ==========================================
+
+    if (formData.signature instanceof File) {
+      data.append(
+        "signature",
+        formData.signature
+      );
+    }
+
+    let response;
+
+    // ==========================================
+    // CREATE PROFILE
+    // ==========================================
+
+    if (!profileSaved) {
+      console.log(
+        "Creating new teacher profile..."
+      );
+
+      response = await API.post(
+        "/teacher/profile",
+        data
+      );
+    }
+
+    // ==========================================
+    // UPDATE PROFILE
+    // ==========================================
+
+    else {
+      console.log(
+        "Updating existing teacher profile..."
+      );
+
+      response = await API.put(
+        "/teacher/profile",
+        data
+      );
+    }
+
+    console.log(
+      "TEACHER PROFILE SAVE RESPONSE:",
+      response.data
+    );
+
+    const responseData = response.data;
+
+    // ==========================================
+    // BACKEND DATA
+    // ==========================================
+
+    const teacher =
+      responseData.teacher || {};
+
+    const user =
+      responseData.user || {};
+
+    // ==========================================
+    // UPDATE FORM WITH SERVER DATA
+    // ==========================================
+
+    setFormData((previous) => ({
+      ...previous,
+
+      name:
+        user.name ||
+        previous.name,
+
+      email:
+        user.email ||
+        previous.email,
+
+      teacherId:
+        teacher.teacherId ||
+        previous.teacherId,
+
+      course:
+        teacher.course ||
+        previous.course,
+
+      department:
+        teacher.department ||
+        previous.department,
+
+      mobileNo:
+        teacher.mobileNo !== undefined &&
+        teacher.mobileNo !== null
+          ? teacher.mobileNo
+          : "",
+
+      experience:
+        teacher.experience !== undefined &&
+        teacher.experience !== null
+          ? teacher.experience
+          : "",
+
+      collegeName:
+        teacher.collegeName ||
+        previous.collegeName,
+
+      // IMPORTANT
+      signature:
+        teacher.signature ||
+        previous.signature,
+    }));
+
+    // ==========================================
+    // PROFILE EXISTS
+    // ==========================================
+
+    setProfileSaved(true);
+
+    // ==========================================
+    // SUCCESS MESSAGE
+    // ==========================================
+
+    const successMessage =
+      responseData.message ||
+      (
+        profileSaved
+          ? "Teacher profile updated successfully."
+          : "Teacher profile saved successfully."
+      );
+
+    setMessage(successMessage);
+
+    alert(successMessage);
+
+  } catch (err) {
+
+    console.error(
+      "Teacher Profile Save Error:",
+      err
+    );
+
+    console.error(
+      "Backend Response:",
+      err.response?.data
+    );
+
+    const errorMessage =
+      err.response?.data?.message ||
+      "Unable to save teacher profile.";
+
+    setError(errorMessage);
+
+    alert(errorMessage);
+
+  } finally {
+
+    setSaving(false);
+
+  }
+};
+
+function getSignatureUrl(signature) {
+  if (!signature) {
+    return null;
+  }
+
+  // Already complete URL
+  if (
+    signature.startsWith("http://") ||
+    signature.startsWith("https://")
+  ) {
+    return signature;
+  }
+
+  // Normalize Windows path
+  const cleanPath = signature
+    .replace(/\\/g, "/")
+    .replace(/^uploads\//, "");
+
+  return `http://localhost:5000/uploads/${cleanPath}`;
+}
 
   // LOADING
   if (loading) {
@@ -360,6 +480,41 @@ export default function TeacherProfile() {
                 placeholder="Enter 10 digit mobile number" maxLength="10" disabled={saving}
               />
             </div>
+
+            <div className="teacher-signature-upload">
+
+          <label htmlFor="signature">
+            Teacher Signature
+          </label>
+
+<div className="teacher-signature-preview">
+  {formData.signature ? (
+    <img
+      src={
+        formData.signature instanceof File
+          ? URL.createObjectURL(formData.signature)
+          : getSignatureUrl(formData.signature)
+      }
+      alt="Teacher Signature"
+    />
+  ) : (
+    <span>No signature uploaded</span>
+  )}
+</div>
+
+          <input
+            type="file"
+            id="signature"
+            name="signature"
+            accept="image/jpeg,image/jpg,image/png"
+            onChange={handleChange}
+          />
+
+          <small>
+            Only JPG, JPEG and PNG images are allowed.
+          </small>
+
+        </div>
 
                 {/* EXPERIENCE */}
             <div className="teacher-profile-form-group">

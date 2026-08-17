@@ -1327,3 +1327,48 @@
     width: 100%;
   }
 }
+
+.manager-signature-upload {
+  width: 100%;
+}
+
+.manager-signature-upload label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.manager-signature-preview {
+  width: 320px;
+  height: 140px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #f8fafc;
+  margin-bottom: 12px;
+}
+
+.manager-signature-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.manager-signature-preview span {
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.manager-signature-upload input[type="file"] {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.manager-signature-upload small {
+  color: #64748b;
+  font-size: 12px;
+}

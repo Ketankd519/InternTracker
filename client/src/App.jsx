@@ -10,7 +10,7 @@ import Login from './pages/Login/Login';
 import Register from './pages/Register/Register';
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
 
-import Certificate from './pages/Certificate/Certificate';
+import Certificate from "./pages/Certificate/Certificate";
 import SSCertificate from "./pages/Certificate/SSCertificate";
 
 import StudentLayout from './layouts/StudentLayout';
@@ -89,6 +89,15 @@ function App() {
         />
 
         <Route path="certificate-status" element={<SSCertificate />}
+        />
+
+        <Route
+          path="certificate"
+          element={
+            // <ProtectedRoute allowedRoles={["student"]}>
+              <Certificate />
+            // </ProtectedRoute>
+          }
         />
       </Route>
 

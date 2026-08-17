@@ -1619,3 +1619,65 @@ display: inline-block;
   }
 
 }
+
+/* ==========================================
+   TEACHER SIGNATURE UPLOAD
+========================================== */
+
+.teacher-signature-upload {
+  width: 100%;
+}
+
+.teacher-signature-upload label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+/* 1599 : 662 aspect ratio */
+.teacher-signature-preview {
+  width: 100%;
+  max-width: 500px;
+  aspect-ratio: 1599 / 662;
+
+  border: 2px dashed #d4af37;
+  border-radius: 8px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+  background: #ffffff;
+
+  margin-bottom: 12px;
+}
+
+/* Uploaded signature */
+.teacher-signature-preview img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+
+  display: block;
+}
+
+/* No signature */
+.teacher-signature-preview span {
+  color: #94a3b8;
+  font-size: 14px;
+  text-align: center;
+}
+
+.teacher-signature-upload input[type="file"] {
+  width: 100%;
+  max-width: 500px;
+}
+
+.teacher-signature-upload small {
+  display: block;
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 12px;
+}

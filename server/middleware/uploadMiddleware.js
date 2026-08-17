@@ -60,7 +60,14 @@ const profileUpload = createUpload("profile");
 // Weekly report attachment upload
 const reportUpload = createUpload("reports");
 
+// Teacher signature upload
+const signatureUpload = createUpload("signatures");
+
+// Manager signature upload
+const managerSignatureUpload = createUpload("manager-signatures");
 module.exports = {
   profileUpload,
   reportUpload,
+  signatureUpload,
+  managerSignatureUpload,
 };

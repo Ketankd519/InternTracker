@@ -40,6 +40,11 @@ const teacherSchema = new mongoose.Schema(
       default: "",
     },
 
+    signature: {
+      type: String,
+      default: null,
+    },
+
     collegeName: {
       type: String,
       required: true,

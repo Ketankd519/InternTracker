@@ -29,7 +29,7 @@ export default function StudentSidebar() {
     },
     {
       name: "Certificate",
-      path: "/certificate/certificate",
+      path: "/student/certificate",
     },
   ];
 

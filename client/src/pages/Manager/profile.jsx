@@ -12,6 +12,7 @@ export default function ManagerProfile() {
     mobileNo: "",
     experience: "",
     companyName: "",
+    signature: "",
   });
 
   // PROFILE STATE
@@ -51,6 +52,7 @@ export default function ManagerProfile() {
         experience:manager.experience !== undefined && manager.experience !== null
             ? manager.experience : "",
         companyName: manager.companyName || "",
+        signature: manager.signature || "",
       });
 
       // CHECK PROFILE EXISTS
@@ -76,10 +78,10 @@ export default function ManagerProfile() {
 
   // HANDLE INPUT CHANGE
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, files } = e.target;
     setFormData((previous) => ({
       ...previous,
-      [name]: value,
+      [name]: files ? files[0] : value,
     }));
 
     setMessage("");
@@ -137,12 +139,31 @@ export default function ManagerProfile() {
       }
 
       // REQUEST DATA
-      const requestData = {
-        mobileNo:formData.mobileNo.trim(),
-        experience:formData.experience === ""
-            ? "" : String(formData.experience).trim(),
-        companyName:formData.companyName.trim(),
-      };
+const requestData = new FormData();
+
+requestData.append(
+  "mobileNo",
+  formData.mobileNo.trim()
+);
+
+requestData.append(
+  "experience",
+  formData.experience === ""
+    ? ""
+    : String(formData.experience).trim()
+);
+
+requestData.append(
+  "companyName",
+  formData.companyName.trim()
+);
+
+if (formData.signature instanceof File) {
+  requestData.append(
+    "signature",
+    formData.signature
+  );
+}
 
       let response;
 
@@ -180,6 +201,7 @@ export default function ManagerProfile() {
         experience: manager.experience !== undefined && manager.experience !== null
             ? manager.experience : "",
         companyName: manager.companyName || previous.companyName,
+        signature: manager.signature || previous.signature,
       }));
 
       // PROFILE NOW EXISTS
@@ -220,6 +242,25 @@ export default function ManagerProfile() {
       setSaving(false);
     }
   };
+
+  function getSignatureUrl(signature) {
+  if (!signature) {
+    return null;
+  }
+
+  if (
+    signature.startsWith("http://") ||
+    signature.startsWith("https://")
+  ) {
+    return signature;
+  }
+
+  const cleanPath = signature
+    .replace(/\\/g, "/")
+    .replace(/^uploads\//, "");
+
+  return `http://localhost:5000/uploads/${cleanPath}`;
+}
 
   // =========================================================
   // LOADING
@@ -384,6 +425,53 @@ export default function ManagerProfile() {
 
             </div>
 
+            {/* =================================================
+                MANAGER SIGNATURE
+            ================================================== */}
+
+            <div className="manager-signature-upload">
+
+              <label htmlFor="signature">
+                Manager Signature
+              </label>
+
+              <div className="manager-signature-preview">
+
+                {formData.signature ? (
+                  <img
+                    src={
+                      formData.signature instanceof File
+                        ? URL.createObjectURL(
+                            formData.signature
+                          )
+                        : getSignatureUrl(
+                            formData.signature
+                          )
+                    }
+                    alt="Manager Signature"
+                  />
+                ) : (
+                  <span>
+                    No signature uploaded
+                  </span>
+                )}
+
+              </div>
+
+              <input
+                type="file"
+                id="signature"
+                name="signature"
+                accept="image/jpeg,image/jpg,image/png"
+                onChange={handleChange}
+                disabled={saving}
+              />
+
+              <small>
+                Only JPG, JPEG and PNG images are allowed.
+              </small>
+
+            </div>
 
             {/* =================================================
                 EXPERIENCE

@@ -609,6 +609,9 @@ const createManagerProfile = async (req, res) => {
           ? String(experience).trim()
           : "",
       companyName: companyName.trim(),
+        signature: req.file
+    ? `manager-signatures/${req.file.filename}`
+    : "",
     });
 
     res.status(201).json({
@@ -671,6 +674,10 @@ const updateManagerProfile = async (req, res) => {
         ? String(experience).trim()
         : "";
     manager.companyName = companyName.trim();
+
+    if (req.file) {
+      manager.signature = `manager-signatures/${req.file.filename}`;
+    }
 
     await manager.save();
 

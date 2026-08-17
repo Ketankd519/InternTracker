@@ -530,7 +530,9 @@ const updateTeacherProfile = async (req, res) => {
     teacher.mobileNo = mobileNo?.trim() || "";
     teacher.experience = experience?.trim() || "";
     teacher.collegeName = collegeName.trim();
-
+    if (req.file) {
+    teacher.signature = `signatures/${req.file.filename}`;
+    }
     await teacher.save();
 
     res.status(200).json({
