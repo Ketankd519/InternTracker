@@ -9,6 +9,7 @@ export default function Internship() {
     companyName: "",
     internshipRole: "",
     companyAddress: "",
+    managerId: "",
     managerName: "",
     managerEmail: "",
     managerPhone: "",
@@ -111,6 +112,7 @@ export default function Internship() {
               companyName: internshipData.companyName || "",
               internshipRole: internshipData.internshipRole || "",
               companyAddress: internshipData.companyAddress || "",
+              managerId: internshipData.managerId || "",
               managerName: internshipData.managerName || "",
               managerEmail: internshipData.managerEmail || "",
               managerPhone: internshipData.managerPhone || "",
@@ -188,6 +190,21 @@ export default function Internship() {
       return;
     }
 
+    if (name === "totalWeeks") {
+    // 1. Allow backspace / empty input
+    if (value === "") {
+      setFormData((prev) => ({ ...prev, [name]: "" }));
+      return;
+    }
+
+    // 2. Allow only 1-2 integer digits and numbers from 1 to 53
+    const num = parseInt(value, 10);
+    if (/^\d{1,2}$/.test(value) && num >= 1 && num <= 53) {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+    return;
+  }
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -232,6 +249,7 @@ export default function Internship() {
         companyName: formData.companyName,
         companyAddress: formData.companyAddress,
         internshipRole: formData.internshipRole,
+        managerId: formData.managerId,
         managerName: formData.managerName,
         managerEmail: formData.managerEmail,
         managerPhone: formData.managerPhone,
@@ -346,6 +364,15 @@ export default function Internship() {
           <div className="profile-section">
             <h2>Company Details</h2>
             <div className="profile-grid">
+
+              <input type="text" name="managerId"
+                placeholder="Manager ID"
+                maxLength="8"
+                value={formData.managerId}
+                onChange={handleChange}
+                required
+              />
+
               <input type="text" name="companyName"
                 placeholder="Company Name"
                 value={ formData.companyName}
@@ -360,12 +387,6 @@ export default function Internship() {
                 required
               />
 
-              <input type="text" name="companyAddress"
-                placeholder="Company Address"
-                value={ formData.companyAddress}
-                onChange={handleChange}
-                required
-              />
             </div>
           </div>
 
@@ -390,6 +411,7 @@ export default function Internship() {
 
               <input type="text" name="managerPhone"
                 placeholder="Manager Phone"
+                maxLength="10"
                 value={ formData.managerPhone}
                 onChange={handleChange}
                 required
@@ -421,6 +443,7 @@ export default function Internship() {
                   name="startDate"
                   value={formData.startDate}
                   onChange={handleChange}
+                  required
                 />
               </div>
 
@@ -432,14 +455,27 @@ export default function Internship() {
                   name="endDate"
                   value={formData.endDate}
                   onChange={handleChange}
+                  required
                 />
               </div>
 
+              <input type="text" name="companyAddress"
+                placeholder="Company Address"
+                value={ formData.companyAddress}
+                onChange={handleChange}
+                required
+              />
+
               <input type="number" name="totalWeeks"
-                placeholder="Total Weeks"
-                min="1"
+                placeholder="Total Weeks (1-53)"
+                min="1" max="53"
                 value={ formData.totalWeeks}
                 onChange={handleChange}
+                onKeyDown={(e) => {
+                  if (["e", "E", "+", "-", "."].includes(e.key)) {
+                    e.preventDefault();
+                  }
+                }}  
                 required
               />
 

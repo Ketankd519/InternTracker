@@ -155,27 +155,23 @@ export default function Certificate() {
   // VERIFICATION CONDITIONS
   // =========================================================
 
-  const teacherVerified =
-    data.teacherApproved === true;
 
-  const managerVerified =
-    data.managerApproved === true;
+const teacherVerified =
+  data.teacherVerified === true;
+
+const managerVerified =
+  data.managerVerified === true;
+
 
   // =========================================================
   // SIGNATURES
   // =========================================================
 
   const teacherSignature =
-    data.teacherSignature ||
-    data.teacherDigitalSignature ||
-    data.teacherSignatureUrl ||
-    "";
+    data.teacherSignature || "";
 
   const managerSignature =
-    data.managerSignature ||
-    data.managerDigitalSignature ||
-    data.managerSignatureUrl ||
-    "";
+    data.managerSignature || "";
 
   // =========================================================
   // CERTIFICATE NUMBER

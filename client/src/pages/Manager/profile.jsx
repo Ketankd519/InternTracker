@@ -400,7 +400,7 @@ if (formData.signature instanceof File) {
             <div className="manager-profile-form-group">
 
               <label>
-                Mobile No
+                Mobile Number
 
                 <span
                   style={{
@@ -409,7 +409,6 @@ if (formData.signature instanceof File) {
                     marginLeft: "5px",
                   }}
                 >
-                  (Optional)
                 </span>
               </label>
 
@@ -421,6 +420,7 @@ if (formData.signature instanceof File) {
                 placeholder="Enter 10 digit mobile number"
                 maxLength="10"
                 disabled={saving}
+                required
               />
 
             </div>
@@ -465,6 +465,7 @@ if (formData.signature instanceof File) {
                 accept="image/jpeg,image/jpg,image/png"
                 onChange={handleChange}
                 disabled={saving}
+                required
               />
 
               <small>
@@ -539,6 +540,7 @@ if (formData.signature instanceof File) {
                 onChange={handleChange}
                 placeholder="Enter company name"
                 disabled={saving}
+                required
               />
 
             </div>

@@ -117,7 +117,6 @@ const getInternshipStatus = async (req, res) => {
       student: student._id,
     })
       .populate('student')
-      .populate('managerId', 'name email');
 
     if (!internship) {
       return res.status(404).json({
@@ -185,7 +184,6 @@ const updateInternship = async (req, res) => {
       }
     )
       .populate('student')
-      .populate('managerId', 'name email');
 
     if (!updatedInternship) {
       return res.status(404).json({

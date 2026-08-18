@@ -319,7 +319,7 @@ export default function StdCertificateList() {
 
                       <td>
 
-                        <div className="certificate-student-name">
+                        <div className="teacher-certificate-student-name">
 
                           {studentName}
 

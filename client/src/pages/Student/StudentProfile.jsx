@@ -16,6 +16,7 @@ const emptyForm = {
   rollNo: "",
   enrollmentNumber: "",
   teacherId: "",
+  teacherName: "",
   cgpa: "",
   profilePhoto: "",
 };
@@ -110,6 +111,7 @@ const StudentProfile = () => {
           rollNo: data.rollNo || "",
           enrollmentNumber: data.enrollmentNumber || "",
           teacherId: data.teacherId || "",
+          teacherName: data.teacherName || "",
           cgpa: data.cgpa ?? "",
           profilePhoto: data.profilePhoto || "",
         });
@@ -140,10 +142,28 @@ const StudentProfile = () => {
       return;
     }
 
+    if (name === "cgpa") {
+    // Allow empty string to let user backspace/clear field
+    if (value === "") {
+      setFormData((prev) => ({ ...prev, [name]: "" }));
+      return;
+    }
+
+    // Regex: allows numbers 0-10 with up to 2 decimal places
+    // Accepts: 0 to 9.99, or 10, or 10.00
+    const cgpaRegex = /^([0-9](\.[0-9]{0,2})?|10(\.0{0,2})?)$/;
+
+    if (cgpaRegex.test(value)) {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+    return; // Block invalid inputs
+  }
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
+
   };
 
   // Create / Update
@@ -184,6 +204,10 @@ const StudentProfile = () => {
         {data.append("teacherId",
           formData.teacherId.trim()
         );
+      }
+
+      if (formData.teacherName.trim() !== "") {
+        data.append("teacherName", formData.teacherName.trim());
       }
 
       if (formData.cgpa !== "") {
@@ -263,6 +287,7 @@ const StudentProfile = () => {
           rollNo: profile.rollNo || "",
           enrollmentNumber:profile.enrollmentNumber || "",
           teacherId: profile.teacherId || "",
+          teacherName: profile.teacherName || "",
           cgpa: profile.cgpa ?? "",
           profilePhoto: profile.profilePhoto || "",
         });
@@ -340,6 +365,7 @@ const StudentProfile = () => {
               {/* STUDENTS collection */}
               <input type="text" name="phone"
                 placeholder="Phone Number"
+                maxLength= "10"
                 value={formData.phone}
                 onChange={handleChange}
                 required
@@ -359,13 +385,16 @@ const StudentProfile = () => {
 
               <div className="profile-field">
                 <label htmlFor="gender">Gender</label>
-                  <select name="gender"value={formData.gender}onChange={handleChange}>
+                  <select name="gender"value={formData.gender}onChange={handleChange} required>
                     <option value="">Select Gender</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                     <option value="Other">Other</option>
                   </select>
               </div>
+
+
+
               
               <div className="profile-field">
                 <label htmlFor="address">Address</label>
@@ -377,16 +406,51 @@ const StudentProfile = () => {
                   />
               </div>
               
-              <input type="text" name="state"
-                placeholder="State"
-                value={formData.state}
+              <select name="state" value={formData.state}onChange={handleChange}required>
+                <option value="">Select a State</option>
+                <option value="Andhra Pradesh">Andhra Pradesh</option>
+                <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                <option value="Assam">Assam</option>
+                <option value="Bihar">Bihar</option>
+                <option value="Chhattisgarh">Chhattisgarh</option>
+                <option value="Goa">Goa</option>
+                <option value="Gujarat">Gujarat</option>
+                <option value="Haryana">Haryana</option>
+                <option value="Himachal Pradesh">Himachal Pradesh</option>
+                <option value="Jharkhand">Jharkhand</option>
+                <option value="Karnataka">Karnataka</option>
+                <option value="Kerala">Kerala</option>
+                <option value="Madhya Pradesh">Madhya Pradesh</option>
+                <option value="Maharashtra">Maharashtra</option>
+                <option value="Manipur">Manipur</option>
+                <option value="Meghalaya">Meghalaya</option>
+                <option value="Mizoram">Mizoram</option>
+                <option value="Nagaland">Nagaland</option>
+                <option value="Odisha">Odisha</option>
+                <option value="Punjab">Punjab</option>
+                <option value="Rajasthan">Rajasthan</option>
+                <option value="Sikkim">Sikkim</option>
+                <option value="Tamil Nadu">Tamil Nadu</option>
+                <option value="Telangana">Telangana</option>
+                <option value="Tripura">Tripura</option>
+                <option value="Uttar Pradesh">Uttar Pradesh</option>
+                <option value="Uttarakhand">Uttarakhand</option>
+                <option value="West Bengal">West Bengal</option>
+                <option value="Other">Other</option>
+              </select>
+
+              <input type="text" name="pincode"
+                placeholder="Pincode"
+                maxLength="6"
+                value={formData.pincode}
                 onChange={handleChange}
                 required
               />
 
-              <input type="text" name="pincode"
-                placeholder="Pincode"
-                value={formData.pincode}
+              <input type="text" name="teacherId"
+                placeholder="Teacher ID"
+                maxLength="9"
+                value={formData.teacherId}
                 onChange={handleChange}
                 required
               />
@@ -443,6 +507,14 @@ const StudentProfile = () => {
           <div className="profile-section">
             <h2>Academic Details</h2>
             <div className="profile-grid">
+
+              <input type="text" name="teacherName"
+                placeholder="Teacher Name"
+                value={formData.teacherName}
+                onChange={handleChange}
+                required
+              />
+
               <input type="text" name="college"
                 placeholder="College"
                 value={formData.college}
@@ -450,15 +522,29 @@ const StudentProfile = () => {
                 required
               />
 
-              <input type="text" name="department"
-                placeholder="Department"
-                value={formData.department}
-                onChange={handleChange}
-                required
-              />
+              <select name="department" value={formData.department}onChange={handleChange}required>
+                <option value="">Select Department</option>
+                <option value="CA">CA - Computer Application</option>
+                <option value="CS">CS - Computer Science</option>
+                <option value="IT">IT - Information Technology</option>
+                <option value="AI">AI - Artificial Intelligence</option>
+                <option value="DS">DS - Data Science</option>
+                <option value="SE">SE - Software Engineering</option>
+                <option value="EL">EL - Electronics</option>
+                <option value="ET">ET - Electronics and Telecommunication</option>
+                <option value="ME">ME - Mechanical Engineering</option>
+                <option value="CE">CE - Civil Engineering</option>
+                <option value="EE">EE - Electrical Engineering</option>
+                <option value="MN">MN - Management</option>
+                <option value="CM">CM - Commerce</option>
+                <option value="SC">SC - Science</option>
+                <option value="AR">AR - Arts</option>
+                <option value="Other">Other</option>
+              </select>
 
               <input type="number" name="semester"
                 placeholder="Semester" min="1"
+                max="8" maxLength="1"
                 value={formData.semester}
                 onChange={handleChange}
                 required
@@ -466,6 +552,7 @@ const StudentProfile = () => {
 
               <input type="text" name="rollNo"
                 placeholder="Roll Number"
+                maxLength="10"
                 value={formData.rollNo}
                 onChange={handleChange}
                 required
@@ -473,21 +560,17 @@ const StudentProfile = () => {
 
               <input type="text" name="enrollmentNumber"
                 placeholder="Enrollment Number"
+                maxLength="10"
                 value={formData.enrollmentNumber}
                 onChange={handleChange}
                 required
               />
 
-              <input type="text" name="teacherId"
-                placeholder="Teacher ID"
-                value={formData.teacherId}
-                onChange={handleChange}
-                required
-              />
 
               <input type="number" step="0.01" name="cgpa"
-                placeholder="CGPA"
+                placeholder="CGPA (e.g. 8.97, 10)"
                 min="0" max="10"
+                maxLength="2"
                 value={formData.cgpa}
                 onChange={handleChange}
                 required

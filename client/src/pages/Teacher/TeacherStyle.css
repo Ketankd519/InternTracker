@@ -358,8 +358,8 @@ display: inline-block;
 }
 
 .not-verified-badge {
-  background: #f1f5f9;
-  color: #64748b;
+  background-color: #fef3c7;
+  color: #92400e;
 }
 
    /* VIEW STUDENT BUTTON */
@@ -996,12 +996,9 @@ display: inline-block;
    STUDENT NAME
    ===================================================== */
 
-.certificate-student-name {
-
+.teacher-certificate-student-name {
   font-weight: 600;
-
   color: #1e293b;
-
 }
 
 

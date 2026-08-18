@@ -47,6 +47,7 @@ const createStudentProfile = async (req, res) => {
       rollNo,
       enrollmentNumber,
       teacherId,
+      teacherName,
       cgpa,
     } = req.body;
 
@@ -73,6 +74,7 @@ const createStudentProfile = async (req, res) => {
       rollNo,
       enrollmentNumber,
       teacherId,
+      teacherName,
       cgpa,
       profileCompleted: true,
       // Teacher verification starts as false
@@ -209,12 +211,29 @@ const updateStudentProfile = async (req, res) => {
     delete req.body.profileCompleted;
     delete req.body.teacherVerified;
 
-    // Remove empty teacherId
-    if (
-      req.body.teacherId === undefined || req.body.teacherId === ""
-    ) {
-      delete req.body.teacherId;
-    }
+// Normalize teacherId
+if (Array.isArray(req.body.teacherId)) {
+  req.body.teacherId = req.body.teacherId[0] || "";
+}
+
+if (
+  req.body.teacherId === undefined ||
+  req.body.teacherId === ""
+) {
+  delete req.body.teacherId;
+}
+
+// Normalize teacherName
+if (Array.isArray(req.body.teacherName)) {
+  req.body.teacherName = req.body.teacherName[0] || "";
+}
+
+if (
+  req.body.teacherName === undefined ||
+  req.body.teacherName === ""
+) {
+  delete req.body.teacherName;
+}
 
     // Update profile
     profile =
@@ -235,10 +254,6 @@ const updateStudentProfile = async (req, res) => {
           "user",
           "name email role"
         )
-        // .populate(
-        //   "teacherId",
-        //   "name email"
-        // );
 
     return res.status(200).json({
       success: true,

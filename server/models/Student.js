@@ -88,6 +88,11 @@ const studentSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    teacherName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
 
     cgpa: {
       type: Number,

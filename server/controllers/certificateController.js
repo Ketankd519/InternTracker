@@ -3,11 +3,36 @@ const Student = require("../models/Student");
 const Internship = require("../models/Internship");
 const WeeklyReport = require("../models/WeeklyReport");
 const User = require("../models/User");
+const Teacher = require("../models/Teacher");
+const Manager = require("../models/Manager");
+
+// HELPER: Convert stored signature path into a browser-accessible URL
+const getSignatureUrl = (req, signature) => {
+  if (!signature) {
+    return "";
+  }
+
+  // Already a complete URL
+  if (/^https?:\/\//i.test(signature)) {
+    return signature;
+  }
+
+  const cleanPath = String(signature)
+    .replace(/\\/g, "/")
+    .replace(/^\/+/, "")
+    .replace(/^uploads\//i, "");
+
+  return `${req.protocol}://${req.get("host")}/uploads/${cleanPath}`;
+};
+
 
 // HELPER: Calculate certificate information for a student
-const getCertificateDataForStudent = async (studentId) => {
-  
-  // Find student
+const getCertificateDataForStudent = async (studentId, req) => {
+
+  // =====================================================
+  // STUDENT
+  // =====================================================
+
   const student = await Student.findById(studentId)
     .populate("user", "name email role")
     .lean();
@@ -16,116 +41,229 @@ const getCertificateDataForStudent = async (studentId) => {
     throw new Error("Student not found");
   }
 
-  // Find internship
-  const internship = await Internship.findOne({student: studentId,}).lean();
+  // =====================================================
+  // INTERNSHIP
+  // =====================================================
 
-  if (!internship) {throw new Error("Internship not found");}
+  const internship = await Internship.findOne({
+    student: studentId,
+  }).lean();
 
-  // Find weekly reports
-  const reports = await WeeklyReport.find({student: studentId,})
+  if (!internship) {
+    throw new Error("Internship not found");
+  }
+
+  // =====================================================
+  // TEACHER
+  //
+  // Student model stores teacherId as a STRING.
+  // Teacher model also stores teacherId.
+  // =====================================================
+
+  const teacher = student.teacherId
+    ? await Teacher.findOne({
+        teacherId: student.teacherId,
+      }).lean()
+    : null;
+
+  // =====================================================
+  // MANAGER
+  //
+  // Internship model stores managerId as a STRING.
+  // Manager model also stores managerId.
+  // =====================================================
+
+  const manager = internship.managerId
+    ? await Manager.findOne({
+        managerId: internship.managerId,
+      }).lean()
+    : null;
+
+  // =====================================================
+  // WEEKLY REPORTS
+  // =====================================================
+
+  const reports = await WeeklyReport.find({
+    student: studentId,
+  })
     .select("weekNumber")
     .lean();
 
-  // Find highest submitted week number
   let currentWeek = 0;
 
-  reports.forEach((report) => {const weekNumber = Number(report.weekNumber) || 0;
+  reports.forEach((report) => {
+    const weekNumber = Number(report.weekNumber) || 0;
 
     if (weekNumber > currentWeek) {
       currentWeek = weekNumber;
     }
   });
 
-  // Calculate progress
-  const totalWeeks = Number(internship.totalWeeks) || 0;
+  // =====================================================
+  // PROGRESS
+  // =====================================================
+
+  const totalWeeks =
+    Number(internship.totalWeeks) || 0;
 
   let progress = 0;
+
   if (totalWeeks > 0) {
-    progress = (currentWeek / totalWeeks) * 100;
+    progress =
+      (currentWeek / totalWeeks) * 100;
   }
 
-  // Never allow progress above 100
   progress = Math.min(progress, 100);
 
-  // Round to 2 decimal places
-  progress = Number(progress.toFixed(2));
+  progress = Number(
+    progress.toFixed(2)
+  );
 
-  // Existing verification
-  const teacherVerified = student.teacherVerified === true;
-  const managerVerified = internship.managerVerified === true;
+  // =====================================================
+  // VERIFICATION
+  //
+  // IMPORTANT:
+  // These DO NOT come from Certificate approval fields.
+  // =====================================================
 
-  // Find or create certificate document
-  let certificate = await Certificate.findOne({student: studentId,});
+  const teacherVerified =
+    student.teacherVerified === true;
 
+  const managerVerified =
+    internship.managerVerified === true;
+
+  // =====================================================
+  // CERTIFICATE
+  // =====================================================
+
+  let certificate =
+    await Certificate.findOne({
+      student: studentId,
+    });
+
+  // Create certificate record if it does not exist
   if (!certificate) {
     certificate = await Certificate.create({
       student: studentId,
-      studentName: student.user?.name || "Student",
-      companyName: internship.companyName || "",
-      internshipStartDate: internship.startDate,
-      internshipEndDate: internship.endDate,
-      teacherName: student.teacherId || "",
-      managerName: internship.managerName || "",
-      certificateId: student._id.toString(),
+
+      studentName:
+        student.user?.name || "Student",
+
+      companyName:
+        internship.companyName || "",
+
+      internshipStartDate:
+        internship.startDate,
+
+      internshipEndDate:
+        internship.endDate,
+
+      teacherName:
+        student.teacherName ||
+        teacher?.user?.name ||
+        "",
+
+      managerName:
+        internship.managerName ||
+        manager?.companyName ||
+        "",
+
+      certificateId:
+        student._id,
+
       teacherApproved: false,
       managerApproved: false,
+
       isDownloadable: false,
       generated: false,
       generatedAt: null,
     });
   }
 
-  // Calculate certificate status
+  // =====================================================
+  // APPROVAL
+  // =====================================================
+
+  const teacherApproved =
+    certificate.teacherApproved === true;
+
+  const managerApproved =
+    certificate.managerApproved === true;
+
+  const certificateApproved =
+    teacherApproved && managerApproved;
+
+  // =====================================================
+  // CERTIFICATE STATUS
+  //
+  // Verification is checked FIRST.
+  // Progress is checked ONLY after both
+  // teacher and manager are verified.
+  // =====================================================
+
   let teacherStatus = "Not Eligible";
   let managerStatus = "Not Eligible";
 
-  // First condition:
-  // Existing verification
-  if (teacherVerified && managerVerified) {
-    teacherStatus = "Processing";
-    managerStatus = "Processing";
+  if (!teacherVerified && !managerVerified) {
+
+    teacherStatus = "Not Eligible";
+    managerStatus = "Not Eligible";
+
   } else if (teacherVerified && !managerVerified) {
+
     teacherStatus = "Eligible";
     managerStatus = "Not Eligible";
+
   } else if (!teacherVerified && managerVerified) {
+
     teacherStatus = "Not Eligible";
     managerStatus = "Eligible";
-  } else {
-    teacherStatus = "Not Eligible";
-    managerStatus = "Not Eligible";
+
+  } else if (teacherVerified && managerVerified) {
+
+    if (progress <= 50) {
+
+      teacherStatus = "Processing";
+      managerStatus = "Processing";
+
+    } else if (progress < 100) {
+
+      teacherStatus = "Ongoing";
+      managerStatus = "Ongoing";
+
+    } else {
+
+      teacherStatus = "Waiting for Approval";
+      managerStatus = "Waiting for Approval";
+    }
   }
 
-  // Progress condition
-  if (progress <= 50) {
-    teacherStatus = "Ongoing";
-    managerStatus = "Ongoing";
-  }
+  // =====================================================
+  // FINAL APPROVAL STATUS
+  //
+  // Approval is separate from verification.
+  // =====================================================
 
-  // Internship completion condition
-  const internshipCompleted =
-    progress === 100 ||
-    internship.status === "completed";
-
-  if (internshipCompleted) {
-    teacherStatus = "Waiting for Approval";
-    managerStatus = "Waiting for Approval";
-  }
-
-  // Final certificate approval
-  if (
-    certificate.teacherApproved === true &&
-    certificate.managerApproved === true
-  ) {
+  if (teacherApproved) {
     teacherStatus = "Approved";
-    managerStatus = "Approved";
+  }
 
-    // Certificate is downloadable only
-    // after both approvals.
+  if (managerApproved) {
+    managerStatus = "Approved";
+  }
+
+  // =====================================================
+  // DOWNLOAD / GENERATION
+  //
+  // Only both approvals can unlock the certificate.
+  // =====================================================
+
+  if (certificateApproved) {
+
     if (!certificate.isDownloadable) {
       certificate.isDownloadable = true;
     }
 
-    // Generate certificate information once
     if (!certificate.generated) {
       certificate.generated = true;
       certificate.generatedAt = new Date();
@@ -134,22 +272,80 @@ const getCertificateDataForStudent = async (studentId) => {
     if (!certificate.issueDate) {
       certificate.issueDate = new Date();
     }
+
     await certificate.save();
   }
 
+  // =====================================================
+  // SIGNATURE URLS
+  // =====================================================
+
+  const teacherSignature =
+    teacherApproved && teacher?.signature
+      ? getSignatureUrl(req, teacher.signature)
+      : "";
+
+  const managerSignature =
+    managerApproved && manager?.signature
+      ? getSignatureUrl(req, manager.signature)
+      : "";
+
+  // =====================================================
+  // NAMES
+  // =====================================================
+
+  const finalTeacherName =
+    student.teacherName ||
+    certificate.teacherName ||
+    teacher?.user?.name ||
+    "Teacher Name";
+
+  const finalManagerName =
+    internship.managerName ||
+    certificate.managerName ||
+    "Manager Name";
+
+  // =====================================================
+  // RETURN DATA
+  // =====================================================
+
   return {
+
+    // ===================================================
+    // NESTED DATA
+    // Used by SSCertificate.jsx
+    // ===================================================
+
     student: {
       _id: student._id,
-      name: student.user?.name || "Student",
-      email: student.user?.email || "",
+      name:
+        student.user?.name ||
+        "Student",
+      email:
+        student.user?.email ||
+        "",
+      teacherId:
+        student.teacherId || "",
     },
 
     internship: {
-      companyName: internship.companyName,
-      startDate: internship.startDate,
-      endDate: internship.endDate,
-      status: internship.status,
-      totalWeeks: totalWeeks,
+      _id: internship._id,
+      companyName:
+        internship.companyName || "",
+      managerName:
+        internship.managerName || "",
+      startDate:
+        internship.startDate || null,
+      endDate:
+        internship.endDate || null,
+      status:
+        internship.status || "",
+      totalWeeks,
+    },
+
+    existingVerification: {
+      teacherVerified,
+      managerVerified,
     },
 
     progress: {
@@ -158,38 +354,110 @@ const getCertificateDataForStudent = async (studentId) => {
       percentage: progress,
     },
 
-    existingVerification: {
-      teacherVerified,
-      managerVerified,
-    },
-
     certificate: {
-      _id: certificate._id,
-      certificateId: certificate.certificateId,
-      teacherName: certificate.teacherName,
-      managerName: certificate.managerName,
-      teacherApproved: certificate.teacherApproved,
-      managerApproved: certificate.managerApproved,
+      _id:
+        certificate._id,
+
+      certificateId:
+        certificate.certificateId,
+
+      teacherName:
+        finalTeacherName,
+
+      managerName:
+        finalManagerName,
+
+      teacherApproved,
+      managerApproved,
+
       teacherStatus,
       managerStatus,
-      issueDate: certificate.issueDate,
-      isDownloadable: certificate.isDownloadable,
-      generated: certificate.generated,
-      generatedAt: certificate.generatedAt,
+
+      issueDate:
+        certificate.issueDate,
+
+      isDownloadable:
+        certificate.isDownloadable === true,
+
+      generated:
+        certificate.generated === true,
+
+      generatedAt:
+        certificate.generatedAt || null,
     },
+
+    // ===================================================
+    // FLAT DATA
+    // Used by Certificate.jsx
+    // ===================================================
+
+    studentName:
+      certificate.studentName ||
+      student.user?.name ||
+      "Student",
+
+    companyName:
+      certificate.companyName ||
+      internship.companyName ||
+      "Company Name",
+
+    internshipStartDate:
+      certificate.internshipStartDate ||
+      internship.startDate ||
+      null,
+
+    internshipEndDate:
+      certificate.internshipEndDate ||
+      internship.endDate ||
+      null,
+
+    teacherName:
+      finalTeacherName,
+
+    managerName:
+      finalManagerName,
+
+    certificateId:
+      certificate.certificateId,
+
+    // IMPORTANT
+    teacherVerified,
+    managerVerified,
+
+    teacherApproved,
+    managerApproved,
+
+    // Signatures are ONLY returned after
+    // their corresponding approval.
+    teacherSignature,
+    managerSignature,
+
+    isDownloadable:
+      certificate.isDownloadable === true,
+
+    generated:
+      certificate.generated === true,
+
+    generatedAt:
+      certificate.generatedAt || null,
+
+    issueDate:
+      certificate.issueDate || null,
+
+    certificateApproved,
   };
 };
-
 
 // GET MY CERTIFICATE STATUS
 // Student
 // GET /api/certificates/status
 const getMyCertificateStatus = async (req, res) => {
   try {
+
     // Find logged-in student's profile
     const student = await Student.findOne({
       user: req.user._id,
-    });
+    }).lean();
 
     if (!student) {
       return res.status(404).json({
@@ -198,80 +466,19 @@ const getMyCertificateStatus = async (req, res) => {
       });
     }
 
-      // ====================================================
-      // FETCH EXISTING CERTIFICATE
-      // ====================================================
-
-      const certificate = await Certificate.findOne({
-        student: student._id,
-      }).lean();
-
-      // Certificate has not been generated/stored yet
-      if (!certificate) {
-        return res.status(404).json({
-          success: false,
-          message: "Certificate has not been generated yet.",
-        });
-      }
-
-      // ====================================================
-      // RETURN ONLY THE STORED CERTIFICATE DATA
-      // ====================================================
-
-      return res.status(200).json({
-        success: true,
-
-        data: {
-          _id: certificate._id,
-
-          student: certificate.student,
-
-          studentName: certificate.studentName,
-
-          companyName: certificate.companyName,
-
-          internshipStartDate:
-            certificate.internshipStartDate,
-
-          internshipEndDate:
-            certificate.internshipEndDate,
-
-          teacherName: certificate.teacherName,
-
-          managerName: certificate.managerName,
-
-          issueDate: certificate.issueDate,
-
-          certificateId: certificate.certificateId,
-
-          teacherApproved:
-            certificate.teacherApproved === true,
-
-          managerApproved:
-            certificate.managerApproved === true,
-
-          isDownloadable:
-            certificate.isDownloadable === true,
-
-          generated:
-            certificate.generated === true,
-
-          generatedAt: certificate.generatedAt,
-
-          createdAt: certificate.createdAt,
-
-          updatedAt: certificate.updatedAt,
-        },
-      });
-
     const data =
-      await getCertificateDataForStudent(student._id);
+      await getCertificateDataForStudent(
+        student._id,
+        req
+      );
+
     return res.status(200).json({
       success: true,
       data,
     });
 
   } catch (error) {
+
     console.error(
       "Get My Certificate Status Error:",
       error
@@ -286,14 +493,21 @@ const getMyCertificateStatus = async (req, res) => {
   }
 };
 
+
+
 // GET SINGLE STUDENT CERTIFICATE
 // Teacher / Manager
 // GET /api/certificates/student/:studentId
 const getStudentCertificate = async (req, res) => {
   try {
     const { studentId } = req.params;
+    
+    
     const data =
-      await getCertificateDataForStudent(studentId);
+      await getCertificateDataForStudent(
+        studentId,
+        req
+      );
 
     return res.status(200).json({
       success: true,
@@ -435,24 +649,43 @@ const approveCertificateByTeacher = async (req, res) => {
     }
 
     // Create certificate if it doesn't exist
-    let certificate =
-      await Certificate.findOne({
-        student: studentId,
-      });
+   let certificate =
+  await Certificate.findOne({
+    student: studentId,
+  });
 
     if (!certificate) {
+
+      const studentUser =
+        await User.findById(student.user)
+          .select("name")
+          .lean();
+
       certificate = await Certificate.create({
         student: studentId,
-        studentName: student.user?.name || "",
-        companyName: internship.companyName,
-        internshipStartDate: internship.startDate,
-        internshipEndDate: internship.endDate,
-        teacherName: student.teacherId || "",
-        managerName: internship.managerName || "",
-        certificateId: student._id.toString(),
+
+        studentName:
+          studentUser?.name || "",
+
+        companyName:
+          internship.companyName,
+
+        internshipStartDate:
+          internship.startDate,
+
+        internshipEndDate:
+          internship.endDate,
+
+        teacherName:
+          student.teacherName || "",
+
+        managerName:
+          internship.managerName || "",
+
+        certificateId:
+          student._id,
       });
     }
-
     certificate.teacherApproved = true;
     await certificate.save();
     return res.status(200).json({
@@ -511,24 +744,43 @@ const approveCertificateByManager = async (req, res) => {
       });
     }
 
-    // Create certificate if needed
-    let certificate =
-      await Certificate.findOne({
-        student: studentId,
-      });
+   let certificate =
+  await Certificate.findOne({
+    student: studentId,
+  });
 
-    if (!certificate) {
-      certificate = await Certificate.create({
-        student: studentId,
-        studentName: student.user?.name || "",
-        companyName: internship.companyName,
-        internshipStartDate: internship.startDate,
-        internshipEndDate: internship.endDate,
-        teacherName: student.teacherId || "",
-        managerName: internship.managerName || "",
-        certificateId: student._id.toString(),
-      });
-    }
+if (!certificate) {
+
+  const studentUser =
+    await User.findById(student.user)
+      .select("name")
+      .lean();
+
+  certificate = await Certificate.create({
+    student: studentId,
+
+    studentName:
+      studentUser?.name || "",
+
+    companyName:
+      internship.companyName,
+
+    internshipStartDate:
+      internship.startDate,
+
+    internshipEndDate:
+      internship.endDate,
+
+    teacherName:
+      student.teacherName || "",
+
+    managerName:
+      internship.managerName || "",
+
+    certificateId:
+      student._id,
+  });
+}
 
     certificate.managerApproved = true;
     await certificate.save();

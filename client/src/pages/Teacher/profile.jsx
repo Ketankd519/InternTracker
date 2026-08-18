@@ -476,7 +476,7 @@ function getSignatureUrl(signature) {
                 <span style={{fontWeight: "400", color: "#94a3b8", marginLeft: "5px",}}>
                 </span>
               </label>
-              <input type="tel" name="mobileNo" value={formData.mobileNo} onChange={handleChange}
+              <input type="tel" name="mobileNo" value={formData.mobileNo} onChange={handleChange} required
                 placeholder="Enter 10 digit mobile number" maxLength="10" disabled={saving}
               />
             </div>
@@ -507,7 +507,7 @@ function getSignatureUrl(signature) {
             id="signature"
             name="signature"
             accept="image/jpeg,image/jpg,image/png"
-            onChange={handleChange}
+            onChange={handleChange} required
           />
 
           <small>
@@ -540,7 +540,7 @@ function getSignatureUrl(signature) {
             <div className="teacher-profile-form-group">
               <label>Course</label>
               <select name="course" value={formData.course}
-                onChange={handleChange} disabled={saving}
+                onChange={handleChange} required disabled={saving}
               >
                 <option value="">Select Course</option>
                 {courseList.map(
@@ -560,7 +560,7 @@ function getSignatureUrl(signature) {
             <div className="teacher-profile-form-group">
               <label>Department</label>
               <select name="department" value={formData.department}
-                onChange={handleChange} disabled={saving}
+                onChange={handleChange} required disabled={saving}
               >
                 <option value="">Select Department</option>
                 {departmentList.map(
@@ -584,6 +584,7 @@ function getSignatureUrl(signature) {
                 onChange={handleChange}
                 placeholder="Enter college name"
                 disabled={saving}
+                required
               />
             </div>
           </div>
