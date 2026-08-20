@@ -546,6 +546,127 @@ display: inline-block;
   margin-bottom: 20px;
 }
 
+/* ==========================================
+   TEACHER SIGNATURE SECTION
+========================================== */
+
+.teacher-signature-section {
+  grid-column: 1 / -1;   /* IMPORTANT: occupy full form-grid width */
+
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
+  gap: 24px;
+
+  width: 100%;
+  align-items: start;
+  box-sizing: border-box;
+}
+
+
+/* LEFT SIDE */
+.teacher-signature-upload {
+  width: 100%;
+}
+
+
+/* RIGHT SIDE - GUIDELINES */
+.teacher-signature-instructions {
+  margin-top: 28px;
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 16px 18px;
+
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+
+  border-radius: 8px;
+
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.teacher-signature-instructions strong {
+  display: block;
+  margin-bottom: 8px;
+
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.teacher-signature-instructions ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.teacher-signature-instructions li {
+  margin-bottom: 7px;
+}
+
+.teacher-signature-instructions li:last-child {
+  margin-bottom: 0;
+}
+
+/* ==========================================
+   SIGNATURE SAMPLE IMAGE
+========================================== */
+
+.signature-sample-image {
+  width: 100%;
+  margin-top: 18px;
+  /* border-top: 1px solid #e2e8f0; */
+  padding-top: 15px;
+}
+
+.signature-sample-image img {
+  display: block;
+  width: 100%;
+  max-width: 900px;
+  height: auto;
+  margin: 0 auto;
+  border-radius: 0;
+  border: none;
+}
+
+.teacher-signature-instructions-IMP {
+  margin-top: 28px;
+  padding: 12px 15px;
+
+  background: #f8fafc;
+  border: 1px solid #bfdbfe;
+  border-left: 4px solid #2563eb;
+  border-radius: 8px;
+
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: nowrap;
+
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);
+}
+
+.teacher-signature-instructions-IMP strong {
+  color: #1e3a8a;
+  margin-right: 6px;
+}
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 768px) {
+
+  .teacher-signature-section {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
+  }
+
+  .teacher-signature-instructions {
+    margin-top: 0;
+  }
+
+}
    /* RESPONSIVE - LAPTOP */
 @media (max-width: 1200px) {
   .teacher-main-content {

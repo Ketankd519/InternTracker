@@ -466,6 +466,7 @@ export default function ManagerViewStudent() {
                   "__v",
                   "createdAt",
                   "updatedAt",
+                  "teacherVerified",
                   "profilePhoto",
                 ].includes(key)
             )
@@ -494,6 +495,27 @@ export default function ManagerViewStudent() {
               )
             )}
 
+            {/* Teacher Verification */}
+
+          <div className="manager-detail-item">
+
+            <label>
+              Teacher Verification
+            </label>
+
+            <p>
+              {student?.teacherVerified ? (
+                <span className="manager-verified-badge">
+                  ✓ Verified
+                </span>
+              ) : (
+                <span className="manager-not-verified-badge">
+                  Not Verified
+                </span>
+              )}
+            </p>
+
+          </div>
 
         </div>
 
@@ -541,6 +563,7 @@ export default function ManagerViewStudent() {
                     "__v",
                     "createdAt",
                     "updatedAt",
+
                   ].includes(key)
               )
 
@@ -568,6 +591,27 @@ export default function ManagerViewStudent() {
                 )
               )}
 
+            {/* Manager Verification */}
+
+          <div className="manager-detail-item">
+
+            <label>
+              Manager Verification
+            </label>
+
+            <p>
+              {internship?.managerVerified ? (
+                <span className="manager-verified-badge">
+                  ✓ Verified
+                </span>
+              ) : (
+                <span className="manager-not-verified-badge">
+                  Not Verified
+                </span>
+              )}
+            </p>
+
+          </div>
 
           </div>
 

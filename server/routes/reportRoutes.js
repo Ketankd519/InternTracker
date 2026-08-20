@@ -5,6 +5,7 @@ const {
   submitReport,
   getStudentReports,
   verifyReport,
+  updateReport,
 } = require('../controllers/reportController');
 
 const { protect } = require('../middleware/authMiddleware');
@@ -17,6 +18,9 @@ const { reportUpload } = require('../middleware/uploadMiddleware');
 
 // Student submits weekly report
 router.post('/',protect,authorize('student'),reportUpload.single('attachment'),submitReport);
+
+// Student updates rejected weekly report
+router.put('/:id', protect,authorize('student'),reportUpload.single('attachment'),updateReport);
 
 // Student views own reports
 router.get('/',protect,authorize('student'),getStudentReports);

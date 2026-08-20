@@ -240,8 +240,117 @@ const verifyReport = async (req, res) => {
   }
 };
 
+// Update Rejected Weekly Report
+// PUT /api/reports/:id
+// Private - Student
+const updateReport = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find logged-in student's profile
+    const student = await Student.findOne({
+      user: req.user._id,
+    });
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student profile not found",
+      });
+    }
+
+    // Find report
+    const report = await WeeklyReport.findOne({
+      _id: id,
+      student: student._id,
+    });
+
+    if (!report) {
+      return res.status(404).json({
+        success: false,
+        message: "Weekly report not found",
+      });
+    }
+
+    // Only rejected reports can be edited
+    if (report.status !== "Rejected") {
+      return res.status(400).json({
+        success: false,
+        message: "Only rejected reports can be edited.",
+      });
+    }
+
+    const {
+      taskTitle,
+      description,
+      submissionDate,
+    } = req.body;
+
+    // Validate required fields
+    if (!taskTitle || !description || !submissionDate) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Task title, description and submission date are required.",
+      });
+    }
+
+    // Find student's internship
+    const internship = await Internship.findOne({
+      student: student._id,
+    });
+
+    if (!internship) {
+      return res.status(404).json({
+        success: false,
+        message: "Internship record not found.",
+      });
+    }
+
+    // IMPORTANT:
+    // weekNumber is intentionally NOT taken from req.body.
+    // Therefore student cannot change the week number.
+
+    // Update editable fields
+    report.taskTitle = taskTitle;
+    report.description = description;
+    report.submissionDate = submissionDate;
+
+    // Update attachment only if a new file was uploaded
+    if (req.file) {
+      report.attachment = `uploads/reports/${req.file.filename}`;
+    }
+
+    // Reset verification after student correction
+    report.status = "Pending";
+    report.managerVerified = false;
+
+    // Clear old rejection remark
+    report.rejectionRemark = "";
+
+    const updatedReport = await report.save();
+
+    return res.status(200).json({
+      success: true,
+      message:
+        `Weekly report for Week ${report.weekNumber} updated successfully and sent for manager approval.`,
+      data: updatedReport,
+    });
+
+  } catch (error) {
+    console.error("Update Weekly Report Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Error updating weekly report",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   submitReport,
   getStudentReports,
   verifyReport,
+  updateReport,
 };

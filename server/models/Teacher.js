@@ -9,6 +9,12 @@ const teacherSchema = new mongoose.Schema(
       unique: true,
     },
 
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
     teacherId: {
       type: String,
       required: true,

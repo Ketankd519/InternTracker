@@ -783,12 +783,18 @@ if (!certificate) {
 }
 
     certificate.managerApproved = true;
+    internship.status = "completed";
     await certificate.save();
+    await internship.save();
     return res.status(200).json({
       success: true,
       message:
         "Manager certificate approval completed.",
       data: certificate,
+       internship: {
+        id: internship._id,
+        status: internship.status,
+       },
     });
 
   } catch (error) {

@@ -33,12 +33,31 @@ export default function Internship() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  const [managers, setManagers] = useState([]);
+
   // Fetch Student + Internship
   const fetchInternshipData = useCallback(
     async () => {
       try {
         setFetching(true);
         setError("");
+
+        // 0. Fetch All Managers
+        try {
+          const managerResponse = await API.get("/manager/all");
+
+          console.log(
+            "Managers Response:",
+            managerResponse.data
+          );
+
+          setManagers(
+            managerResponse.data.managers || []
+          );
+        } catch (err) {
+          console.error("Failed to fetch managers:", err);
+          setManagers([]);
+        }
 
         // 1. Fetch Student Profile
         try {
@@ -189,10 +208,64 @@ export default function Internship() {
     if (name === "department") {
       return;
     }
+    
+    // Manager ID selected
+    if (name === "managerId") {
+      const selectedManager = managers.find(
+        (manager) => manager.managerId === value
+      );
+
+      if (selectedManager) {
+        setFormData((prev) => ({
+          ...prev,
+          managerId: selectedManager.managerId,
+          companyName: selectedManager.companyName || "",
+          managerName: selectedManager.name || "",
+          managerEmail: selectedManager.email || "",
+          managerPhone: selectedManager.mobileNo || "",
+        }));
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          managerId: "",
+          companyName: "",
+          managerName: "",
+          managerEmail: "",
+          managerPhone: "",
+        }));
+      }
+
+      return;
+    }
+
+    // Start date cannot be before today
+    if (name === "startDate") {
+      setFormData((prev) => ({
+        ...prev,
+        startDate: value,
+        endDate: "",
+      }));
+      return;
+    }
+
+    // End date must be at least 30 days after start date
+    if (name === "endDate" && formData.startDate) {
+      const start = new Date(formData.startDate);
+      const end = new Date(value);
+
+      const minimumEndDate = new Date(start);
+      minimumEndDate.setDate(
+        minimumEndDate.getDate() + 30
+      );
+
+      if (end < minimumEndDate) {
+        return;
+      }
+    }
 
     if (name === "totalWeeks") {
-    // 1. Allow backspace / empty input
-    if (value === "") {
+      // 1. Allow backspace / empty input
+      if (value === "") {
       setFormData((prev) => ({ ...prev, [name]: "" }));
       return;
     }
@@ -209,6 +282,46 @@ export default function Internship() {
       ...prev,
       [name]: value,
     }));
+  };
+
+  // Get today's date in YYYY-MM-DD format
+  const getTodayDate = () => {
+    const today = new Date();
+
+    const year = today.getFullYear();
+    const month = String(
+      today.getMonth() + 1
+    ).padStart(2, "0");
+    const day = String(
+      today.getDate()
+    ).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  // Get minimum allowed ending date
+  const getMinimumEndDate = () => {
+    if (!formData.startDate) {
+      return "";
+    }
+
+    const start = new Date(
+      formData.startDate
+    );
+
+    start.setDate(
+      start.getDate() + 30
+    );
+
+    const year = start.getFullYear();
+    const month = String(
+      start.getMonth() + 1
+    ).padStart(2, "0");
+    const day = String(
+      start.getDate()
+    ).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
   };
 
   // Submit / Update Internship
@@ -365,18 +478,28 @@ export default function Internship() {
             <h2>Company Details</h2>
             <div className="profile-grid">
 
-              <input type="text" name="managerId"
-                placeholder="Manager ID"
-                maxLength="8"
+              <select
+                name="managerId"
                 value={formData.managerId}
                 onChange={handleChange}
                 required
-              />
+              >
+                <option value="">Select Manager ID</option>
+
+                {managers.map((manager) => (
+                  <option
+                    key={manager._id}
+                    value={manager.managerId}
+                  >
+                    {manager.managerId}
+                  </option>
+                ))}
+              </select>
 
               <input type="text" name="companyName"
                 placeholder="Company Name"
                 value={ formData.companyName}
-                onChange={handleChange}
+                readOnly
                 required
               />
 
@@ -398,14 +521,14 @@ export default function Internship() {
               <input type="text" name="managerName"
                 placeholder="Manager Name"
                 value={formData.managerName}
-                onChange={handleChange}
+                readOnly
                 required
               />
 
               <input type="email" name="managerEmail"
                 placeholder="Manager Email"
                 value={ formData.managerEmail}
-                onChange={handleChange}
+                readOnly
                 required
               />
 
@@ -413,7 +536,7 @@ export default function Internship() {
                 placeholder="Manager Phone"
                 maxLength="10"
                 value={ formData.managerPhone}
-                onChange={handleChange}
+                readOnly
                 required
               />
             </div>
@@ -442,6 +565,7 @@ export default function Internship() {
                   id="startDate"
                   name="startDate"
                   value={formData.startDate}
+                  min={getTodayDate()}
                   onChange={handleChange}
                   required
                 />
@@ -454,6 +578,7 @@ export default function Internship() {
                   id="endDate"
                   name="endDate"
                   value={formData.endDate}
+                  min={getMinimumEndDate()}
                   onChange={handleChange}
                   required
                 />

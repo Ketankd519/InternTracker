@@ -422,6 +422,28 @@ function getReportStatusClass(status) {
 
               ))}
 
+              {/* Manager Verification */}
+
+          <div className="detail-item">
+
+            <label>
+              Manager Verification
+            </label>
+
+            <p>
+              {internship?.managerVerified ? (
+                <span className="verified-badge">
+                  ✓ Verified
+                </span>
+              ) : (
+                <span className="not-verified-badge">
+                  Not Verified
+                </span>
+              )}
+            </p>
+
+          </div>
+
           </div>
 
         )}

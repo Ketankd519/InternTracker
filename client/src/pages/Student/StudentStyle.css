@@ -365,6 +365,28 @@ transition:.3s;
 background:#1d4ed8;
 }
 
+/* Edit Report Button */
+.report-edit-btn {
+  margin-top: 8px;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.report-edit-btn:hover {
+  background: #1d4ed8;
+}
+
+.report-edit-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
 @media(max-width:768px){
 
 .profile-grid{

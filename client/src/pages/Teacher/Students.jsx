@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./TeacherStyle.css";
 import api from "../../services/api";
+import "./TeacherStyle.css";
 
 export default function TeacherStudents() {
   const navigate = useNavigate();
-
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
+
+    //The syntax error show because this function is colling but not using.
+    //This is because the new user register function can not fetch the data.
+    //If Already register stuent with complete profile the data is fetching and the function is using.
+    // so ignore this error.
     fetchStudents();
   }, []);
 
@@ -34,6 +38,9 @@ export default function TeacherStudents() {
     }
   };
 
+
+
+
   const getStatusClass = (status) => {
     switch (status) {
       case "completed":
@@ -52,6 +59,9 @@ export default function TeacherStudents() {
         return "status-default";
     }
   };
+
+
+
 
   if (loading) {
     return (
@@ -103,6 +113,7 @@ export default function TeacherStudents() {
               <th>Current Week</th>
               <th>Total Weeks</th>
               <th>Status</th>
+              <th>Manager Verification</th>
               <th>Teacher Verification</th>
               <th>Action</th>
             </tr>
@@ -153,6 +164,9 @@ export default function TeacherStudents() {
                     {student.totalWeeks || "-"}
                   </td>
 
+
+
+
                   <td>
                     <span
                       className={`status-badge ${getStatusClass(
@@ -162,6 +176,16 @@ export default function TeacherStudents() {
                       {student.internshipStatus}
                     </span>
                   </td>
+
+
+                    <td>
+                      {student.managerVerified ? (
+                        <span className="verified-badge">✓ Verified</span>
+                      ) : (
+                        <span className="not-verified-badge">Not Verified</span>
+                      )}
+                    </td>
+
 
                   <td>
 
@@ -180,6 +204,11 @@ export default function TeacherStudents() {
                     )}
 
                   </td>
+
+
+
+
+                  
 
                   <td>
 

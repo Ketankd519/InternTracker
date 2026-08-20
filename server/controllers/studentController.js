@@ -48,6 +48,7 @@ const createStudentProfile = async (req, res) => {
       enrollmentNumber,
       teacherId,
       teacherName,
+      teacherNo,
       cgpa,
     } = req.body;
 
@@ -75,6 +76,7 @@ const createStudentProfile = async (req, res) => {
       enrollmentNumber,
       teacherId,
       teacherName,
+      teacherNo,
       cgpa,
       profileCompleted: true,
       // Teacher verification starts as false
@@ -89,11 +91,6 @@ const createStudentProfile = async (req, res) => {
       "user",
       "name email role"
     );
-
-    // await savedProfile.populate(
-    //   "teacherId",
-    //   "name email"
-    // );
 
     return res.status(201).json({
       success: true,

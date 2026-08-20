@@ -17,6 +17,7 @@ const emptyForm = {
   enrollmentNumber: "",
   teacherId: "",
   teacherName: "",
+  teacherNo: "",
   cgpa: "",
   profilePhoto: "",
 };
@@ -63,6 +64,8 @@ const StudentProfile = () => {
   const [fetching, setFetching] = useState(true);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [teachers, setTeachers] = useState([]);
+  const [loadingTeachers, setLoadingTeachers] = useState(false);
 
   // Fetch Profile
   useEffect(() => {
@@ -93,7 +96,8 @@ const StudentProfile = () => {
         // EXISTING PROFILE
         const data = result.data;
         setProfileExists(true);
-        setFormData({phone: data.phone || "",
+        setFormData({
+          phone: data.phone || "",
           dob: data.dob
             ? new Date(data.dob)
                 .toISOString()
@@ -112,6 +116,7 @@ const StudentProfile = () => {
           enrollmentNumber: data.enrollmentNumber || "",
           teacherId: data.teacherId || "",
           teacherName: data.teacherName || "",
+          teacherNo: data.teacherNo || "",
           cgpa: data.cgpa ?? "",
           profilePhoto: data.profilePhoto || "",
         });
@@ -128,6 +133,34 @@ const StudentProfile = () => {
     };
     loadProfile();
   }, []);
+
+  // FETCH TEACHERS BY DEPARTMENT
+  const fetchTeachersByDepartment = async (department) => {
+    try {
+      setLoadingTeachers(true);
+      setTeachers([]);
+
+      if (!department) {
+        return;
+      }
+
+      const response = await API.get(
+        `/teacher/list?department=${encodeURIComponent(department)}`
+      );
+
+      setTeachers(response.data?.teachers || []);
+    } catch (err) {
+      console.error("Fetch Teachers Error:", err);
+
+      setTeachers([]);
+      setError(
+        err.response?.data?.message ||
+          "Unable to fetch teachers."
+      );
+    } finally {
+      setLoadingTeachers(false);
+    }
+  };
 
   // Handle Input
   const handleChange = (e) => {
@@ -158,6 +191,38 @@ const StudentProfile = () => {
     }
     return; // Block invalid inputs
   }
+
+    // Department changed
+    if (name === "department") {
+      setFormData((prev) => ({
+        ...prev,
+        department: value,
+        teacherId: "",
+        teacherName: "",
+        teacherNo: "",
+        college: "",
+      }));
+
+      fetchTeachersByDepartment(value);
+      return;
+    }
+
+    // Teacher selected
+    if (name === "teacherId") {
+      const selectedTeacher = teachers.find(
+        (teacher) => teacher.teacherId === value
+      );
+
+      setFormData((prev) => ({
+        ...prev,
+        teacherId: value,
+        teacherName: selectedTeacher?.name || "",
+        teacherNo: selectedTeacher?.mobileNo || "",
+        college: selectedTeacher?.collegeName || "",
+      }));
+
+      return;
+    }
 
     setFormData((prev) => ({
       ...prev,
@@ -209,6 +274,8 @@ const StudentProfile = () => {
       if (formData.teacherName.trim() !== "") {
         data.append("teacherName", formData.teacherName.trim());
       }
+
+      data.append("teacherNo",formData.teacherNo);
 
       if (formData.cgpa !== "") {
         data.append("cgpa",
@@ -288,6 +355,7 @@ const StudentProfile = () => {
           enrollmentNumber:profile.enrollmentNumber || "",
           teacherId: profile.teacherId || "",
           teacherName: profile.teacherName || "",
+          teacherNo: profile.teacherNo || "",
           cgpa: profile.cgpa ?? "",
           profilePhoto: profile.profilePhoto || "",
         });
@@ -371,6 +439,8 @@ const StudentProfile = () => {
                 required
               />
 
+              
+
               <div className="profile-field">
                 <label htmlFor="dob">Date of Birth</label>
                 <input
@@ -447,13 +517,6 @@ const StudentProfile = () => {
                 required
               />
 
-              <input type="text" name="teacherId"
-                placeholder="Teacher ID"
-                maxLength="9"
-                value={formData.teacherId}
-                onChange={handleChange}
-                required
-              />
 
               <textarea rows="4" name="address"
                 placeholder="Address"
@@ -472,24 +535,24 @@ const StudentProfile = () => {
                       formData.profilePhoto instanceof File
                         ? URL.createObjectURL(formData.profilePhoto)
                         : getProfilePhotoUrl(formData.profilePhoto)
-                    }
-                    alt="Student Profile Preview"
-                    onLoad={(e) => {
-                      console.log(
-                        "Profile image loaded successfully:",
-                        e.currentTarget.src
-                      );
-                    }}
-                    onError={(e) => {
-                      console.error(
-                        "PROFILE IMAGE FAILED:",
-                        e.currentTarget.src
-                      );
-                    }}
-                  />
-                ) : (
-                  <span>No photo selected</span>
-                )}
+                      }
+                      alt="Student Profile Preview"
+                      onLoad={(e) => {
+                        console.log(
+                          "Profile image loaded successfully:",
+                          e.currentTarget.src
+                        );
+                      }}
+                      onError={(e) => {
+                        console.error(
+                          "PROFILE IMAGE FAILED:",
+                          e.currentTarget.src
+                        );
+                      }}
+                      />
+                    ) : (
+                      <span>No photo selected</span>
+                    )}
               </div>
 
               <input type="file"
@@ -507,40 +570,73 @@ const StudentProfile = () => {
           <div className="profile-section">
             <h2>Academic Details</h2>
             <div className="profile-grid">
+              <select name="department" value={formData.department}onChange={handleChange}required>
+                <option value="">Select Department</option>
+                <option value="CA-Computer Application">CA - Computer Application</option>
+                <option value="CS-Computer Science">CS - Computer Science</option>
+                <option value="IT-Information Technology">IT - Information Technology</option>
+                <option value="AI-Artificial Intelligence">AI - Artificial Intelligence</option>
+                <option value="DS-Data Science">DS - Data Science</option>
+                <option value="SE-Software Engineering">SE - Software Engineering</option>
+                <option value="EL-Electronics">EL - Electronics</option>
+                <option value="ET-Electronics and Telecommunication">ET - Electronics and Telecommunication</option>
+                <option value="ME-Mechanical Engineering">ME - Mechanical Engineering</option>
+                <option value="CE-Civil Engineering">CE - Civil Engineering</option>
+                <option value="EE-Electrical Engineering">EE - Electrical Engineering</option>
+                <option value="MN-Management">MN - Management</option>
+                <option value="CM-Commerce">CM - Commerce</option>
+                <option value="SC-Science">SC - Science</option>
+                <option value="AR-Arts">AR - Arts</option>
+                <option value="Other">Other</option>
+              </select>
+
+              <select
+                name="teacherId"
+                value={formData.teacherId}
+                onChange={handleChange}
+                required
+                disabled={!formData.department || loadingTeachers}
+              >
+                <option value="">
+                  {loadingTeachers
+                    ? "Loading Teachers..."
+                    : !formData.department
+                    ? "Select Department First"
+                    : teachers.length === 0
+                    ? "No Teachers Available"
+                    : "Select Teacher ID"}
+                </option>
+
+                {teachers.map((teacher) => (
+                  <option
+                    key={teacher.teacherId}
+                    value={teacher.teacherId}
+                  >
+                    {teacher.teacherId}
+                  </option>
+                ))}
+              </select>
 
               <input type="text" name="teacherName"
                 placeholder="Teacher Name"
                 value={formData.teacherName}
-                onChange={handleChange}
+                readOnly
                 required
               />
 
+              <input type="text" name="teacherNo"
+                placeholder="Teacher Number"
+                maxLength="10"
+                value={formData.teacherNo}
+                readOnly
+                required
+              />
               <input type="text" name="college"
                 placeholder="College"
                 value={formData.college}
-                onChange={handleChange}
+                readOnly
                 required
               />
-
-              <select name="department" value={formData.department}onChange={handleChange}required>
-                <option value="">Select Department</option>
-                <option value="CA">CA - Computer Application</option>
-                <option value="CS">CS - Computer Science</option>
-                <option value="IT">IT - Information Technology</option>
-                <option value="AI">AI - Artificial Intelligence</option>
-                <option value="DS">DS - Data Science</option>
-                <option value="SE">SE - Software Engineering</option>
-                <option value="EL">EL - Electronics</option>
-                <option value="ET">ET - Electronics and Telecommunication</option>
-                <option value="ME">ME - Mechanical Engineering</option>
-                <option value="CE">CE - Civil Engineering</option>
-                <option value="EE">EE - Electrical Engineering</option>
-                <option value="MN">MN - Management</option>
-                <option value="CM">CM - Commerce</option>
-                <option value="SC">SC - Science</option>
-                <option value="AR">AR - Arts</option>
-                <option value="Other">Other</option>
-              </select>
 
               <input type="number" name="semester"
                 placeholder="Semester" min="1"
@@ -565,7 +661,6 @@ const StudentProfile = () => {
                 onChange={handleChange}
                 required
               />
-
 
               <input type="number" step="0.01" name="cgpa"
                 placeholder="CGPA (e.g. 8.97, 10)"

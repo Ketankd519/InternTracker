@@ -93,7 +93,11 @@ const studentSchema = new mongoose.Schema(
       trim: true,
       default: "",
     },
-
+    teacherNo: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     cgpa: {
       type: Number,
       min: 0,

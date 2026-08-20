@@ -434,34 +434,28 @@ function getSignatureUrl(signature) {
   // PAGE
   return (
     <div className="teacher-profile-page">
-
-          {/* PAGE HEADER */}
       <div className="profile-page-header">
         <h1>Teacher Profile</h1>
         <p>Manage your teacher profile information.</p>
       </div>
 
-          {/* MAIN PROFILE CONTAINER */}
       <div className="teacher-profile-container">
 
-            {/* BASIC INFORMATION */}
         <div className="teacher-profile-section">
           <h2>Basic Information</h2>
+
           <div className="teacher-profile-form-grid">
 
-                {/* TEACHER NAME */}
             <div className="teacher-profile-form-group">
               <label>Teacher Name</label>
               <input type="text" value={formData.name} readOnly/>
             </div>
 
-                {/* TEACHER EMAIL */}
             <div className="teacher-profile-form-group">
               <label>Teacher Email</label>
               <input type="email" value={formData.email} readOnly/>
             </div>
 
-                {/* TEACHER ID */}
             <div className="teacher-profile-form-group">
               <label>Teacher ID</label>
               <input type="text" className="teacher-profile-id"
@@ -470,7 +464,6 @@ function getSignatureUrl(signature) {
               />
             </div>
 
-                {/* MOBILE NUMBER */}
             <div className="teacher-profile-form-group">
               <label>Mobile No
                 <span style={{fontWeight: "400", color: "#94a3b8", marginLeft: "5px",}}>
@@ -481,55 +474,50 @@ function getSignatureUrl(signature) {
               />
             </div>
 
-            <div className="teacher-signature-upload">
+            {/* <div className="teacher-signature-section"> */}
+              <div className="teacher-signature-upload">
+                <label htmlFor="signature">Teacher Signature</label>
 
-          <label htmlFor="signature">
-            Teacher Signature
-          </label>
+                  <div className="teacher-signature-preview">
+                    {formData.signature ? (
+                    <img
+                      src={
+                        formData.signature instanceof File
+                          ? URL.createObjectURL(formData.signature)
+                          : getSignatureUrl(formData.signature)
+                      }
+                      alt="Teacher Signature"
+                    />
+                    ) : (
+                      <span>No signature uploaded</span>
+                    )}
+                  </div>
 
-<div className="teacher-signature-preview">
-  {formData.signature ? (
-    <img
-      src={
-        formData.signature instanceof File
-          ? URL.createObjectURL(formData.signature)
-          : getSignatureUrl(formData.signature)
-      }
-      alt="Teacher Signature"
-    />
-  ) : (
-    <span>No signature uploaded</span>
-  )}
-</div>
+                  <input
+                    type="file" id="signature" name="signature"
+                    accept="image/jpeg,image/jpg,image/png"
+                    onChange={handleChange} required
+                  />
 
-          <input
-            type="file"
-            id="signature"
-            name="signature"
-            accept="image/jpeg,image/jpg,image/png"
-            onChange={handleChange} required
-          />
-
-          <small>
-            Only JPG, JPEG and PNG images are allowed.
-          </small>
-
-        </div>
-
-                {/* EXPERIENCE */}
-            <div className="teacher-profile-form-group">
-              <label>Experience
-                <span style={{fontWeight: "400", color: "#94a3b8", marginLeft: "5px",}}>
-                  (Optional)
-                </span>
-              </label>
-              <input type="number" name="experience" value={formData.experience}
-                onChange={handleChange} placeholder="Experience in years"
-                min="0" step="0.1" disabled={saving}
-              />
+                  <small>Recommended format: PNG (transparent background).</small>
+                <div className="teacher-signature-instructions-IMP">
+                  <strong>Signature Guidelines:</strong>
+                     ✍️ Use a 0.7–1.0 mm black/dark-blue pen, remove the<br/> background,
+                     and upload a clear transparent PNG. This signature will be displayed<br/> on the certificate.
+                </div>
             </div>
-          </div>
-        </div>
+
+          <div className="teacher-signature-instructions">
+            <strong>Signature Guidelines:</strong>
+              <div className="signature-sample-image">
+                <img
+                  src="/images/signature-guidelines.png"
+                  alt="Accepted and Not Accepted signature examples"
+                />
+              </div>
+    </div>
+  </div>
+</div>
 
             {/* PROFESSIONAL INFORMATION */}
         <div className="teacher-profile-section">
@@ -576,8 +564,8 @@ function getSignatureUrl(signature) {
               </select>
             </div>
 
-                {/* COLLEGE NAME */}
-            <div className="teacher-profile-form-group full-width">
+              {/* COLLEGE NAME */}
+            <div className="teacher-profile-form-group ">
               <label>College Name</label>
               <input type="text" name="collegeName"
                 value={formData.collegeName}
@@ -587,6 +575,23 @@ function getSignatureUrl(signature) {
                 required
               />
             </div>
+
+                {/* EXPERIENCE */}
+            <div className="teacher-profile-form-group">
+              <label>Experience
+                <span style={{fontWeight: "400", color: "#94a3b8", marginLeft: "5px",}}>
+                  (Optional)
+                </span>
+              </label>
+              <input type="number" name="experience" value={formData.experience}
+                onChange={handleChange} placeholder="Experience in years"
+                min="0" step="0.1" disabled={saving}
+              />
+            </div>
+
+
+
+
           </div>
         </div>
 

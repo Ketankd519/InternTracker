@@ -25,6 +25,10 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  // Edit Report State
+  const [editingReportId, setEditingReportId] = useState(null);
+  const [editingLoading, setEditingLoading] = useState(false);
+
   // Fetch Student Reports
   useEffect(() => {
 
@@ -82,6 +86,32 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
     }
   };
  
+  // Edit rejected report
+  const handleEdit = (report) => {
+    setEditingReportId(report._id);
+
+    setFormData({
+      weekNumber: report.weekNumber,
+      taskTitle: report.taskTitle || "",
+      description: report.description || "",
+      attachment: null,
+      submissionDate: report.submissionDate
+        ? new Date(report.submissionDate)
+            .toISOString()
+            .split("T")[0]
+        : "",
+    });
+
+    setMessage("");
+    setError("");
+
+    // Scroll to form
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
   // Handle Input Changes
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -99,7 +129,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
     }
   };
 
-  // Submit Weekly Report
+    // Submit / Update Weekly Report
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -123,36 +153,33 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
       return;
     }
 
-    // Validate week number against internship total weeks
+    // Validate week number
     if (totalWeeks && weekNumber > totalWeeks) {
-      const msg = `Invalid week number. Your internship is for ${totalWeeks} weeks. You cannot submit a report for Week ${weekNumber}.`;
+      const msg =
+        `Invalid week number. Your internship is for ${totalWeeks} weeks. You cannot submit a report for Week ${weekNumber}.`;
 
       setError(msg);
       alert(msg);
-
       return;
     }
 
-    // Validate minimum week number
     if (weekNumber < 1) {
       const msg = "Week number must be at least 1.";
 
       setError(msg);
       alert(msg);
-
       return;
     }
 
+    // Count words
     const countWords = (text) => {
       return text.trim()
         ? text.trim().split(/\s+/).length
         : 0;
     };
 
-    // Validate description word limit
-    const descriptionWordCount = countWords(
-      formData.description
-    );
+    const descriptionWordCount =
+      countWords(formData.description);
 
     if (descriptionWordCount > 200) {
       const msg =
@@ -180,34 +207,79 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
     setError("");
 
     try {
-      // FormData
       const data = new FormData();
 
-      data.append("weekNumber", formData.weekNumber);
-      data.append("taskTitle", formData.taskTitle);
-      data.append("description", formData.description);
-      data.append("submissionDate", formData.submissionDate);
-
-      if (formData.attachment) {
-        data.append("attachment", formData.attachment);
+      // IMPORTANT:
+      // Week number is sent only during NEW submission.
+      // During edit, backend keeps the original week number.
+      if (!editingReportId) {
+        data.append(
+          "weekNumber",
+          formData.weekNumber
+        );
       }
 
-      // Submit Report
-      const response = await API.post("/reports", data);
+      data.append(
+        "taskTitle",
+        formData.taskTitle
+      );
+
+      data.append(
+        "description",
+        formData.description
+      );
+
+      data.append(
+        "submissionDate",
+        formData.submissionDate
+      );
+
+      if (formData.attachment) {
+        data.append(
+          "attachment",
+          formData.attachment
+        );
+      }
+
+      let response;
+
+      if (editingReportId) {
+
+        // UPDATE rejected report
+        response = await API.put(
+          `/reports/${editingReportId}`,
+          data
+        );
+
+      } else {
+
+        // NEW report
+        response = await API.post(
+          "/reports",
+          data
+        );
+      }
 
       console.log(
-        "Weekly Report Submit Response:",
+        "Weekly Report Response:",
         response.data
       );
 
       const successMessage =
         response.data.message ||
-        "Weekly report submitted successfully.";
+        (
+          editingReportId
+            ? "Weekly report updated successfully."
+            : "Weekly report submitted successfully."
+        );
 
       setMessage(successMessage);
       alert(successMessage);
 
-      // Reset Form
+      // Exit edit mode
+      setEditingReportId(null);
+
+      // Reset form
       setFormData({
         weekNumber: "",
         taskTitle: "",
@@ -219,10 +291,11 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
       // Reset file input
       e.target.reset();
 
-      // Refresh Reports Table
+      // Refresh reports
       await fetchReports();
 
     } catch (err) {
+
       console.error(
         "Weekly Report Error:",
         err
@@ -230,7 +303,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
       const errorMessage =
         err.response?.data?.message ||
-        "Unable to submit weekly report. Please try again.";
+        "Unable to process weekly report. Please try again.";
 
       setError(errorMessage);
       alert(errorMessage);
@@ -327,6 +400,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
                   max={totalWeeks || undefined}
                   value={formData.weekNumber}
                   onChange={handleChange}
+                  disabled={editingReportId !== null}
                   required
                 />
               </div>
@@ -383,11 +457,41 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
               {/* Submit Button */}
           <div className="profile-buttons">
-            <button type="submit" className="profile-btn" disabled={loading}>
-              {loading
-                ? "Submitting..."
-                : "Submit Report"}
+          {editingReportId && !loading && (
+            <button
+              type="button"
+              className="profile-btn"
+              onClick={() => {
+                setEditingReportId(null);
+
+                setFormData({
+                  weekNumber: "",
+                  taskTitle: "",
+                  description: "",
+                  attachment: null,
+                  submissionDate: "",
+                });
+
+                setMessage("");
+                setError("");
+              }}
+            >
+              Cancel Edit
             </button>
+          )}
+          <button
+            type="submit"
+            className="profile-btn"
+            disabled={loading}
+          >
+            {loading
+              ? editingReportId
+                ? "Updating..."
+                : "Submitting..."
+              : editingReportId
+                ? "Update Report"
+                : "Submit Report"}
+          </button>
           </div>
         </form>
 
@@ -468,11 +572,10 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
                         {/* Status */}
                         <td>
-                          <span className={getStatusClass( report.status )}>
+                          <span className={getStatusClass(report.status)}>
                             {report.status || "Pending"}
                           </span>
 
-                          {/* Rejection Remark */}
                           {report.status === "Rejected" &&
                             (report.remark || report.rejectionRemark) && (
                               <div className="rejection-remark">
@@ -480,6 +583,17 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
                                 {report.remark || report.rejectionRemark}
                               </div>
                             )}
+
+                          {report.status === "Rejected" && (
+                            <button
+                              type="button"
+                              className="report-edit-btn"
+                              onClick={() => handleEdit(report)}
+                              disabled={editingReportId !== null}
+                            >
+                              Edit
+                            </button>
+                          )}
                         </td>
                       </tr>
                     );

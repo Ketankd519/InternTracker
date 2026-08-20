@@ -173,7 +173,7 @@
 .certificate-teacher-name {
   position: absolute;
   z-index: 6;
-  left: 150px;
+  left: 165px;
   bottom: 140px;
   width: 300px;
   text-align: center;
@@ -210,10 +210,10 @@
 .teacher-signature {
   position: absolute;
   z-index: 8;
-  left: 19%;
-  bottom: 15%;
-  width: 22%;
-  height: 8%;
+  left: 200px;
+  bottom: 65px;
+  width: 200px;
+  height: 65px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -230,10 +230,10 @@
 .manager-signature {
   position: absolute;
   z-index: 8;
-  right: 19%;
-  bottom: 15%;
-  width: 22%;
-  height: 8%;
+  right: 140px;
+  bottom: 65px;
+  width: 200px;
+  height: 65px;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -9,6 +9,18 @@ const managerSchema = new mongoose.Schema(
       unique: true,
     },
 
+    email: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
     managerId: {
       type: String,
       required: true,

@@ -468,45 +468,24 @@ if (formData.signature instanceof File) {
                 required
               />
 
-              <small>
-                Only JPG, JPEG and PNG images are allowed.
-              </small>
-
+        <small>Recommended format: PNG (transparent background).</small>
+          <div className="teacher-signature-instructions-IMP">
+            <strong>Signature Guidelines:</strong>
+            ✍️ Use a 0.7–1.0 mm black/dark-blue pen, 
+            remove the <br/>background, and upload a clear transparent PNG. 
+            This signature will be displayed<br/> on the certificate.
+          </div>
             </div>
-
-            {/* =================================================
-                EXPERIENCE
-            ================================================== */}
-
-            <div className="manager-profile-form-group">
-
-              <label>
-                Experience
-
-                <span
-                  style={{
-                    fontWeight: "400",
-                    color: "#94a3b8",
-                    marginLeft: "5px",
-                  }}
-                >
-                  (Optional)
-                </span>
-              </label>
-
-              <input
-                type="number"
-                name="experience"
-                value={formData.experience}
-                onChange={handleChange}
-                placeholder="Experience in years"
-                min="0"
-                step="0.1"
-                disabled={saving}
+            <div className="teacher-signature-instructions">
+          <strong>Signature Guidelines:</strong>
+          <div className="signature-sample-image">
+              <img
+                src="/images/signature-guidelines2.png"
+                alt="Accepted and Not Accepted signature examples"
               />
-
-            </div>
-
+          </div>
+      </div>
+            
           </div>
 
         </div>
@@ -541,6 +520,35 @@ if (formData.signature instanceof File) {
                 placeholder="Enter company name"
                 disabled={saving}
                 required
+              />
+
+            </div>
+
+            <div className="manager-profile-form-group full-width">
+
+              <label>
+                Experience
+
+                <span
+                  style={{
+                    fontWeight: "400",
+                    color: "#94a3b8",
+                    marginLeft: "5px",
+                  }}
+                >
+                  (Optional)
+                </span>
+              </label>
+
+              <input
+                type="number"
+                name="experience"
+                value={formData.experience}
+                onChange={handleChange}
+                placeholder="Experience in years"
+                min="0"
+                step="0.1"
+                disabled={saving}
               />
 
             </div>

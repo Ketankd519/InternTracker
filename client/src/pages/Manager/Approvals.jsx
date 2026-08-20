@@ -95,6 +95,7 @@ export default function ManagerApprovals() {
               <th>Current Week</th>
               <th>Total Weeks</th>
               <th>Status</th>
+              <th>Teacher Verification</th>
               <th>Manager Verification</th>
               <th>Action</th>
             </tr>
@@ -104,7 +105,7 @@ export default function ManagerApprovals() {
             {students.length === 0 ? (
               <tr>
                 <td
-                  colSpan="9"
+                  colSpan="10"
                   className="manager-empty-table"
                 >
                   No students found.
@@ -144,6 +145,9 @@ export default function ManagerApprovals() {
                     <td>
                       {student.totalWeeks || "-"}
                     </td>
+
+
+
                     <td>
                       <span className={
                           `manager-status-badge ${
@@ -156,6 +160,28 @@ export default function ManagerApprovals() {
                         {student.internshipStatus}
                       </span>
                     </td>
+
+
+
+
+                  <td>
+
+                    {student.teacherVerified ? (
+
+                      <span className="manager-verified-badge">
+                        ✓ Verified
+                      </span>
+
+                    ) : (
+
+                      <span className="manager-not-verified-badge">
+                        Not Verified
+                      </span>
+
+                    )}
+
+                  </td>
+
                     <td>
                       {student.managerVerified ? (
                         <span className="manager-verified-badge">✓ Verified</span>
@@ -163,6 +189,9 @@ export default function ManagerApprovals() {
                         <span className="manager-not-verified-badge">Not Verified</span>
                       )}
                     </td>
+
+
+
                     <td>
                       <button
                         className="manager-view-btn"

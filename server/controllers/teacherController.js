@@ -137,7 +137,9 @@ const getTeacherStudents = async (req, res) => {
         internshipStatus: internship
           ? internship.status
           : "not-found",
-
+        managerVerified: internship
+          ? internship.managerVerified || false
+          : false,
         teacherVerified: student
           ? student.teacherVerified || false
           : false,
@@ -348,6 +350,16 @@ const createTeacherProfile = async (req, res) => {
       collegeName,
     } = req.body;
 
+    // Get teacher name from User collection
+    const user = await User.findById(req.user._id).select("name");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Teacher account not found",
+      });
+    }
+
     // Required validation
     if (!course || !course.trim()) {
       return res.status(400).json({
@@ -445,6 +457,7 @@ const createTeacherProfile = async (req, res) => {
 
     const teacher = await Teacher.create({
       user: req.user._id,
+      name: user.name,
       teacherId,
       course: course.trim(),
       department: department.trim(),
@@ -495,6 +508,15 @@ const updateTeacherProfile = async (req, res) => {
       user: req.user._id,
     });
 
+    const user = await User.findById(req.user._id).select("name");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Teacher account not found",
+      });
+    }
+
     if (!teacher) {
       return res.status(404).json({
         success: false,
@@ -525,6 +547,7 @@ const updateTeacherProfile = async (req, res) => {
 
     // IMPORTANT:
     // teacherId is NOT updated here.
+    teacher.name = user.name;
     teacher.course = course.trim();
     teacher.department = department.trim();
     teacher.mobileNo = mobileNo?.trim() || "";
@@ -551,6 +574,41 @@ const updateTeacherProfile = async (req, res) => {
   }
 };
 
+// GET TEACHERS BY DEPARTMENT
+// GET /api/teacher/list?department=CA
+const getTeachersByDepartment = async (req, res) => {
+  try {
+    const { department } = req.query;
+
+    if (!department) {
+      return res.status(400).json({
+        success: false,
+        message: "Department is required",
+      });
+    }
+
+    const teachers = await Teacher.find({
+      department: department.trim(),
+    })
+      .select("name teacherId mobileNo collegeName")
+      .sort({ teacherId: 1 })
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      teachers,
+    });
+  } catch (error) {
+    console.error("Get Teachers By Department Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch teachers",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getTeacherDashboard,
   getTeacherStudents,
@@ -560,4 +618,5 @@ module.exports = {
   getTeacherProfile,
   createTeacherProfile,
   updateTeacherProfile,
+  getTeachersByDepartment,
 };

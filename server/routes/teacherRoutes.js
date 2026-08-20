@@ -9,6 +9,7 @@ const {
   getTeacherProfile,
   createTeacherProfile,
   updateTeacherProfile,
+  getTeachersByDepartment,
 } = require("../controllers/teacherController");
 
 // Authentication middleware
@@ -46,6 +47,10 @@ router.put(
 // TEACHER DASHBOARD
 // GET /api/teacher/dashboard
 router.get("/dashboard",protect,authorize("teacher"),getTeacherDashboard);
+
+// GET TEACHERS BY DEPARTMENT
+// GET /api/teacher/list?department=CA
+router.get("/list",protect,authorize("student"),getTeachersByDepartment);
 
 // ALL STUDENTS
 // GET /api/teacher/students

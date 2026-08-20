@@ -175,6 +175,10 @@ const getManagerStudents = async (req, res) => {
         internshipStatus: internship
           ? internship.status
           : "not-found",
+          
+        teacherVerified: student
+          ? student.teacherVerified || false
+          : false,
 
         managerVerified: internship
           ? internship.managerVerified || false
@@ -282,6 +286,7 @@ const verifyStudentByManager = async (req, res) => {
     }
 
     internship.managerVerified = true;
+    internship.status = "ongoing";
     await internship.save();
     res.status(200).json({
       success: true,
@@ -292,6 +297,8 @@ const verifyStudentByManager = async (req, res) => {
         id: internship._id,
         managerVerified:
           internship.managerVerified,
+        status:
+          internship.status,
       },
     });
 
@@ -537,6 +544,15 @@ const createManagerProfile = async (req, res) => {
       companyName,
     } = req.body;
 
+    const user = await User.findById(req.user._id).select("name email");
+    
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "Teacher account not found",
+        });
+      }
+
     if (!companyName || !companyName.trim()) {
       return res.status(400).json({
         success: false,
@@ -602,6 +618,8 @@ const createManagerProfile = async (req, res) => {
 
     const manager = await Manager.create({
       user: req.user._id,
+      name: user.name,
+      email: user.email,
       managerId,
       mobileNo: mobileNo?.trim() || "",
       experience:
@@ -653,6 +671,15 @@ const updateManagerProfile = async (req, res) => {
       user: req.user._id,
     });
 
+    const user = await User.findById(req.user._id).select("name email");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Teacher account not found",
+      });
+    }
+
     if (!manager) {
       return res.status(404).json({
         success: false,
@@ -668,6 +695,8 @@ const updateManagerProfile = async (req, res) => {
     }
 
     // managerId is intentionally NOT changed.
+    manager.name = user.name;
+    manager.email = user.email;
     manager.mobileNo = mobileNo?.trim() || "";
     manager.experience =
       experience !== undefined && experience !== null
@@ -697,6 +726,30 @@ const updateManagerProfile = async (req, res) => {
   }
 };
 
+// GET ALL MANAGERS FOR STUDENT INTERNSHIP
+// GET /api/manager/all
+const getAllManagers = async (req, res) => {
+  try {
+    const managers = await Manager.find({})
+      .select("managerId name email mobileNo companyName")
+      .sort({ managerId: 1 })
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      managers,
+    });
+  } catch (error) {
+    console.error("Get All Managers Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch managers",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getManagerDashboard,
   getManagerStudents,
@@ -709,4 +762,6 @@ module.exports = {
   getManagerProfile,
   createManagerProfile,
   updateManagerProfile,
+
+  getAllManagers,
 };

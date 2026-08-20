@@ -5,8 +5,8 @@ import QRCode from "qrcode";
 import "./Certificate.css";
 
 export default function Certificate() {
-  const certificateRef = useRef(null);
 
+  const certificateRef = useRef(null);
   const [certificateData, setCertificateData] = useState(null);
   const [qrCode, setQrCode] = useState("");
   const [loading, setLoading] = useState(true);
@@ -161,6 +161,29 @@ const teacherVerified =
 
 const managerVerified =
   data.managerVerified === true;
+
+  // Certificate is not displayed until at least
+  // one side (Teacher or Manager) verifies the student.
+  const certificateVisible =
+    teacherVerified || managerVerified;
+
+  // =========================================================
+  // CERTIFICATE VISIBILITY
+  // =========================================================
+
+  if (!certificateVisible) {
+    return (
+      <div className="final-certificate-page">
+        <div className="certificate-error">
+          <h2>Certificate</h2>
+
+          <p>
+            Certificate is not available yet.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
 
   // =========================================================
@@ -427,10 +450,6 @@ const managerVerified =
                 alt="Certificate QR Code"
               />
 
-              {/* <span>
-                SCAN TO VERIFY
-              </span> */}
-
             </div>
           )}
 
@@ -441,21 +460,11 @@ const managerVerified =
         {certificateApproved &&
           certificateNumber && (
             <div className="certificate-number">
-              {/* <span>
-                ★
-              </span> */}
-
-              {/* <strong>
-                CERTIFICATE NO.:
-              </strong> */}
 
               <span>
                 {certificateNumber}
               </span>
 
-              {/* <span>
-                ★
-              </span> */}
             </div>
           )}
 

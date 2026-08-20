@@ -13,6 +13,7 @@ const {
   getManagerProfile,
   createManagerProfile,
   updateManagerProfile,
+  getAllManagers,
 } = require("../controllers/managerController");
 
 // Middleware
@@ -42,6 +43,15 @@ router.put(
   authorize("manager"),
   managerSignatureUpload.single("signature"),
   updateManagerProfile
+);
+
+// GET ALL MANAGERS
+// GET /api/manager/all
+router.get(
+  "/all",
+  protect,
+  authorize("student"),
+  getAllManagers
 );
 
 // DASHBOARD
