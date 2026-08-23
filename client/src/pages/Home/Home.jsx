@@ -11,7 +11,27 @@ export default function Home() {
           <Card title="Teacher Portal" description="Monitor internship progress of students." link="/teacher/dashboard" role="teacher"/>
           <Card title="Manager Portal" description="Approve reports and evaluate students." link="/manager/dashboard" role="manager"/>
         </div>
+
+        {/* Certificate Verification Section */}
+        <div className="certificate-verification-home">
+          <div className="certificate-verification-content">
+            <h2>Verify Your Certificate</h2>
+
+            <p>
+              Verify the authenticity of an InternTrack
+              certificate using your Certificate ID.
+            </p>
+
+            <a
+              href="/certificate-verification"
+              className="certificate-verification-btn"
+            >
+              Verify Your Certificate
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
+

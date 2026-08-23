@@ -87,7 +87,7 @@ export default function TeacherDashboard() {
           <div className="teacher-stat-icon">👨‍🎓</div>
 
           <div>
-            <p>Total Students</p>
+            <p>Total Students on portal</p>
             <h2>{statistics.totalStudents}</h2>
           </div>
         </div>
@@ -97,7 +97,7 @@ export default function TeacherDashboard() {
           <div className="teacher-stat-icon">📚</div>
 
           <div>
-            <p>Active Students</p>
+            <p>Active Students on portal</p>
             <h2>{statistics.activeStudents}</h2>
           </div>
         </div>
@@ -107,11 +107,28 @@ export default function TeacherDashboard() {
           <div className="teacher-stat-icon">✅</div>
 
           <div>
-            <p>Completed</p>
+            <p>Completed student on portal</p>
             <h2>{statistics.completedStudents}</h2>
           </div>
         </div>
 
+      <div className="teacher-stat-card">
+          <div className="teacher-stat-icon">🙋‍♀️</div>
+
+          <div>
+            <p>Students Assigned {teacher?.name || "Teacher"}</p>
+            <h2>{statistics.assignedStudents}</h2>
+          </div>
+        </div>
+
+        <div className="teacher-stat-card">
+          <div className="teacher-stat-icon">✅</div>
+
+          <div>
+            <p>Completed student of {teacher?.name || "Teacher"}</p>
+            <h2>{statistics.completedAssignedStudents}</h2>
+          </div>
+        </div>
       </div>
 
 

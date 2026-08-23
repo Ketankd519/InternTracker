@@ -14,6 +14,10 @@ export default function StdCertificateList() {
     fetchCertificateStudents();
   }, []);
 
+  // -----------------------------------------
+  // FETCH CERTIFICATE STUDENTS
+  // -----------------------------------------
+
   const fetchCertificateStudents = async () => {
     try {
       setLoading(true);
@@ -28,7 +32,10 @@ export default function StdCertificateList() {
         response.data
       );
 
-      setStudents(response.data?.data || []);
+      setStudents(
+        response.data?.data || []
+      );
+
     } catch (err) {
       console.error(
         "Manager Certificate List Error:",
@@ -39,19 +46,42 @@ export default function StdCertificateList() {
         err.response?.data?.message ||
           "Unable to fetch certificate students."
       );
+
     } finally {
       setLoading(false);
     }
   };
 
+
+  // -----------------------------------------
+  // VIEW CERTIFICATE
+  // -----------------------------------------
+
   const handleViewCertificate = (studentId) => {
+
+    if (!studentId) {
+      console.error(
+        "Student ID is missing"
+      );
+      return;
+    }
+
     navigate(
       `/manager/student-certificate/${studentId}`
     );
   };
 
+
+  // -----------------------------------------
+  // INTERNSHIP STATUS CLASS
+  // -----------------------------------------
+
   const getStatusClass = (status) => {
-    switch (status?.toLowerCase()) {
+
+    switch (
+      status?.toLowerCase()
+    ) {
+
       case "completed":
         return "manager-status-completed";
 
@@ -69,40 +99,88 @@ export default function StdCertificateList() {
     }
   };
 
-  const getTeacherApprovalClass = (approved) => {
+
+  // -----------------------------------------
+  // TEACHER APPROVAL CLASS
+  // -----------------------------------------
+
+  const getTeacherApprovalClass = (
+    approved
+  ) => {
+
     return approved
       ? "manager-teacher-approved"
       : "manager-teacher-not-approved";
   };
 
+
+  // -----------------------------------------
+  // LOADING
+  // -----------------------------------------
+
   if (loading) {
+
     return (
       <div className="manager-certificate-page">
+
         <div className="manager-certificate-header">
-          <h1>Student Certificates</h1>
-          <p>Loading students...</p>
+
+          <h1>
+            Student Certificates
+          </h1>
+
+          <p>
+            Loading students...
+          </p>
+
         </div>
+
       </div>
     );
   }
+
+
+  // -----------------------------------------
+  // ERROR
+  // -----------------------------------------
 
   if (error) {
+
     return (
       <div className="manager-certificate-page">
+
         <div className="manager-certificate-header">
-          <h1>Student Certificates</h1>
+
+          <h1>
+            Student Certificates
+          </h1>
 
           <div className="manager-certificate-error">
-            <p>{error}</p>
 
-            <button onClick={fetchCertificateStudents}>
+            <p>
+              {error}
+            </p>
+
+            <button
+              onClick={
+                fetchCertificateStudents
+              }
+            >
               Try Again
             </button>
+
           </div>
+
         </div>
+
       </div>
     );
   }
+
+
+  // -----------------------------------------
+  // PAGE
+  // -----------------------------------------
 
   return (
     <div className="manager-certificate-page">
@@ -112,17 +190,26 @@ export default function StdCertificateList() {
       <div className="manager-certificate-header">
 
         <div>
-          <h1>Student Certificates</h1>
+
+          <h1>
+            Student Certificates
+          </h1>
 
           <p>
-            Students whose internship has been
-            verified by the manager.
+            Students verified by manager
+            are displayed below.
           </p>
+
         </div>
 
         <div className="manager-certificate-count">
+
           Total Students:{" "}
-          <strong>{students.length}</strong>
+
+          <strong>
+            {students.length}
+          </strong>
+
         </div>
 
       </div>
@@ -137,12 +224,13 @@ export default function StdCertificateList() {
           <div className="manager-no-certificates">
 
             <h3>
-              No Students Available
+              No Verified Students
             </h3>
 
             <p>
-              No students are currently available
-              for certificate processing.
+              No students are currently
+              available for certificate
+              processing.
             </p>
 
           </div>
@@ -152,120 +240,165 @@ export default function StdCertificateList() {
           <table className="manager-certificate-table">
 
             <thead>
+
               <tr>
 
-                <th>Sr. No.</th>
+                <th>
+                  Sr. No.
+                </th>
 
-                <th>Student Name</th>
+                <th>
+                  Student Name
+                </th>
 
-                <th>Internship Status</th>
+                <th>
+                  Internship Status
+                </th>
 
-                <th>Teacher Certificate Approval</th>
+                <th>
+                  Teacher Certificate Approval
+                </th>
 
-                <th>Action</th>
+                <th>
+                  Action
+                </th>
 
               </tr>
+
             </thead>
+
 
             <tbody>
 
-              {students.map((student, index) => {
+              {students.map(
+                (student, index) => {
 
-                const studentId =
-                  student.studentId ||
-                  student._id ||
-                  student.student?._id;
+                  /*
+                   * Backend currently returns:
+                   *
+                   * studentId
+                   * studentName
+                   * internshipStatus
+                   * teacherApproved
+                   * managerApproved
+                   * progress
+                   */
 
-                const studentName =
-                  student.studentName ||
-                  student.student?.user?.name ||
-                  student.name ||
-                  "Not Available";
-
-                const internshipStatus =
-                  student.internshipStatus ||
-                  student.internship?.status ||
-                  "pending";
-
-                const teacherApproved =
-                  student.teacherApproved === true ||
-                  student.certificate
-                    ?.teacherApproved === true;
-
-                return (
-                  <tr key={studentId || index}>
-
-                    {/* SR NO */}
-
-                    <td>
-                      {index + 1}
-                    </td>
+                  const studentId =
+                    student.studentId ||
+                    student._id ||
+                    student.student?._id;
 
 
-                    {/* STUDENT */}
-
-                    <td>
-                      <div className="manager-student-name">
-                        {studentName}
-                      </div>
-                    </td>
+                  const studentName =
+                    student.studentName ||
+                    student.student?.user?.name ||
+                    student.name ||
+                    "Not Available";
 
 
-                    {/* INTERNSHIP STATUS */}
-
-                    <td>
-
-                      <span
-                        className={`manager-internship-status ${getStatusClass(
-                          internshipStatus
-                        )}`}
-                      >
-                        {internshipStatus
-                          .charAt(0)
-                          .toUpperCase() +
-                          internshipStatus.slice(1)}
-                      </span>
-
-                    </td>
+                  const internshipStatus =
+                    student.internshipStatus ||
+                    student.internship?.status ||
+                    "pending";
 
 
-                    {/* TEACHER APPROVAL */}
-
-                    <td>
-
-                      <span
-                        className={`manager-teacher-certificate-status ${getTeacherApprovalClass(
-                          teacherApproved
-                        )}`}
-                      >
-                        {teacherApproved
-                          ? "✓ Approved"
-                          : "Not Approved"}
-                      </span>
-
-                    </td>
+                  const teacherApproved =
+                    student.teacherApproved === true ||
+                    student.certificate
+                      ?.teacherApproved === true;
 
 
-                    {/* VIEW */}
+                  return (
 
-                    <td>
+                    <tr
+                      key={
+                        studentId || index
+                      }
+                    >
 
-                      <button
-                        className="manager-view-certificate-btn"
-                        onClick={() =>
-                          handleViewCertificate(
-                            studentId
-                          )
-                        }
-                      >
-                        View Certificate
-                      </button>
+                      {/* SR NO */}
 
-                    </td>
+                      <td>
+                        {index + 1}
+                      </td>
 
-                  </tr>
-                );
-              })}
+
+                      {/* STUDENT NAME */}
+
+                      <td>
+
+                        <div className="manager-student-name">
+
+                          {studentName}
+
+                        </div>
+
+                      </td>
+
+
+                      {/* INTERNSHIP STATUS */}
+
+                      <td>
+
+                        <span
+                          className={`manager-internship-status ${getStatusClass(
+                            internshipStatus
+                          )}`}
+                        >
+
+                          {internshipStatus
+                            .charAt(0)
+                            .toUpperCase() +
+                            internshipStatus.slice(1)}
+
+                        </span>
+
+                      </td>
+
+
+                      {/* TEACHER APPROVAL */}
+
+                      <td>
+
+                        <span
+                          className={`manager-teacher-certificate-status ${getTeacherApprovalClass(
+                            teacherApproved
+                          )}`}
+                        >
+
+                          {teacherApproved
+                            ? "✓ Approved"
+                            : "Not Approved"}
+
+                        </span>
+
+                      </td>
+
+
+                      {/* ACTION */}
+
+                      <td>
+
+                        <button
+                          className="manager-view-certificate-btn"
+                          onClick={() =>
+                            handleViewCertificate(
+                              studentId
+                            )
+                          }
+                          disabled={!studentId}
+                        >
+                          View Certificate
+                        </button>
+
+                      </td>
+
+                    </tr>
+
+                  );
+                }
+              )}
 
             </tbody>
 

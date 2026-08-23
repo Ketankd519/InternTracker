@@ -274,7 +274,7 @@ export default function Dashboard() {
           <div className="stats-grid">
             <div className="stat-item">
               <h2>{submittedReports}</h2>
-              <p>Total Reports</p>
+              <p>Submit Total Reports</p>
             </div>
 
             <div className="stat-item">

@@ -18,6 +18,20 @@ const getTeacherDashboard = async (req, res) => {
       });
     }
 
+    // GET TEACHER PROFILE
+    // We need teacher.teacherId because Student collection
+    // stores the teacher's unique teacherId, not MongoDB _id.
+    const teacherProfile = await Teacher.findOne({
+      user: req.user._id,
+    }).select("teacherId");
+
+    if (!teacherProfile) {
+      return res.status(404).json({
+        success: false,
+        message: "Teacher profile not found",
+      });
+    }
+
     // TOTAL STUDENTS
     // User collection where role = student
     const totalStudents = await User.countDocuments({
@@ -30,7 +44,6 @@ const getTeacherDashboard = async (req, res) => {
     // Exclude:
     // rejected
     // no internship
-    // distinct student IDs are counted
     const activeInternships = await Internship.find({
       status: {
         $in: ["pending", "ongoing", "completed"],
@@ -63,17 +76,48 @@ const getTeacherDashboard = async (req, res) => {
 
     const completedStudents = completedStudentIds.length;
 
+    // ==========================================
+    // STUDENTS ASSIGNED TO CURRENT TEACHER
+    // ==========================================
+    const assignedStudents = await Student.find({
+      teacherId: teacherProfile.teacherId,
+    }).select("_id");
+
+    const assignedStudentIds = assignedStudents.map(
+      (student) => student._id
+    );
+
+    const assignedStudentsCount = assignedStudentIds.length;
+
+    // ==========================================
+    // COMPLETED STUDENTS OF CURRENT TEACHER
+    // ==========================================
+    const completedAssignedStudents =
+      await Internship.countDocuments({
+        student: {
+          $in: assignedStudentIds,
+        },
+        status: "completed",
+      });
+
     res.status(200).json({
       success: true,
+
       teacher: {
         id: teacher._id,
         name: teacher.name,
         email: teacher.email,
+        teacherId: teacherProfile.teacherId,
       },
+
       statistics: {
         totalStudents,
         activeStudents,
         completedStudents,
+
+        // NEW
+        assignedStudents: assignedStudentsCount,
+        completedAssignedStudents,
       },
     });
   } catch (error) {
@@ -87,34 +131,52 @@ const getTeacherDashboard = async (req, res) => {
   }
 };
 
-// GET ALL STUDENTS
+// GET STUDENTS ASSIGNED TO LOGGED-IN TEACHER
 // GET /api/teacher/students
 const getTeacherStudents = async (req, res) => {
   try {
-    // Get all student users
-    const studentUsers = await User.find({
-      role: "student",
-    }).select("-password");
+    // Get the teacher profile of the currently logged-in teacher
+    const teacher = await Teacher.findOne({
+      user: req.user._id,
+    }).lean();
+
+    // Teacher profile not found
+    if (!teacher) {
+      return res.status(404).json({
+        success: false,
+        message: "Teacher profile not found",
+      });
+    }
+
+    // Get only students who selected this teacher's teacherId
+    const studentProfiles = await Student.find({
+      teacherId: teacher.teacherId,
+    }).lean();
 
     const students = [];
 
-    for (const user of studentUsers) {
-      // Find Student document connected to this user
-      const student = await Student.findOne({
-        user: user._id,
-      });
+    for (const student of studentProfiles) {
+      // Find User document connected to this student
+      const user = await User.findById(student.user)
+        .select("-password")
+        .lean();
+
+      // Skip if user account does not exist
+      if (!user) {
+        continue;
+      }
 
       // Find internship
       const internship = await Internship.findOne({
-        student: student ? student._id : null,
-      });
+        student: student._id,
+      }).lean();
 
       // Get all weekly reports for this student
-      const weeklyReports = student
-        ? await WeeklyReport.find({
-            student: student._id,
-          }).select("weekNumber")
-        : [];
+      const weeklyReports = await WeeklyReport.find({
+        student: student._id,
+      })
+        .select("weekNumber")
+        .lean();
 
       // CURRENT WEEK
       // Largest weekNumber
@@ -122,37 +184,55 @@ const getTeacherStudents = async (req, res) => {
 
       if (weeklyReports.length > 0) {
         currentWeek = Math.max(
-          ...weeklyReports.map((report) => report.weekNumber || 0)
+          ...weeklyReports.map(
+            (report) => report.weekNumber || 0
+          )
         );
       }
 
       students.push({
         userId: user._id,
-        studentId: student ? student._id : null,
+        studentId: student._id,
+
         name: user.name,
         email: user.email,
-        companyName: internship ? internship.companyName : "Not Assigned",
+
+        companyName: internship
+          ? internship.companyName
+          : "Not Assigned",
+
         currentWeek,
-        totalWeeks: internship ? internship.totalWeeks : 0,
+
+        totalWeeks: internship
+          ? internship.totalWeeks
+          : 0,
+
         internshipStatus: internship
           ? internship.status
           : "not-found",
+
         managerVerified: internship
           ? internship.managerVerified || false
           : false,
-        teacherVerified: student
-          ? student.teacherVerified || false
-          : false,
+
+        teacherVerified: student.teacherVerified || false,
       });
     }
 
     res.status(200).json({
       success: true,
+
+      // Optional but useful for debugging
+      teacherId: teacher.teacherId,
+
       count: students.length,
       students,
     });
   } catch (error) {
-    console.error("Get Teacher Students Error:", error);
+    console.error(
+      "Get Teacher Students Error:",
+      error
+    );
 
     res.status(500).json({
       success: false,

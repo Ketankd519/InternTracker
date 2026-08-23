@@ -125,7 +125,7 @@ export default function TeacherStudents() {
             {students.length === 0 ? (
 
               <tr>
-                <td colSpan="8" className="empty-table">
+                <td colSpan="9" className="empty-table">
                   No students found.
                 </td>
               </tr>
@@ -204,11 +204,6 @@ export default function TeacherStudents() {
                     )}
 
                   </td>
-
-
-
-
-                  
 
                   <td>
 

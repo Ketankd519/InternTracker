@@ -118,13 +118,22 @@ export default function Progress() {
         )
       : 0;
 
+    const RScompletion = totalWeeks > 0
+        ? Math.min(
+            Math.round(
+              (approvedReports / totalWeeks ) * 100
+            ),
+            100
+        )
+      : 0;
+
   // Progress Status
   const verificationStatus =
-    completion === 100
+    RScompletion === 100
       ? "Completed"
-      : completion >= 50
+      : RScompletion >= 50
       ? "In Progress"
-      : completion > 0
+      : RScompletion > 0
       ? "Started"
       : "Not Started";
 
@@ -197,7 +206,7 @@ export default function Progress() {
 
             {/* Total Reports */}
             <div className="stat-item">
-              <h2>{submittedReports}</h2>
+              <h2>{totalWeeks}</h2>
               <p>Total Reports</p>
             </div>
           
@@ -227,16 +236,14 @@ export default function Progress() {
 
             {/* Completion */}
             <div className="stat-item">
-              <h2>{completion}%</h2>
+              <h2>{RScompletion}%</h2>
               <p>Completion</p>
             </div>
           </div>
         </div>
-
-            Verification / Progress Status
         <div className="dashboard-box">
           <div className="verification-header">
-            <h3>Verification Status</h3>
+            <h3>Internship Status</h3>
           </div>
           <div
             className={`verification-status ${

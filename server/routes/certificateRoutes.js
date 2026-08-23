@@ -8,6 +8,7 @@ const {
   getCertificateStudentList,
   approveCertificateByTeacher,
   approveCertificateByManager,
+  verifyCertificate,
 } = require("../controllers/certificateController");
 
 const { protect } = require("../middleware/authMiddleware");
@@ -47,6 +48,17 @@ router.get(
   protect,
   authorize("teacher", "manager"),
   getStudentCertificate
+);
+
+// ======================================================
+// PUBLIC CERTIFICATE VERIFICATION
+// No login required
+// GET /api/certificates/verify/:certificateId
+// ======================================================
+
+router.get(
+  "/verify/:certificateId",
+  verifyCertificate
 );
 
 // ======================================================

@@ -77,16 +77,34 @@ export default function ManagerProfile() {
   };
 
   // HANDLE INPUT CHANGE
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
+const handleChange = (e) => {
+  const { name, value, files } = e.target;
+
+  // MOBILE NUMBER VALIDATION
+  if (name === "mobileNo") {
+    // Allow only numbers and maximum 10 digits
+    const onlyNumbers = value
+      .replace(/\D/g, "")
+      .slice(0, 10);
+
     setFormData((previous) => ({
       ...previous,
-      [name]: files ? files[0] : value,
+      mobileNo: onlyNumbers,
     }));
 
     setMessage("");
     setError("");
-  };
+    return;
+  }
+
+  setFormData((previous) => ({
+    ...previous,
+    [name]: files ? files[0] : value,
+  }));
+
+  setMessage("");
+  setError("");
+};
 
   // VALIDATION
   const validateForm = () => {
@@ -97,16 +115,20 @@ export default function ManagerProfile() {
       return false;
     }
 
-    // MOBILE NUMBER
-    if (formData.mobileNo.trim()) {
-      const mobileRegex = /^[0-9]{10}$/;
+// MOBILE NUMBER
+const mobileNumber = formData.mobileNo.trim();
 
-      if (!mobileRegex.test(formData.mobileNo.trim())
-      ) {
-        setError("Mobile number must contain exactly 10 digits.");
-        return false;
-      }
-    }
+if (!mobileNumber) {
+  setError("Mobile number is required.");
+  return false;
+}
+
+const mobileRegex = /^[0-9]{10}$/;
+
+if (!mobileRegex.test(mobileNumber)) {
+  setError("Mobile number must contain exactly 10 digits.");
+  return false;
+}
 
     // EXPERIENCE
     if (formData.experience !== "") {
@@ -412,16 +434,18 @@ if (formData.signature instanceof File) {
                 </span>
               </label>
 
-              <input
-                type="tel"
-                name="mobileNo"
-                value={formData.mobileNo}
-                onChange={handleChange}
-                placeholder="Enter 10 digit mobile number"
-                maxLength="10"
-                disabled={saving}
-                required
-              />
+<input
+  type="tel"
+  name="mobileNo"
+  value={formData.mobileNo}
+  onChange={handleChange}
+  placeholder="Enter 10 digit mobile number"
+  maxLength={10}
+  inputMode="numeric"
+  pattern="[0-9]{10}"
+  disabled={saving}
+  required
+/>
 
             </div>
 

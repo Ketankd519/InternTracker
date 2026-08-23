@@ -8,6 +8,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home/Home';
 import Login from './pages/Login/Login';
 import Register from './pages/Register/Register';
+import CertificateVerification from "./pages/Certificate/CertificateVerification";
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
 
 import Certificate from "./pages/Certificate/Certificate";
@@ -47,6 +48,12 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+
+          {/* Public Certificate Verification */}
+        <Route
+          path="/certificate-verification"
+          element={<CertificateVerification />}
+        />
 
         <Route path="/forgot-password" element={<ForgotPassword />}/>
       

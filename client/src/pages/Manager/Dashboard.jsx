@@ -79,7 +79,7 @@ export default function ManagerDashboard() {
 
           <div>
 
-            <p>Total Students</p>
+            <p>Total Students on portal</p>
 
             <h2>
               {statistics.totalStudents}
@@ -99,7 +99,7 @@ export default function ManagerDashboard() {
 
           <div>
 
-            <p>Active Students</p>
+            <p>Active Students on portal</p>
 
             <h2>
               {statistics.activeStudents}
@@ -119,7 +119,7 @@ export default function ManagerDashboard() {
 
           <div>
 
-            <p>Completed</p>
+            <p>Completed students on portal</p>
 
             <h2>
               {statistics.completedStudents}
@@ -129,7 +129,23 @@ export default function ManagerDashboard() {
 
         </div>
 
+        <div className="teacher-stat-card">
+  <div className="teacher-stat-icon">🙋‍♂️</div>
 
+  <div>
+    <p>Students Assigned {manager?.name || "Manager"}</p>
+    <h2>{statistics.assignedStudents}</h2>
+  </div>
+</div>
+
+<div className="teacher-stat-card">
+  <div className="teacher-stat-icon">✅</div>
+
+  <div>
+    <p>Completed student of {manager?.name || "Manager"}</p>
+    <h2>{statistics.completedAssignedStudents}</h2>
+  </div>
+</div>
       </div>
 
 

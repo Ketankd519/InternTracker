@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Certificate = require("../models/Certificate");
 const Student = require("../models/Student");
 const Internship = require("../models/Internship");
@@ -531,39 +532,111 @@ const getStudentCertificate = async (req, res) => {
 
 
 // GET STUDENTS FOR TEACHER / MANAGER
+// GET /api/certificates/students
+
 const getCertificateStudentList = async (req, res) => {
   try {
-    // Only students whose existing
-    // teacher verification is true
-    const students = await Student.find({
-      teacherVerified: true,
-    })
-      .populate("user", "name email")
-      .lean();
+    let students = [];
+
+    // =====================================================
+    // TEACHER
+    // =====================================================
+
+    if (req.user.role === "teacher") {
+      const teacher = await Teacher.findOne({
+        user: req.user._id,
+      }).lean();
+
+      if (!teacher) {
+        return res.status(404).json({
+          success: false,
+          message: "Teacher profile not found",
+        });
+      }
+
+      // Only verified students assigned to this teacher
+      students = await Student.find({
+        teacherId: teacher.teacherId,
+        teacherVerified: true,
+      })
+        .populate("user", "name email")
+        .lean();
+    }
+
+    // =====================================================
+    // MANAGER
+    // =====================================================
+
+    else if (req.user.role === "manager") {
+      const manager = await Manager.findOne({
+        user: req.user._id,
+      }).lean();
+
+      if (!manager) {
+        return res.status(404).json({
+          success: false,
+          message: "Manager profile not found",
+        });
+      }
+
+      // Find internships assigned to this manager
+      const internships = await Internship.find({
+        managerId: manager.managerId,
+        managerVerified: true,
+      }).lean();
+
+      // Get students from those internships
+      const studentIds = internships
+        .map((internship) => internship.student)
+        .filter(Boolean);
+
+      students = await Student.find({
+        _id: { $in: studentIds },
+      })
+        .populate("user", "name email")
+        .lean();
+    }
+
+    // =====================================================
+    // INVALID ROLE
+    // =====================================================
+
+    else {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized role",
+      });
+    }
+
+    // =====================================================
+    // BUILD CERTIFICATE LIST
+    // =====================================================
 
     const result = [];
+
     for (const student of students) {
-      const internship =
-        await Internship.findOne({
-          student: student._id,
-        }).lean();
+
+      const internship = await Internship.findOne({
+        student: student._id,
+      }).lean();
 
       if (!internship) {
         continue;
       }
 
-      const certificate =
-        await Certificate.findOne({
-          student: student._id,
-        }).lean();
+      const certificate = await Certificate.findOne({
+        student: student._id,
+      }).lean();
 
-      const reports =
-        await WeeklyReport.find({
-          student: student._id,
-        })
-          .select("weekNumber")
-          .lean();
+      // Weekly reports
+      const reports = await WeeklyReport.find({
+        student: student._id,
+      })
+        .select("weekNumber")
+        .lean();
+
       let currentWeek = 0;
+
       reports.forEach((report) => {
         const week = Number(report.weekNumber) || 0;
 
@@ -572,23 +645,47 @@ const getCertificateStudentList = async (req, res) => {
         }
       });
 
-      const totalWeeks = Number(internship.totalWeeks) || 0;
+      // Progress
+      const totalWeeks =
+        Number(internship.totalWeeks) || 0;
+
       let progress = 0;
+
       if (totalWeeks > 0) {
         progress = (currentWeek / totalWeeks) * 100;
       }
 
       progress = Math.min(progress, 100);
-      result.push({ 
+
+      result.push({
         studentId: student._id,
-        studentName: student.user?.name || "Student",
-        internshipStatus: internship.status,
-        managerVerified: internship.managerVerified,
-        teacherApproved: certificate?.teacherApproved || false,
-        managerApproved: certificate?.managerApproved || false,
-        progress: Number(progress.toFixed(2)),
+
+        studentName:
+          student.user?.name || "Student",
+
+        internshipStatus:
+          internship.status || "pending",
+
+        managerVerified:
+          internship.managerVerified === true,
+
+        teacherVerified:
+          student.teacherVerified === true,
+
+        teacherApproved:
+          certificate?.teacherApproved === true,
+
+        managerApproved:
+          certificate?.managerApproved === true,
+
+        progress:
+          Number(progress.toFixed(2)),
       });
     }
+
+    // =====================================================
+    // RESPONSE
+    // =====================================================
 
     return res.status(200).json({
       success: true,
@@ -597,6 +694,7 @@ const getCertificateStudentList = async (req, res) => {
     });
 
   } catch (error) {
+
     console.error(
       "Certificate Student List Error:",
       error
@@ -610,7 +708,6 @@ const getCertificateStudentList = async (req, res) => {
     });
   }
 };
-
 
 // TEACHER APPROVES CERTIFICATE
 // PUT /api/certificates/:studentId/teacher-approve
@@ -812,6 +909,120 @@ if (!certificate) {
   }
 };
 
+// =====================================================
+// PUBLIC CERTIFICATE VERIFICATION
+// GET /api/certificates/verify/:certificateId
+//
+// No login required.
+// Anyone can verify a certificate using its ID.
+// =====================================================
+
+const verifyCertificate = async (req, res) => {
+  try {
+    const { certificateId } = req.params;
+
+    // Certificate ID is the Student _id.
+    // Validate MongoDB ObjectId before searching.
+    if (!mongoose.Types.ObjectId.isValid(certificateId)) {
+      return res.status(400).json({
+        success: false,
+        verified: false,
+        message: "Incorrect certificate ID.",
+      });
+    }
+
+    // Find certificate using certificateId
+    const certificate = await Certificate.findOne({
+      certificateId: certificateId,
+    }).lean();
+
+    // Certificate ID not found
+    if (!certificate) {
+      return res.status(404).json({
+        success: false,
+        verified: false,
+        message:
+          "No certificate found with this certificate ID.",
+      });
+    }
+
+    // Check both final approvals
+const teacherApproved =
+  certificate.teacherApproved === true;
+
+const managerApproved =
+  certificate.managerApproved === true;
+
+console.log("Certificate Verification:", {
+  certificateId: certificate.certificateId,
+  teacherApproved: certificate.teacherApproved,
+  managerApproved: certificate.managerApproved,
+  teacherApprovedType: typeof certificate.teacherApproved,
+  managerApprovedType: typeof certificate.managerApproved,
+});
+
+const verified =
+  teacherApproved && managerApproved;
+
+    // Certificate exists but is not fully approved
+    if (!verified) {
+      return res.status(200).json({
+        success: true,
+        verified: false,
+        message:
+          "Certificate found, but it has not been fully approved yet.",
+      });
+    }
+
+    // Fully approved certificate
+    return res.status(200).json({
+      success: true,
+      verified: true,
+      message: "Student certificate is verified.",
+
+      data: {
+        certificateId:
+          certificate.certificateId,
+
+        studentName:
+          certificate.studentName,
+
+        companyName:
+          certificate.companyName,
+
+        managerName:
+          certificate.managerName,
+
+        teacherName:
+          certificate.teacherName,
+
+        teacherApproved:
+          certificate.teacherApproved,
+
+        managerApproved:
+          certificate.managerApproved,
+
+        issueDate:
+          certificate.issueDate,
+      },
+    });
+
+  } catch (error) {
+    console.error(
+      "Public Certificate Verification Error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      verified: false,
+      message:
+        "Unable to verify certificate.",
+    });
+  }
+};
+
+
 // EXPORT
 module.exports = {
   getMyCertificateStatus,
@@ -819,4 +1030,5 @@ module.exports = {
   getCertificateStudentList,
   approveCertificateByTeacher,
   approveCertificateByManager,
+  verifyCertificate,
 };

@@ -43,6 +43,8 @@ export default function Internship() {
         setError("");
 
         // 0. Fetch All Managers
+        let managerList = [];
+
         try {
           const managerResponse = await API.get("/manager/all");
 
@@ -51,12 +53,14 @@ export default function Internship() {
             managerResponse.data
           );
 
-          setManagers(
-            managerResponse.data.managers || []
-          );
+         const managerList =
+  managerResponse.data.managers || [];
+
+setManagers(managerList);
         } catch (err) {
           console.error("Failed to fetch managers:", err);
           setManagers([]);
+          managerList = [];
         }
 
         // 1. Fetch Student Profile
@@ -109,66 +113,105 @@ export default function Internship() {
         }
 
         // 2. Fetch Existing Internship
-        try {
-          const internshipResponse =
-            await API.get("/internships/status");
+try {
+  const internshipResponse =
+    await API.get("/internships/status");
 
-          console.log(
-            "Internship Response:",
-            internshipResponse.data
-          );
+  console.log(
+    "Internship Response:",
+    internshipResponse.data
+  );
 
-          const internshipData =
-            internshipResponse.data.data?.internship;
+  const internshipData =
+    internshipResponse.data.data?.internship;
 
-          // Internship exists
-          if (internshipData) {
-            setInternshipExists(true);
+  // Internship exists
+  if (internshipData) {
+    setInternshipExists(true);
 
-            setFormData((prev) => ({
-              ...prev,
+    // Saved Manager ID from Internship collection
+    const savedManagerId =
+      internshipData.managerId || "";
 
-              companyName: internshipData.companyName || "",
-              internshipRole: internshipData.internshipRole || "",
-              companyAddress: internshipData.companyAddress || "",
-              managerId: internshipData.managerId || "",
-              managerName: internshipData.managerName || "",
-              managerEmail: internshipData.managerEmail || "",
-              managerPhone: internshipData.managerPhone || "",
+    // Find the saved manager from Manager collection
+    const savedManager = managerList.find(
+  (manager) =>
+    manager.managerId === savedManagerId
+);
 
-              startDate:
-                internshipData.startDate
-                  ? new Date(
-                      internshipData.startDate
-                    )
-                      .toISOString()
-                      .split("T")[0]
-                  : "",
+    setFormData((prev) => ({
+      ...prev,
 
-              endDate:
-                internshipData.endDate
-                  ? new Date(
-                      internshipData.endDate
-                    )
-                      .toISOString()
-                      .split("T")[0]
-                  : "",
+      companyName:
+        savedManager?.companyName ||
+        internshipData.companyName ||
+        "",
 
-              totalWeeks:
-                internshipData.totalWeeks || "",
+      internshipRole:
+        internshipData.internshipRole || "",
 
-              // Department is NOT taken from Internship.
-              // It continues coming from Student.
-            }));
-          } else {
-            setInternshipExists(false);
-          }
-        } catch {
-          // New user may not have internship yet.
-          setInternshipExists(false);
+      companyAddress:
+        internshipData.companyAddress || "",
 
-          console.log("No internship found.");
-        }
+      // IMPORTANT:
+      // Restore saved Manager ID
+      managerId: savedManagerId,
+
+      managerName:
+        savedManager?.name ||
+        internshipData.managerName ||
+        "",
+
+      managerEmail:
+        savedManager?.email ||
+        internshipData.managerEmail ||
+        "",
+
+      managerPhone:
+        savedManager?.mobileNo ||
+        internshipData.managerPhone ||
+        "",
+
+      startDate:
+        internshipData.startDate
+          ? new Date(
+              internshipData.startDate
+            )
+              .toISOString()
+              .split("T")[0]
+          : "",
+
+      endDate:
+        internshipData.endDate
+          ? new Date(
+              internshipData.endDate
+            )
+              .toISOString()
+              .split("T")[0]
+          : "",
+
+      totalWeeks:
+        internshipData.totalWeeks || "",
+
+      // Department continues coming from Student.
+    }));
+  } else {
+    setInternshipExists(false);
+
+    // Clear only internship-specific manager data
+    setFormData((prev) => ({
+      ...prev,
+      managerId: "",
+      managerName: "",
+      managerEmail: "",
+      managerPhone: "",
+    }));
+  }
+} catch {
+  setInternshipExists(false);
+
+  console.log("No internship found.");
+}
       } catch (err) {
         console.error(
           "Fetch Internship Data Error:",
@@ -478,37 +521,46 @@ export default function Internship() {
             <h2>Company Details</h2>
             <div className="profile-grid">
 
+            <div className="profile-field">
+              <label htmlFor="managerId">Manager ID</label>
               <select
                 name="managerId"
                 value={formData.managerId}
                 onChange={handleChange}
                 required
-              >
+                >
                 <option value="">Select Manager ID</option>
 
                 {managers.map((manager) => (
                   <option
-                    key={manager._id}
-                    value={manager.managerId}
+                  key={manager._id}
+                  value={manager.managerId}
                   >
                     {manager.managerId}
                   </option>
                 ))}
               </select>
+            </div>
 
+            <div className="profile-field">
+              <label htmlFor="companyaName">Company Name</label>
               <input type="text" name="companyName"
                 placeholder="Company Name"
                 value={ formData.companyName}
                 readOnly
                 required
-              />
+                />
+            </div>
 
+            <div className="profile-field">
+            <label htmlFor="internshiprole">Internship Role</label>
               <input type="text" name="internshipRole"
                 placeholder="Internship Role"
                 value={ formData.internshipRole}
                 onChange={handleChange}
                 required
-              />
+                />
+            </div>    
 
             </div>
           </div>
@@ -518,27 +570,36 @@ export default function Internship() {
             <h2>Manager Details</h2>
 
             <div className="profile-grid">
+              <div className="profile-field">
+                <label htmlFor="managerName">Manager Name</label>
               <input type="text" name="managerName"
                 placeholder="Manager Name"
                 value={formData.managerName}
                 readOnly
                 required
-              />
+                />
+              </div>
 
+              <div className="profile-field">
+                <label htmlFor="managerEmail">Manager Email</label>
               <input type="email" name="managerEmail"
                 placeholder="Manager Email"
                 value={ formData.managerEmail}
                 readOnly
                 required
-              />
+                />
+              </div>
 
+              <div className="profile-field">
+              <label htmlFor="managerPhone">Manager Phone Number</label>  
               <input type="text" name="managerPhone"
                 placeholder="Manager Phone"
                 maxLength="10"
                 value={ formData.managerPhone}
                 readOnly
                 required
-              />
+                />
+              </div>  
             </div>
           </div>
 
@@ -584,13 +645,18 @@ export default function Internship() {
                 />
               </div>
 
+              <div className="profile-field">
+                <label htmlFor="address">Company Address</label>
               <input type="text" name="companyAddress"
                 placeholder="Company Address"
                 value={ formData.companyAddress}
                 onChange={handleChange}
                 required
-              />
+                />
+              </div>
 
+              <div className="profile-field">
+                <label htmlFor="totalweeks">Total Weeks</label>
               <input type="number" name="totalWeeks"
                 placeholder="Total Weeks (1-53)"
                 min="1" max="53"
@@ -602,7 +668,8 @@ export default function Internship() {
                   }
                 }}  
                 required
-              />
+                />
+              </div>
 
             </div>
           </div>

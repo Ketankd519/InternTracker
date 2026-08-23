@@ -8,7 +8,10 @@ const Manager = require("../models/Manager");
 // GET /api/manager/dashboard
 const getManagerDashboard = async (req, res) => {
   try {
-    // Current logged-in manager
+    // ==========================================
+    // CURRENT LOGGED-IN MANAGER
+    // ==========================================
+
     const manager = await User.findById(req.user._id)
       .select("name email role");
 
@@ -19,14 +22,37 @@ const getManagerDashboard = async (req, res) => {
       });
     }
 
+    // ==========================================
+    // GET MANAGER PROFILE
+    // ==========================================
+
+    const managerProfile = await Manager.findOne({
+      user: req.user._id,
+    })
+      .select("managerId")
+      .lean();
+
+    if (!managerProfile) {
+      return res.status(404).json({
+        success: false,
+        message: "Manager profile not found",
+      });
+    }
+
+    // ==========================================
     // TOTAL STUDENTS
+    // ALL STUDENTS ON PORTAL
+    // ==========================================
+
     const totalStudents = await User.countDocuments({
       role: "student",
     });
 
+    // ==========================================
     // ACTIVE STUDENTS
-    // pending + ongoing + completed
-    // rejected is excluded
+    // ALL STUDENTS ON PORTAL
+    // ==========================================
+
     const activeInternships = await Internship.find({
       status: {
         $in: ["pending", "ongoing", "completed"],
@@ -43,7 +69,11 @@ const getManagerDashboard = async (req, res) => {
 
     const activeStudents = activeStudentIds.length;
 
+    // ==========================================
     // COMPLETED STUDENTS
+    // ALL STUDENTS ON PORTAL
+    // ==========================================
+
     const completedInternships = await Internship.find({
       status: "completed",
     }).select("student");
@@ -58,24 +88,81 @@ const getManagerDashboard = async (req, res) => {
 
     const completedStudents = completedStudentIds.length;
 
-    // WEEKLY REPORT COUNTS
+    // ==========================================
+    // INTERNSHIPS ASSIGNED TO CURRENT MANAGER
+    // ==========================================
+
+    const managerInternships = await Internship.find({
+      managerId: managerProfile.managerId,
+    }).select("student status");
+
+    // Get student IDs assigned to this manager
+    const managerStudentIds = [
+      ...new Set(
+        managerInternships
+          .filter((item) => item.student)
+          .map((item) => item.student.toString())
+      ),
+    ];
+
+    // ==========================================
+    // ASSIGNED STUDENTS COUNT
+    // ==========================================
+
+    const assignedStudents = managerStudentIds.length;
+
+    // ==========================================
+    // COMPLETED ASSIGNED STUDENTS
+    // ==========================================
+
+    const completedAssignedStudents =
+      managerInternships.filter(
+        (item) =>
+          item.student &&
+          item.status === "completed"
+      ).length;
+
+    // ==========================================
+    // WEEKLY REPORTS OF CURRENT MANAGER'S
+    // STUDENTS ONLY
+    // ==========================================
+
+    const reportFilter = {
+      student: {
+        $in: managerStudentIds,
+      },
+    };
+
+    // TOTAL WEEKLY REPORTS
+    const totalWeeklyReports =
+      await WeeklyReport.countDocuments(
+        reportFilter
+      );
+
+    // PENDING WEEKLY REPORTS
     const pendingWeeklyReports =
       await WeeklyReport.countDocuments({
+        ...reportFilter,
         status: "Pending",
       });
 
+    // APPROVED WEEKLY REPORTS
     const approvedWeeklyReports =
       await WeeklyReport.countDocuments({
+        ...reportFilter,
         status: "Approved",
       });
 
+    // REJECTED WEEKLY REPORTS
     const rejectedWeeklyReports =
       await WeeklyReport.countDocuments({
+        ...reportFilter,
         status: "Rejected",
       });
 
-    const totalWeeklyReports =
-      await WeeklyReport.countDocuments();
+    // ==========================================
+    // RESPONSE
+    // ==========================================
 
     res.status(200).json({
       success: true,
@@ -85,12 +172,20 @@ const getManagerDashboard = async (req, res) => {
         name: manager.name,
         email: manager.email,
         role: manager.role,
+        managerId: managerProfile.managerId,
       },
 
       statistics: {
+        // Existing portal-wide statistics
         totalStudents,
         activeStudents,
         completedStudents,
+
+        // Current manager statistics
+        assignedStudents,
+        completedAssignedStudents,
+
+        // Current manager's weekly reports only
         totalWeeklyReports,
         pendingWeeklyReports,
         approvedWeeklyReports,
@@ -99,7 +194,10 @@ const getManagerDashboard = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Manager Dashboard Error:", error);
+    console.error(
+      "Manager Dashboard Error:",
+      error
+    );
 
     res.status(500).json({
       success: false,
@@ -109,36 +207,79 @@ const getManagerDashboard = async (req, res) => {
   }
 };
 
-// GET ALL STUDENTS FOR MANAGER APPROVAL
+// GET STUDENTS ASSIGNED TO LOGGED-IN MANAGER
 // GET /api/manager/students
 const getManagerStudents = async (req, res) => {
   try {
 
-    const studentUsers = await User.find({
-      role: "student",
-    }).select("-password");
+    // =====================================================
+    // GET LOGGED-IN MANAGER
+    // =====================================================
+
+    const manager = await Manager.findOne({
+      user: req.user._id,
+    }).lean();
+
+    // Manager profile not found
+    if (!manager) {
+      return res.status(404).json({
+        success: false,
+        message: "Manager profile not found",
+      });
+    }
+
+    // =====================================================
+    // GET INTERNSHIPS ASSIGNED TO THIS MANAGER
+    // =====================================================
+
+    const internships = await Internship.find({
+      managerId: manager.managerId,
+    }).lean();
 
     const students = [];
-    for (const user of studentUsers) {
 
-      // Student
-      const student = await Student.findOne({
-        user: user._id,
-      });
+    // =====================================================
+    // GET STUDENT DATA FOR EACH INTERNSHIP
+    // =====================================================
 
-      // Internship
-      const internship = student
-        ? await Internship.findOne({
-            student: student._id,
-          })
-        : null;
+    for (const internship of internships) {
 
-      // Weekly Reports
-      const weeklyReports = student
-        ? await WeeklyReport.find({
-            student: student._id,
-          }).select("weekNumber")
-        : [];
+      // Find Student connected to this internship
+      const student = await Student.findById(
+        internship.student
+      ).lean();
+
+      // Skip if student profile does not exist
+      if (!student) {
+        continue;
+      }
+
+      // Find User connected to this student
+      const user = await User.findById(
+        student.user
+      )
+        .select("-password")
+        .lean();
+
+      // Skip if user account does not exist
+      if (!user) {
+        continue;
+      }
+
+      // =====================================================
+      // WEEKLY REPORTS
+      // =====================================================
+
+      const weeklyReports =
+        await WeeklyReport.find({
+          student: student._id,
+        })
+          .select("weekNumber")
+          .lean();
+
+      // =====================================================
+      // CURRENT WEEK
+      // =====================================================
 
       let currentWeek = 0;
 
@@ -149,54 +290,74 @@ const getManagerStudents = async (req, res) => {
             (report) => report.weekNumber || 0
           )
         );
+
       }
 
+      // =====================================================
+      // ADD STUDENT
+      // =====================================================
+
       students.push({
+
         userId: user._id,
-        studentId: student
-          ? student._id
-          : null,
+
+        studentId: student._id,
 
         name: user.name,
-        email: user.email,
-        rollNo: student
-          ? student.rollNo || ""
-          : "",
 
-        companyName: internship
-          ? internship.companyName
-          : "Not Assigned",
+        email: user.email,
+
+        rollNo: student.rollNo || "",
+
+        companyName:
+          internship.companyName ||
+          "Not Assigned",
 
         currentWeek,
-        totalWeeks: internship
-          ? internship.totalWeeks || 0
-          : 0,
 
-        internshipStatus: internship
-          ? internship.status
-          : "not-found",
-          
-        teacherVerified: student
-          ? student.teacherVerified || false
-          : false,
+        totalWeeks:
+          internship.totalWeeks || 0,
 
-        managerVerified: internship
-          ? internship.managerVerified || false
-          : false,
+        internshipStatus:
+          internship.status ||
+          "not-found",
+
+        teacherVerified:
+          student.teacherVerified || false,
+
+        managerVerified:
+          internship.managerVerified || false,
+
       });
     }
 
+    // =====================================================
+    // RESPONSE
+    // =====================================================
+
     res.status(200).json({
       success: true,
+
+      // Useful for checking which manager
+      // is currently being used
+      managerId: manager.managerId,
+
       count: students.length,
+
       students,
     });
 
   } catch (error) {
-    console.error("Manager Students Error:", error);
+
+    console.error(
+      "Manager Students Error:",
+      error
+    );
+
     res.status(500).json({
       success: false,
-      message: "Failed to fetch students",
+      message:
+        "Failed to fetch students",
       error: error.message,
     });
   }
@@ -318,68 +479,140 @@ const verifyStudentByManager = async (req, res) => {
 
 // GET WEEKLY REPORTS FOR EVALUATION
 // GET /api/manager/evaluation
-const getManagerEvaluationReports = async (
-  req,
-  res
-) => {
-
+const getManagerEvaluationReports = async (req, res) => {
   try {
-    const reports =
-      await WeeklyReport.find()
-        .populate({
-          path: "student",
-          populate: {
-            path: "user",
-            select: "name email",
-          },
-        })
-        .sort({
-          createdAt: -1,
-        })
-        .lean();
+    // =====================================================
+    // GET LOGGED-IN MANAGER
+    // =====================================================
 
-    const evaluationData = reports.map(
-      (report, index) => {
-        const student = report.student;
-        const user = student
-          ? student.user
-          : null;
+    const manager = await Manager.findOne({
+      user: req.user._id,
+    }).lean();
 
-        return {
-          srNo: index + 1,
-          reportId: report._id,
-          studentId: student
-            ? student._id
-            : null,
+    // Manager profile not found
+    if (!manager) {
+      return res.status(404).json({
+        success: false,
+        message: "Manager profile not found",
+      });
+    }
 
-          rollNo: student
-            ? student.rollNo || ""
-            : "",
+    // =====================================================
+    // GET INTERNSHIPS ASSIGNED TO THIS MANAGER
+    // =====================================================
 
-          studentName: user
-            ? user.name
-            : "Unknown Student",
+    const internships = await Internship.find({
+      managerId: manager.managerId,
+    })
+      .select("student")
+      .lean();
 
-          submissionDate: report.submissionDate || report.createdAt,
-          weekNumber: report.weekNumber || 0,
-          taskTitle: report.taskTitle || "",
-          description: report.description || "",
-          attachment: report.attachment || "",
-          managerVerified: report.managerVerified || false,
-          status: report.status || "Pending",
-          rejectionRemark: report.rejectionRemark || "",
-        };
-      }
-    );
+    // Get only student IDs assigned to this manager
+    const studentIds = internships
+      .filter((internship) => internship.student)
+      .map((internship) => internship.student);
+
+    // =====================================================
+    // NO STUDENTS ASSIGNED
+    // =====================================================
+
+    if (studentIds.length === 0) {
+      return res.status(200).json({
+        success: true,
+        count: 0,
+        reports: [],
+      });
+    }
+
+    // =====================================================
+    // GET WEEKLY REPORTS ONLY FOR THIS MANAGER'S STUDENTS
+    // =====================================================
+
+    const reports = await WeeklyReport.find({
+      student: {
+        $in: studentIds,
+      },
+    })
+      .populate({
+        path: "student",
+        populate: {
+          path: "user",
+          select: "name email",
+        },
+      })
+      .sort({
+        createdAt: -1,
+      })
+      .lean();
+
+    // =====================================================
+    // FORMAT EVALUATION DATA
+    // =====================================================
+
+    const evaluationData = reports.map((report, index) => {
+      const student = report.student;
+      const user = student ? student.user : null;
+
+      return {
+        srNo: index + 1,
+
+        reportId: report._id,
+
+        studentId: student
+          ? student._id
+          : null,
+
+        rollNo: student
+          ? student.rollNo || ""
+          : "",
+
+        studentName: user
+          ? user.name
+          : "Unknown Student",
+
+        submissionDate:
+          report.submissionDate ||
+          report.createdAt,
+
+        weekNumber:
+          report.weekNumber || 0,
+
+        taskTitle:
+          report.taskTitle || "",
+
+        description:
+          report.description || "",
+
+        attachment:
+          report.attachment || "",
+
+        managerVerified:
+          report.managerVerified || false,
+
+        status:
+          report.status || "Pending",
+
+        rejectionRemark:
+          report.rejectionRemark || "",
+      };
+    });
+
+    // =====================================================
+    // RESPONSE
+    // =====================================================
 
     res.status(200).json({
       success: true,
+
+      // Useful for debugging
+      managerId: manager.managerId,
+
       count: evaluationData.length,
+
       reports: evaluationData,
     });
 
   } catch (error) {
-
     console.error(
       "Manager Evaluation Error:",
       error
@@ -395,11 +628,32 @@ const getManagerEvaluationReports = async (
 
 // APPROVE WEEKLY REPORT
 // PUT /api/manager/reports/:reportId/approve
-const approveWeeklyReport = async (req,res) => {
+const approveWeeklyReport = async (req, res) => {
   try {
     const { reportId } = req.params;
-    const report =
-      await WeeklyReport.findById(reportId);
+
+    // =====================================================
+    // GET LOGGED-IN MANAGER
+    // =====================================================
+
+    const manager = await Manager.findOne({
+      user: req.user._id,
+    }).lean();
+
+    if (!manager) {
+      return res.status(404).json({
+        success: false,
+        message: "Manager profile not found",
+      });
+    }
+
+    // =====================================================
+    // FIND WEEKLY REPORT
+    // =====================================================
+
+    const report = await WeeklyReport.findById(
+      reportId
+    );
 
     if (!report) {
       return res.status(404).json({
@@ -408,19 +662,51 @@ const approveWeeklyReport = async (req,res) => {
       });
     }
 
+    // =====================================================
+    // CHECK WHETHER THIS STUDENT BELONGS TO THIS MANAGER
+    // =====================================================
+
+    const internship = await Internship.findOne({
+      student: report.student,
+      managerId: manager.managerId,
+    });
+
+    // Report does not belong to logged-in manager
+    if (!internship) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "You are not authorized to approve this weekly report.",
+      });
+    }
+
+    // =====================================================
+    // APPROVE REPORT
+    // =====================================================
+
     report.status = "Approved";
+
     report.managerVerified = true;
+
     report.rejectionRemark = "";
 
     await report.save();
 
+    // =====================================================
+    // RESPONSE
+    // =====================================================
+
     res.status(200).json({
       success: true,
-      message: "Weekly report approved successfully",
+
+      message:
+        "Weekly report approved successfully",
+
       report: {
         id: report._id,
         status: report.status,
-        managerVerified: report.managerVerified,
+        managerVerified:
+          report.managerVerified,
       },
     });
 
@@ -432,7 +718,8 @@ const approveWeeklyReport = async (req,res) => {
 
     res.status(500).json({
       success: false,
-      message: "Failed to approve weekly report",
+      message:
+        "Failed to approve weekly report",
       error: error.message,
     });
   }
@@ -440,21 +727,46 @@ const approveWeeklyReport = async (req,res) => {
 
 // REJECT WEEKLY REPORT
 // PUT /api/manager/reports/:reportId/reject
-const rejectWeeklyReport = async (req,res) => {
+const rejectWeeklyReport = async (req, res) => {
   try {
     const { reportId } = req.params;
+
     const { rejectionRemark } = req.body;
 
-    // Remark required
+    // =====================================================
+    // REMARK REQUIRED
+    // =====================================================
+
     if (
       !rejectionRemark ||
       !rejectionRemark.trim()
     ) {
       return res.status(400).json({
         success: false,
-        message:"Rejection remark is required",
+        message:
+          "Rejection remark is required",
       });
     }
+
+    // =====================================================
+    // GET LOGGED-IN MANAGER
+    // =====================================================
+
+    const manager = await Manager.findOne({
+      user: req.user._id,
+    }).lean();
+
+    if (!manager) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Manager profile not found",
+      });
+    }
+
+    // =====================================================
+    // FIND WEEKLY REPORT
+    // =====================================================
 
     const report =
       await WeeklyReport.findById(reportId);
@@ -462,27 +774,67 @@ const rejectWeeklyReport = async (req,res) => {
     if (!report) {
       return res.status(404).json({
         success: false,
-        message:"Weekly report not found",
+        message:
+          "Weekly report not found",
       });
     }
 
+    // =====================================================
+    // CHECK WHETHER THIS STUDENT BELONGS TO THIS MANAGER
+    // =====================================================
+
+    const internship =
+      await Internship.findOne({
+        student: report.student,
+        managerId: manager.managerId,
+      });
+
+    // Report does not belong to logged-in manager
+    if (!internship) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "You are not authorized to reject this weekly report.",
+      });
+    }
+
+    // =====================================================
+    // REJECT REPORT
+    // =====================================================
+
     report.status = "Rejected";
+
     report.managerVerified = false;
+
     report.rejectionRemark =
       rejectionRemark.trim();
 
     await report.save();
 
+    // =====================================================
+    // RESPONSE
+    // =====================================================
+
     res.status(200).json({
       success: true,
-      message:"Weekly report rejected successfully",
+
+      message:
+        "Weekly report rejected successfully",
+
       report: {
         id: report._id,
-        status: report.status,
-        managerVerified: report.managerVerified,
-        rejectionRemark: report.rejectionRemark,
+
+        status:
+          report.status,
+
+        managerVerified:
+          report.managerVerified,
+
+        rejectionRemark:
+          report.rejectionRemark,
       },
     });
+
   } catch (error) {
     console.error(
       "Reject Weekly Report Error:",
@@ -491,7 +843,8 @@ const rejectWeeklyReport = async (req,res) => {
 
     res.status(500).json({
       success: false,
-      message:"Failed to reject weekly report",
+      message:
+        "Failed to reject weekly report",
       error: error.message,
     });
   }

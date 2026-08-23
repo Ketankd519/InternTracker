@@ -114,20 +114,66 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
   // Handle Input Changes
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
+  const { name, value, files } = e.target;
 
-    if (files) {
+  // FILE INPUT
+  if (files) {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: files[0],
+    }));
+
+    return;
+  }
+
+  // WEEK NUMBER
+  if (name === "weekNumber") {
+    // Allow empty value while typing/deleting
+    if (value === "") {
       setFormData((prev) => ({
         ...prev,
-        [name]: files[0],
+        weekNumber: "",
       }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
+
+      return;
     }
-  };
+
+    // Only allow numbers
+    if (!/^\d+$/.test(value)) {
+      return;
+    }
+
+    // Maximum 2 digits
+    if (value.length > 2) {
+      return;
+    }
+
+    const weekNumber = Number(value);
+
+    // Must be at least 1
+    if (weekNumber < 1) {
+      return;
+    }
+
+    // Cannot exceed internship total weeks
+    if (totalWeeks && weekNumber > totalWeeks) {
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      weekNumber: value,
+    }));
+
+    return;
+  }
+
+  // NORMAL INPUT
+  setFormData((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+};
 
     // Submit / Update Weekly Report
   const handleSubmit = async (e) => {
@@ -392,14 +438,21 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
                 </label>
 
                 <input
-                  type="number"
+                  type="text"
                   id="weekNumber"
                   name="weekNumber"
                   placeholder="Enter week number"
-                  min="1"
-                  max={totalWeeks || undefined}
+                  inputMode="numeric"
+                  pattern="[0-9]{1,2}"
+                  maxLength="2"
                   value={formData.weekNumber}
                   onChange={handleChange}
+                  onKeyDown={(e) => {
+                    // Prevent e, E, +, -, ., etc.
+                    if (["e", "E", "+", "-", "."].includes(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
                   disabled={editingReportId !== null}
                   required
                 />

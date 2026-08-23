@@ -115,6 +115,19 @@ export default function StdCertificateList() {
 
   };
 
+  
+  // -----------------------------------------
+  // TEACHER APPROVAL CLASS
+  // -----------------------------------------
+
+  const getTeacherApprovalClass = (
+    approved
+  ) => {
+
+    return approved
+      ? "manager-teacher-approved"
+      : "manager-teacher-not-approved";
+  };
 
   // -----------------------------------------
   // LOADING
@@ -262,6 +275,10 @@ export default function StdCertificateList() {
                 </th>
 
                 <th>
+                  Teacher Certificate
+                </th>
+
+                <th>
                   Action
                 </th>
 
@@ -303,6 +320,10 @@ export default function StdCertificateList() {
                     student.certificate
                       ?.managerApproved === true;
 
+                  const teacherApproved =
+                    student.teacherApproved === true ||
+                    student.certificate
+                      ?.teacherApproved === true;
 
                   return (
 
@@ -361,8 +382,25 @@ export default function StdCertificateList() {
                         >
 
                           {managerApproved
-                            ? "✓ Verified"
-                            : "Not Verified"}
+                            ? "✓ Approved"
+                            : "Not Approved"}
+
+                        </span>
+
+                      </td>
+
+                      {/* TEACHER APPROVAL */}
+                       <td>
+
+                        <span
+                          className={`manager-teacher-certificate-status ${getTeacherApprovalClass(
+                            teacherApproved
+                          )}`}
+                        >
+
+                          {teacherApproved
+                            ? "✓ Approved"
+                            : "Not Approved"}
 
                         </span>
 

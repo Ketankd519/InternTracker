@@ -120,6 +120,12 @@ const StudentProfile = () => {
           cgpa: data.cgpa ?? "",
           profilePhoto: data.profilePhoto || "",
         });
+
+        // Fetch teachers for saved department
+        // so Teacher ID dropdown is populated after page reload
+        if (data.department) {
+          fetchTeachersByDepartment(data.department);
+        }
       } catch (err) {
         console.error("Fetch Student Profile Error:", err );
 
@@ -162,89 +168,181 @@ const StudentProfile = () => {
     }
   };
 
-  // Handle Input
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
+  const { name, value, files } = e.target;
 
-    if (files && files[0]) {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: files[0],
-      }));
+  // FILE INPUT
+  if (files && files[0]) {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: files[0],
+    }));
 
-      return;
-    }
-
-    if (name === "cgpa") {
-    // Allow empty string to let user backspace/clear field
-    if (value === "") {
-      setFormData((prev) => ({ ...prev, [name]: "" }));
-      return;
-    }
-
-    // Regex: allows numbers 0-10 with up to 2 decimal places
-    // Accepts: 0 to 9.99, or 10, or 10.00
-    const cgpaRegex = /^([0-9](\.[0-9]{0,2})?|10(\.0{0,2})?)$/;
-
-    if (cgpaRegex.test(value)) {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
-    return; // Block invalid inputs
+    return;
   }
 
-    // Department changed
-    if (name === "department") {
-      setFormData((prev) => ({
-        ...prev,
-        department: value,
-        teacherId: "",
-        teacherName: "",
-        teacherNo: "",
-        college: "",
-      }));
+  // =====================================================
+  // PHONE NUMBER
+  // Only numbers and maximum 10 digits
+  // =====================================================
 
-      fetchTeachersByDepartment(value);
-      return;
-    }
-
-    // Teacher selected
-    if (name === "teacherId") {
-      const selectedTeacher = teachers.find(
-        (teacher) => teacher.teacherId === value
-      );
-
-      setFormData((prev) => ({
-        ...prev,
-        teacherId: value,
-        teacherName: selectedTeacher?.name || "",
-        teacherNo: selectedTeacher?.mobileNo || "",
-        college: selectedTeacher?.collegeName || "",
-      }));
-
-      return;
-    }
+  if (name === "phone") {
+    const phoneValue = value.replace(/\D/g, "").slice(0, 10);
 
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      phone: phoneValue,
     }));
 
-  };
+    return;
+  }
 
-  // Create / Update
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // =====================================================
+  // SEMESTER
+  // Only one digit and only 1-8
+  // =====================================================
 
-    if (!e.currentTarget.checkValidity()) {
-      alert("Please fill all required fields.");
+  if (name === "semester") {
+    // Allow empty value while editing
+    if (value === "") {
+      setFormData((prev) => ({
+        ...prev,
+        semester: "",
+      }));
+
       return;
     }
 
-    setLoading(true);
-    setMessage("");
-    setError("");
+    // Only allow 1 to 8
+    if (/^[1-8]$/.test(value)) {
+      setFormData((prev) => ({
+        ...prev,
+        semester: value,
+      }));
+    }
 
-    try {
+    return;
+  }
+
+  // =====================================================
+  // CGPA
+  // =====================================================
+
+  if (name === "cgpa") {
+    // Allow empty string to let user backspace/clear field
+    if (value === "") {
+      setFormData((prev) => ({
+        ...prev,
+        cgpa: "",
+      }));
+
+      return;
+    }
+
+    // Allow 0-9 with up to 2 decimal places
+    // or 10 / 10.0 / 10.00
+    const cgpaRegex =
+      /^([0-9](\.[0-9]{0,2})?|10(\.0{0,2})?)$/;
+
+    if (cgpaRegex.test(value)) {
+      setFormData((prev) => ({
+        ...prev,
+        cgpa: value,
+      }));
+    }
+
+    return;
+  }
+
+  // =====================================================
+  // DEPARTMENT CHANGED
+  // =====================================================
+
+  if (name === "department") {
+    setFormData((prev) => ({
+      ...prev,
+      department: value,
+      teacherId: "",
+      teacherName: "",
+      teacherNo: "",
+      college: "",
+    }));
+
+    fetchTeachersByDepartment(value);
+
+    return;
+  }
+
+  // =====================================================
+  // TEACHER SELECTED
+  // =====================================================
+
+  if (name === "teacherId") {
+    const selectedTeacher = teachers.find(
+      (teacher) => teacher.teacherId === value
+    );
+
+    setFormData((prev) => ({
+      ...prev,
+      teacherId: value,
+      teacherName: selectedTeacher?.name || "",
+      teacherNo: selectedTeacher?.mobileNo || "",
+      college: selectedTeacher?.collegeName || "",
+    }));
+
+    return;
+  }
+
+  // =====================================================
+  // NORMAL INPUT
+  // =====================================================
+
+  setFormData((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+};
+
+  // Create / Update
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  // =====================================================
+  // HTML REQUIRED FIELD VALIDATION
+  // =====================================================
+
+  if (!e.currentTarget.checkValidity()) {
+    alert("Please fill all required fields.");
+    return;
+  }
+
+  // =====================================================
+  // PHONE NUMBER VALIDATION
+  // =====================================================
+
+  const phoneRegex = /^[0-9]{10}$/;
+
+  if (!phoneRegex.test(formData.phone)) {
+    setError("Phone number must contain exactly 10 digits.");
+    alert("Phone number must contain exactly 10 digits.");
+    return;
+  }
+
+  // =====================================================
+  // SEMESTER VALIDATION
+  // =====================================================
+
+  if (!/^[1-8]$/.test(String(formData.semester))) {
+    setError("Semester must be a number between 1 and 8.");
+    alert("Semester must be a number between 1 and 8.");
+    return;
+  }
+
+  setLoading(true);
+  setMessage("");
+  setError("");
+
+  try {
       const data = new FormData();
 
       // Student Details
@@ -417,29 +515,39 @@ const StudentProfile = () => {
             <h2>Personal Details</h2>
             <div className="profile-grid">
               
-              {/* USERS collection */}
+            <div className="profile-field">
+              <label htmlFor="name">Full Name</label>
               <input type="text" name="fullName"
                 value={userData.name}
                 placeholder="Full Name"
                 readOnly
               />
+            </div>
 
+            <div className="profile-field">
+              <label htmlFor="email">Email</label>
               <input type="email" name="email" 
                 value={userData.email}
                 placeholder="Email"
                 readOnly
               />
+            </div>
 
               {/* STUDENTS collection */}
-              <input type="text" name="phone"
+            <div className="profile-field">
+              <label htmlFor="phone">Phone Number</label>
+              <input
+                type="tel"
+                name="phone"
                 placeholder="Phone Number"
-                maxLength= "10"
+                maxLength="10"
+                inputMode="numeric"
+                pattern="[0-9]{10}"
                 value={formData.phone}
                 onChange={handleChange}
                 required
               />
-
-              
+            </div>
 
               <div className="profile-field">
                 <label htmlFor="dob">Date of Birth</label>
@@ -463,9 +571,6 @@ const StudentProfile = () => {
                   </select>
               </div>
 
-
-
-              
               <div className="profile-field">
                 <label htmlFor="address">Address</label>
                   <input type="text" name="city"
@@ -476,6 +581,8 @@ const StudentProfile = () => {
                   />
               </div>
               
+              <div className="profile-field">
+                <label htmlFor="state">State</label>                
               <select name="state" value={formData.state}onChange={handleChange}required>
                 <option value="">Select a State</option>
                 <option value="Andhra Pradesh">Andhra Pradesh</option>
@@ -508,22 +615,27 @@ const StudentProfile = () => {
                 <option value="West Bengal">West Bengal</option>
                 <option value="Other">Other</option>
               </select>
+              </div>
 
+              <div className="profile-field">
+                <label htmlFor="pincode">Pincode</label>
               <input type="text" name="pincode"
                 placeholder="Pincode"
                 maxLength="6"
                 value={formData.pincode}
                 onChange={handleChange}
                 required
-              />
-
-
+                />
+              </div>
+            <br/>
+              <label htmlFor="address">Address</label>
               <textarea rows="4" name="address"
                 placeholder="Address"
                 value={formData.address}
                 onChange={handleChange}
                 required
-              />
+                />
+
 
               <div className="photo-upload">
               <label htmlFor="profilePhoto">Profile Photo</label>
@@ -570,6 +682,10 @@ const StudentProfile = () => {
           <div className="profile-section">
             <h2>Academic Details</h2>
             <div className="profile-grid">
+
+
+            <div className="profile-field">
+              <label htmlFor="department">Department</label>
               <select name="department" value={formData.department}onChange={handleChange}required>
                 <option value="">Select Department</option>
                 <option value="CA-Computer Application">CA - Computer Application</option>
@@ -589,14 +705,17 @@ const StudentProfile = () => {
                 <option value="AR-Arts">AR - Arts</option>
                 <option value="Other">Other</option>
               </select>
+            </div>
 
+            <div className="profile-field">
+              <label htmlFor="teacherId">Teacher ID</label>
               <select
                 name="teacherId"
                 value={formData.teacherId}
                 onChange={handleChange}
                 required
                 disabled={!formData.department || loadingTeachers}
-              >
+                >
                 <option value="">
                   {loadingTeachers
                     ? "Loading Teachers..."
@@ -609,59 +728,83 @@ const StudentProfile = () => {
 
                 {teachers.map((teacher) => (
                   <option
-                    key={teacher.teacherId}
-                    value={teacher.teacherId}
+                  key={teacher.teacherId}
+                  value={teacher.teacherId}
                   >
                     {teacher.teacherId}
                   </option>
                 ))}
               </select>
-
+            </div>
+              
+            <div className="profile-field">
+            <label htmlFor="teachername">Teacher Name</label>  
               <input type="text" name="teacherName"
                 placeholder="Teacher Name"
                 value={formData.teacherName}
                 readOnly
                 required
-              />
+                />
+            </div>  
 
+            <div className="profile-field">
+              <label htmlFor="teacherno">Teacher Number</label>
               <input type="text" name="teacherNo"
                 placeholder="Teacher Number"
                 maxLength="10"
                 value={formData.teacherNo}
                 readOnly
                 required
-              />
+                />
+            </div>
+            <div className="profile-field">
+              <label htmlFor="college">College Name</label>
               <input type="text" name="college"
                 placeholder="College"
                 value={formData.college}
                 readOnly
                 required
-              />
+                />
+            </div>
 
-              <input type="number" name="semester"
-                placeholder="Semester" min="1"
-                max="8" maxLength="1"
+            <div className="profile-field">
+              <label htmlFor="semester">Semester</label>
+              <input
+                type="text"
+                name="semester"
+                placeholder="Semester (1-8)"
+                maxLength="1"
+                inputMode="numeric"
+                pattern="[1-8]"
                 value={formData.semester}
                 onChange={handleChange}
                 required
               />
-
+            </div>
+            <div className="profile-field">
+              <label htmlFor="rollno">Roll Number</label>
               <input type="text" name="rollNo"
                 placeholder="Roll Number"
                 maxLength="10"
                 value={formData.rollNo}
                 onChange={handleChange}
                 required
-              />
-
+                />
+            </div>
+            
+            <div className="profile-field">
+              <label htmlFor="enrollno">Enrollment Number</label>
               <input type="text" name="enrollmentNumber"
                 placeholder="Enrollment Number"
                 maxLength="10"
                 value={formData.enrollmentNumber}
                 onChange={handleChange}
                 required
-              />
-
+                />
+            </div>
+            
+            <div className="profile-field">
+              <label htmlFor="cgpa">CGPA</label>
               <input type="number" step="0.01" name="cgpa"
                 placeholder="CGPA (e.g. 8.97, 10)"
                 min="0" max="10"
@@ -669,7 +812,8 @@ const StudentProfile = () => {
                 value={formData.cgpa}
                 onChange={handleChange}
                 required
-              />
+                />
+            </div>
 
             </div>
           </div>
