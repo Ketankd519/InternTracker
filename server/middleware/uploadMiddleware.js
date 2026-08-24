@@ -4,7 +4,7 @@ const fs = require("fs");
 
 // Create upload middleware based on folder
 const createUpload = (folderName) => {
-  const uploadDir = path.join(__dirname, `../uploads/${folderName}`);
+const uploadDir = path.join(__dirname, `../uploads/${folderName}`);
 
   // Create folder if it doesn't exist
   if (!fs.existsSync(uploadDir)) {
@@ -20,14 +20,12 @@ const createUpload = (folderName) => {
       const uniqueName =
         `${Date.now()}-${Math.round(Math.random() * 1e9)}` +
         path.extname(file.originalname);
-
       cb(null, uniqueName);
     },
   });
 
   const fileFilter = (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|pdf|doc|docx/;
-
     const extName = allowedTypes.test(
       path.extname(file.originalname).toLowerCase()
     );
@@ -47,9 +45,7 @@ const createUpload = (folderName) => {
 
   return multer({
     storage,
-    limits: {
-      fileSize: 5 * 1024 * 1024,
-    },
+    limits: {fileSize: 5 * 1024 * 1024,},
     fileFilter,
   });
 };

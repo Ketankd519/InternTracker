@@ -16,7 +16,6 @@ export default function Navbar() {
       <div className="header-title">
         InternTrack - Internship Tracking System
       </div>
-
       <nav className="nav-bar">
 
         {/* Home */}
@@ -90,7 +89,6 @@ export default function Navbar() {
             </Link>
           </>
         )}
-
       </nav>
     </header>
   );

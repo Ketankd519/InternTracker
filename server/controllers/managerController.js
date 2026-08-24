@@ -8,10 +8,8 @@ const Manager = require("../models/Manager");
 // GET /api/manager/dashboard
 const getManagerDashboard = async (req, res) => {
   try {
-    // ==========================================
-    // CURRENT LOGGED-IN MANAGER
-    // ==========================================
 
+    // CURRENT LOGGED-IN MANAGER
     const manager = await User.findById(req.user._id)
       .select("name email role");
 
@@ -22,10 +20,7 @@ const getManagerDashboard = async (req, res) => {
       });
     }
 
-    // ==========================================
     // GET MANAGER PROFILE
-    // ==========================================
-
     const managerProfile = await Manager.findOne({
       user: req.user._id,
     })
@@ -39,20 +34,14 @@ const getManagerDashboard = async (req, res) => {
       });
     }
 
-    // ==========================================
     // TOTAL STUDENTS
     // ALL STUDENTS ON PORTAL
-    // ==========================================
-
     const totalStudents = await User.countDocuments({
       role: "student",
     });
 
-    // ==========================================
     // ACTIVE STUDENTS
     // ALL STUDENTS ON PORTAL
-    // ==========================================
-
     const activeInternships = await Internship.find({
       status: {
         $in: ["pending", "ongoing", "completed"],
@@ -69,11 +58,8 @@ const getManagerDashboard = async (req, res) => {
 
     const activeStudents = activeStudentIds.length;
 
-    // ==========================================
     // COMPLETED STUDENTS
     // ALL STUDENTS ON PORTAL
-    // ==========================================
-
     const completedInternships = await Internship.find({
       status: "completed",
     }).select("student");
@@ -88,10 +74,7 @@ const getManagerDashboard = async (req, res) => {
 
     const completedStudents = completedStudentIds.length;
 
-    // ==========================================
     // INTERNSHIPS ASSIGNED TO CURRENT MANAGER
-    // ==========================================
-
     const managerInternships = await Internship.find({
       managerId: managerProfile.managerId,
     }).select("student status");
@@ -105,16 +88,10 @@ const getManagerDashboard = async (req, res) => {
       ),
     ];
 
-    // ==========================================
     // ASSIGNED STUDENTS COUNT
-    // ==========================================
-
     const assignedStudents = managerStudentIds.length;
 
-    // ==========================================
     // COMPLETED ASSIGNED STUDENTS
-    // ==========================================
-
     const completedAssignedStudents =
       managerInternships.filter(
         (item) =>
@@ -122,11 +99,8 @@ const getManagerDashboard = async (req, res) => {
           item.status === "completed"
       ).length;
 
-    // ==========================================
     // WEEKLY REPORTS OF CURRENT MANAGER'S
     // STUDENTS ONLY
-    // ==========================================
-
     const reportFilter = {
       student: {
         $in: managerStudentIds,
@@ -160,10 +134,7 @@ const getManagerDashboard = async (req, res) => {
         status: "Rejected",
       });
 
-    // ==========================================
     // RESPONSE
-    // ==========================================
-
     res.status(200).json({
       success: true,
 
@@ -194,10 +165,7 @@ const getManagerDashboard = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(
-      "Manager Dashboard Error:",
-      error
-    );
+    console.error("Manager Dashboard Error:", error);
 
     res.status(500).json({
       success: false,
@@ -212,10 +180,7 @@ const getManagerDashboard = async (req, res) => {
 const getManagerStudents = async (req, res) => {
   try {
 
-    // =====================================================
     // GET LOGGED-IN MANAGER
-    // =====================================================
-
     const manager = await Manager.findOne({
       user: req.user._id,
     }).lean();
@@ -228,20 +193,14 @@ const getManagerStudents = async (req, res) => {
       });
     }
 
-    // =====================================================
     // GET INTERNSHIPS ASSIGNED TO THIS MANAGER
-    // =====================================================
-
     const internships = await Internship.find({
       managerId: manager.managerId,
     }).lean();
 
     const students = [];
 
-    // =====================================================
     // GET STUDENT DATA FOR EACH INTERNSHIP
-    // =====================================================
-
     for (const internship of internships) {
 
       // Find Student connected to this internship
@@ -266,10 +225,7 @@ const getManagerStudents = async (req, res) => {
         continue;
       }
 
-      // =====================================================
       // WEEKLY REPORTS
-      // =====================================================
-
       const weeklyReports =
         await WeeklyReport.find({
           student: student._id,
@@ -277,10 +233,7 @@ const getManagerStudents = async (req, res) => {
           .select("weekNumber")
           .lean();
 
-      // =====================================================
       // CURRENT WEEK
-      // =====================================================
-
       let currentWeek = 0;
 
       if (weeklyReports.length > 0) {
@@ -290,74 +243,42 @@ const getManagerStudents = async (req, res) => {
             (report) => report.weekNumber || 0
           )
         );
-
       }
 
-      // =====================================================
       // ADD STUDENT
-      // =====================================================
-
       students.push({
-
         userId: user._id,
-
         studentId: student._id,
-
         name: user.name,
-
         email: user.email,
-
         rollNo: student.rollNo || "",
-
-        companyName:
-          internship.companyName ||
-          "Not Assigned",
-
+        companyName: internship.companyName || "Not Assigned",
         currentWeek,
-
-        totalWeeks:
-          internship.totalWeeks || 0,
-
-        internshipStatus:
-          internship.status ||
-          "not-found",
-
-        teacherVerified:
-          student.teacherVerified || false,
-
-        managerVerified:
-          internship.managerVerified || false,
-
+        totalWeeks: internship.totalWeeks || 0,
+        internshipStatus: internship.status || "not-found",
+        teacherVerified: student.teacherVerified || false,
+        managerVerified: internship.managerVerified || false,
       });
     }
 
-    // =====================================================
     // RESPONSE
-    // =====================================================
-
     res.status(200).json({
       success: true,
 
       // Useful for checking which manager
       // is currently being used
       managerId: manager.managerId,
-
       count: students.length,
-
       students,
     });
 
   } catch (error) {
 
-    console.error(
-      "Manager Students Error:",
-      error
-    );
+    console.error("Manager Students Error:",error);
 
     res.status(500).json({
       success: false,
-      message:
-        "Failed to fetch students",
+      message:"Failed to fetch students",
       error: error.message,
     });
   }
@@ -383,9 +304,7 @@ const getManagerStudentDetails = async (req, res) => {
     }
 
     // User
-    const user = await User.findById(
-      student.user
-    )
+    const user = await User.findById(student.user)
       .select("-password")
       .lean();
 
@@ -415,10 +334,7 @@ const getManagerStudentDetails = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(
-      "Manager Student Details Error:",
-      error
-    );
+    console.error("Manager Student Details Error:",error);
 
     res.status(500).json({
       success: false,
@@ -434,8 +350,7 @@ const verifyStudentByManager = async (req, res) => {
   try {
     const { studentId } = req.params;
 
-    const internship =
-      await Internship.findOne({
+    const internship = await Internship.findOne({
         student: studentId,
       });
 
@@ -451,23 +366,17 @@ const verifyStudentByManager = async (req, res) => {
     await internship.save();
     res.status(200).json({
       success: true,
-      message:
-        "Student internship verified successfully",
+      message:"Student internship verified successfully",
 
       internship: {
         id: internship._id,
-        managerVerified:
-          internship.managerVerified,
-        status:
-          internship.status,
+        managerVerified: internship.managerVerified,
+        status: internship.status,
       },
     });
 
   } catch (error) {
-    console.error(
-      "Manager Verification Error:",
-      error
-    );
+    console.error("Manager Verification Error:",error);
 
     res.status(500).json({
       success: false,
@@ -481,10 +390,8 @@ const verifyStudentByManager = async (req, res) => {
 // GET /api/manager/evaluation
 const getManagerEvaluationReports = async (req, res) => {
   try {
-    // =====================================================
-    // GET LOGGED-IN MANAGER
-    // =====================================================
 
+    // GET LOGGED-IN MANAGER
     const manager = await Manager.findOne({
       user: req.user._id,
     }).lean();
@@ -497,10 +404,7 @@ const getManagerEvaluationReports = async (req, res) => {
       });
     }
 
-    // =====================================================
     // GET INTERNSHIPS ASSIGNED TO THIS MANAGER
-    // =====================================================
-
     const internships = await Internship.find({
       managerId: manager.managerId,
     })
@@ -512,10 +416,7 @@ const getManagerEvaluationReports = async (req, res) => {
       .filter((internship) => internship.student)
       .map((internship) => internship.student);
 
-    // =====================================================
     // NO STUDENTS ASSIGNED
-    // =====================================================
-
     if (studentIds.length === 0) {
       return res.status(200).json({
         success: true,
@@ -524,10 +425,7 @@ const getManagerEvaluationReports = async (req, res) => {
       });
     }
 
-    // =====================================================
     // GET WEEKLY REPORTS ONLY FOR THIS MANAGER'S STUDENTS
-    // =====================================================
-
     const reports = await WeeklyReport.find({
       student: {
         $in: studentIds,
@@ -545,19 +443,13 @@ const getManagerEvaluationReports = async (req, res) => {
       })
       .lean();
 
-    // =====================================================
     // FORMAT EVALUATION DATA
-    // =====================================================
-
     const evaluationData = reports.map((report, index) => {
       const student = report.student;
       const user = student ? student.user : null;
-
       return {
         srNo: index + 1,
-
         reportId: report._id,
-
         studentId: student
           ? student._id
           : null,
@@ -570,53 +462,29 @@ const getManagerEvaluationReports = async (req, res) => {
           ? user.name
           : "Unknown Student",
 
-        submissionDate:
-          report.submissionDate ||
-          report.createdAt,
-
-        weekNumber:
-          report.weekNumber || 0,
-
-        taskTitle:
-          report.taskTitle || "",
-
-        description:
-          report.description || "",
-
-        attachment:
-          report.attachment || "",
-
-        managerVerified:
-          report.managerVerified || false,
-
-        status:
-          report.status || "Pending",
-
-        rejectionRemark:
-          report.rejectionRemark || "",
+        submissionDate: report.submissionDate || report.createdAt,
+        weekNumber: report.weekNumber || 0,
+        taskTitle: report.taskTitle || "",
+        description: report.description || "",
+        attachment: report.attachment || "",
+        managerVerified: report.managerVerified || false,
+        status: report.status || "Pending",
+        rejectionRemark: report.rejectionRemark || "",
       };
     });
 
-    // =====================================================
     // RESPONSE
-    // =====================================================
-
     res.status(200).json({
       success: true,
 
       // Useful for debugging
       managerId: manager.managerId,
-
       count: evaluationData.length,
-
       reports: evaluationData,
     });
 
   } catch (error) {
-    console.error(
-      "Manager Evaluation Error:",
-      error
-    );
+    console.error("Manager Evaluation Error:",error);
 
     res.status(500).json({
       success: false,
@@ -632,10 +500,7 @@ const approveWeeklyReport = async (req, res) => {
   try {
     const { reportId } = req.params;
 
-    // =====================================================
     // GET LOGGED-IN MANAGER
-    // =====================================================
-
     const manager = await Manager.findOne({
       user: req.user._id,
     }).lean();
@@ -647,10 +512,7 @@ const approveWeeklyReport = async (req, res) => {
       });
     }
 
-    // =====================================================
     // FIND WEEKLY REPORT
-    // =====================================================
-
     const report = await WeeklyReport.findById(
       reportId
     );
@@ -662,10 +524,7 @@ const approveWeeklyReport = async (req, res) => {
       });
     }
 
-    // =====================================================
     // CHECK WHETHER THIS STUDENT BELONGS TO THIS MANAGER
-    // =====================================================
-
     const internship = await Internship.findOne({
       student: report.student,
       managerId: manager.managerId,
@@ -675,32 +534,21 @@ const approveWeeklyReport = async (req, res) => {
     if (!internship) {
       return res.status(403).json({
         success: false,
-        message:
-          "You are not authorized to approve this weekly report.",
+        message:"You are not authorized to approve this weekly report.",
       });
     }
 
-    // =====================================================
     // APPROVE REPORT
-    // =====================================================
-
     report.status = "Approved";
-
     report.managerVerified = true;
-
     report.rejectionRemark = "";
-
     await report.save();
 
-    // =====================================================
     // RESPONSE
-    // =====================================================
-
     res.status(200).json({
       success: true,
 
-      message:
-        "Weekly report approved successfully",
+      message:"Weekly report approved successfully",
 
       report: {
         id: report._id,
@@ -711,15 +559,11 @@ const approveWeeklyReport = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(
-      "Approve Weekly Report Error:",
-      error
-    );
+    console.error("Approve Weekly Report Error:",error);
 
     res.status(500).json({
       success: false,
-      message:
-        "Failed to approve weekly report",
+      message:"Failed to approve weekly report",
       error: error.message,
     });
   }
@@ -730,28 +574,20 @@ const approveWeeklyReport = async (req, res) => {
 const rejectWeeklyReport = async (req, res) => {
   try {
     const { reportId } = req.params;
-
     const { rejectionRemark } = req.body;
 
-    // =====================================================
     // REMARK REQUIRED
-    // =====================================================
-
     if (
       !rejectionRemark ||
       !rejectionRemark.trim()
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "Rejection remark is required",
+        message:"Rejection remark is required",
       });
     }
 
-    // =====================================================
     // GET LOGGED-IN MANAGER
-    // =====================================================
-
     const manager = await Manager.findOne({
       user: req.user._id,
     }).lean();
@@ -759,32 +595,22 @@ const rejectWeeklyReport = async (req, res) => {
     if (!manager) {
       return res.status(404).json({
         success: false,
-        message:
-          "Manager profile not found",
+        message:"Manager profile not found",
       });
     }
 
-    // =====================================================
     // FIND WEEKLY REPORT
-    // =====================================================
-
-    const report =
-      await WeeklyReport.findById(reportId);
+    const report = await WeeklyReport.findById(reportId);
 
     if (!report) {
       return res.status(404).json({
         success: false,
-        message:
-          "Weekly report not found",
+        message:"Weekly report not found",
       });
     }
 
-    // =====================================================
     // CHECK WHETHER THIS STUDENT BELONGS TO THIS MANAGER
-    // =====================================================
-
-    const internship =
-      await Internship.findOne({
+    const internship = await Internship.findOne({
         student: report.student,
         managerId: manager.managerId,
       });
@@ -793,58 +619,36 @@ const rejectWeeklyReport = async (req, res) => {
     if (!internship) {
       return res.status(403).json({
         success: false,
-        message:
-          "You are not authorized to reject this weekly report.",
+        message:"You are not authorized to reject this weekly report.",
       });
     }
 
-    // =====================================================
     // REJECT REPORT
-    // =====================================================
-
     report.status = "Rejected";
-
     report.managerVerified = false;
-
-    report.rejectionRemark =
-      rejectionRemark.trim();
-
+    report.rejectionRemark = rejectionRemark.trim();
+    
     await report.save();
 
-    // =====================================================
     // RESPONSE
-    // =====================================================
-
     res.status(200).json({
       success: true,
-
-      message:
-        "Weekly report rejected successfully",
+      message:"Weekly report rejected successfully",
 
       report: {
         id: report._id,
-
-        status:
-          report.status,
-
-        managerVerified:
-          report.managerVerified,
-
-        rejectionRemark:
-          report.rejectionRemark,
+        status: report.status,
+        managerVerified: report.managerVerified,
+        rejectionRemark: report.rejectionRemark,
       },
     });
 
   } catch (error) {
-    console.error(
-      "Reject Weekly Report Error:",
-      error
-    );
+    console.error("Reject Weekly Report Error:",error);
 
     res.status(500).json({
       success: false,
-      message:
-        "Failed to reject weekly report",
+      message:"Failed to reject weekly report",
       error: error.message,
     });
   }
@@ -885,7 +689,6 @@ const getManagerProfile = async (req, res) => {
     });
   }
 };
-
 
 // CREATE MANAGER PROFILE
 // POST /api/manager/profile
@@ -944,7 +747,6 @@ const createManagerProfile = async (req, res) => {
     }
 
     const prefix = `M${currentYear}`;
-
     const lastManager = await Manager.findOne({
       managerId: {
         $regex: `^${prefix}\\d{3}${companyCode}$`,
@@ -960,14 +762,11 @@ const createManagerProfile = async (req, res) => {
         prefix.length,
         prefix.length + 3
       );
-
       sequence = Number(sequencePart) + 1;
     }
 
     const sequenceNumber = String(sequence).padStart(3, "0");
-
-    const managerId =
-      `M${currentYear}${sequenceNumber}${companyCode}`;
+    const managerId =`M${currentYear}${sequenceNumber}${companyCode}`;
 
     const manager = await Manager.create({
       user: req.user._id,
@@ -981,8 +780,8 @@ const createManagerProfile = async (req, res) => {
           : "",
       companyName: companyName.trim(),
         signature: req.file
-    ? `manager-signatures/${req.file.filename}`
-    : "",
+          ? `manager-signatures/${req.file.filename}`
+          : "",
     });
 
     res.status(201).json({
@@ -996,8 +795,7 @@ const createManagerProfile = async (req, res) => {
     if (error.code === 11000) {
       return res.status(409).json({
         success: false,
-        message:
-          "Manager ID already exists. Please try saving the profile again.",
+        message:"Manager ID already exists. Please try saving the profile again.",
       });
     }
 
@@ -1008,7 +806,6 @@ const createManagerProfile = async (req, res) => {
     });
   }
 };
-
 
 // UPDATE MANAGER PROFILE
 // PUT /api/manager/profile
@@ -1111,10 +908,8 @@ module.exports = {
   getManagerEvaluationReports,
   approveWeeklyReport,
   rejectWeeklyReport,
-
   getManagerProfile,
   createManagerProfile,
   updateManagerProfile,
-
   getAllManagers,
 };

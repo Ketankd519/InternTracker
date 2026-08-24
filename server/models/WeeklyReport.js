@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const weeklyReportSchema = new mongoose.Schema(
   {
     // Student

@@ -68,7 +68,6 @@ const createStudentProfile = async (req, res) => {
       profilePhoto: req.file
         ? `profile/${req.file.filename}`
         : null,
-
       college,
       department,
       semester,
@@ -79,12 +78,12 @@ const createStudentProfile = async (req, res) => {
       teacherNo,
       cgpa,
       profileCompleted: true,
+
       // Teacher verification starts as false
       teacherVerified: false,
     });
 
-    const savedProfile =
-      await studentProfile.save();
+    const savedProfile = await studentProfile.save();
 
     // Populate user information
     await savedProfile.populate(
@@ -95,20 +94,15 @@ const createStudentProfile = async (req, res) => {
     return res.status(201).json({
       success: true,
       profileExists: true,
-      message:
-        "Student profile created successfully.",
+      message:"Student profile created successfully.",
       data: savedProfile,
     });
   } catch (error) {
-    console.error(
-      "Create Student Profile Error:",
-      error
-    );
+    console.error("Create Student Profile Error:",error);
 
     return res.status(500).json({
       success: false,
-      message:
-        "Error creating student profile",
+      message:"Error creating student profile",
       error: error.message,
     });
   }
@@ -164,10 +158,7 @@ const getStudentProfile = async (req, res) => {
       data: profile,
     });
   } catch (error) {
-    console.error(
-      "Get Student Profile Error:",
-      error
-    );
+    console.error("Get Student Profile Error:",error);
 
     return res.status(500).json({
       success: false,
@@ -198,8 +189,7 @@ const updateStudentProfile = async (req, res) => {
 
     // File upload
     if (req.file) {
-      req.body.profilePhoto =
-        req.file.path;
+      req.body.profilePhoto = req.file.path;
     }
 
     // Never allow frontend to change these
@@ -233,8 +223,7 @@ if (
 }
 
     // Update profile
-    profile =
-      await Student.findOneAndUpdate(
+    profile = await Student.findOneAndUpdate(
         { user: userId },
         {
           $set: {
@@ -255,20 +244,14 @@ if (
     return res.status(200).json({
       success: true,
       profileExists: true,
-      message:
-        "Student profile updated successfully.",
+      message:"Student profile updated successfully.",
       data: profile,
     });
   } catch (error) {
-    console.error(
-      "Update Student Profile Error:",
-      error
-    );
-
+    console.error("Update Student Profile Error:",error);
     return res.status(500).json({
       success: false,
-      message:
-        "Error updating student profile",
+      message:"Error updating student profile",
       error: error.message,
     });
   }

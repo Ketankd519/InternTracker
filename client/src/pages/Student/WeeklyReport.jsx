@@ -43,9 +43,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
     const fetchInternship = async () => {
       try {
         const response = await API.get("/internships/status");
-
         const internship = response.data.data?.internship;
-
         if (internship) {
           setTotalWeeks(internship.totalWeeks);
         }
@@ -54,33 +52,17 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
       }
     };
 
-
   const fetchReports = async () => {
     try {
       setLoadingReports(true);
       setError("");
-
       const response = await API.get("/reports");
-
-      console.log("Weekly Reports Response:",
-        response.data
-      );
-
       const reportData = response.data.data || [];
-
       setReports(reportData);
     } catch (err) {
-      console.error(
-        "Fetch Weekly Reports Error:",
-        err
-      );
-
+      console.error("Fetch Weekly Reports Error:",err);
       setReports([]);
-
-      setError(
-        err.response?.data?.message ||
-          "Unable to fetch weekly reports."
-      );
+      setError(err.response?.data?.message || "Unable to fetch weekly reports.");
     } finally {
       setLoadingReports(false);
     }
@@ -89,7 +71,6 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
   // Edit rejected report
   const handleEdit = (report) => {
     setEditingReportId(report._id);
-
     setFormData({
       weekNumber: report.weekNumber,
       taskTitle: report.taskTitle || "",
@@ -106,11 +87,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
     setError("");
 
     // Scroll to form
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
+    window.scrollTo({top: 0,behavior: "smooth",});};
 
   // Handle Input Changes
   const handleChange = (e) => {
@@ -122,7 +99,6 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
       ...prev,
       [name]: files[0],
     }));
-
     return;
   }
 
@@ -134,7 +110,6 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
         ...prev,
         weekNumber: "",
       }));
-
       return;
     }
 
@@ -164,7 +139,6 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
       ...prev,
       weekNumber: value,
     }));
-
     return;
   }
 
@@ -178,22 +152,18 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
     // Submit / Update Weekly Report
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const weekNumber = Number(formData.weekNumber);
 
     // Validate submission date
     if (!formData.submissionDate) {
       const msg = "Please select a submission date.";
-
       setError(msg);
       alert(msg);
       return;
     }
 
     if (formData.submissionDate < today) {
-      const msg =
-        "Submission date cannot be before today.";
-
+      const msg = "Submission date cannot be before today.";
       setError(msg);
       alert(msg);
       return;
@@ -201,9 +171,8 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
     // Validate week number
     if (totalWeeks && weekNumber > totalWeeks) {
-      const msg =
-        `Invalid week number. Your internship is for ${totalWeeks} weeks. You cannot submit a report for Week ${weekNumber}.`;
-
+      const msg =`Invalid week number. Your internship is for ${totalWeeks} weeks. 
+                  You cannot submit a report for Week ${weekNumber}.`;
       setError(msg);
       alert(msg);
       return;
@@ -211,7 +180,6 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
     if (weekNumber < 1) {
       const msg = "Week number must be at least 1.";
-
       setError(msg);
       alert(msg);
       return;
@@ -224,13 +192,9 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
         : 0;
     };
 
-    const descriptionWordCount =
-      countWords(formData.description);
-
+    const descriptionWordCount = countWords(formData.description);
     if (descriptionWordCount > 200) {
-      const msg =
-        "Description cannot exceed 200 words.";
-
+      const msg = "Description cannot exceed 200 words.";
       setError(msg);
       alert(msg);
       return;
@@ -239,9 +203,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
     // Validate attachment size
     if (formData.attachment) {
       if (formData.attachment.size > MAX_FILE_SIZE) {
-        const msg =
-          "Attachment size cannot exceed 5 MB.";
-
+        const msg = "Attachment size cannot exceed 5 MB.";
         setError(msg);
         alert(msg);
         return;
@@ -251,68 +213,32 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
     setLoading(true);
     setMessage("");
     setError("");
-
     try {
       const data = new FormData();
-
       // IMPORTANT:
       // Week number is sent only during NEW submission.
       // During edit, backend keeps the original week number.
       if (!editingReportId) {
-        data.append(
-          "weekNumber",
-          formData.weekNumber
-        );
+        data.append("weekNumber",formData.weekNumber);
       }
 
-      data.append(
-        "taskTitle",
-        formData.taskTitle
-      );
-
-      data.append(
-        "description",
-        formData.description
-      );
-
-      data.append(
-        "submissionDate",
-        formData.submissionDate
-      );
-
+      data.append("taskTitle",formData.taskTitle);
+      data.append("description",formData.description);
+      data.append("submissionDate",formData.submissionDate);
       if (formData.attachment) {
-        data.append(
-          "attachment",
-          formData.attachment
-        );
+        data.append("attachment",formData.attachment);
       }
-
       let response;
-
       if (editingReportId) {
 
         // UPDATE rejected report
-        response = await API.put(
-          `/reports/${editingReportId}`,
-          data
-        );
-
+        response = await API.put(`/reports/${editingReportId}`,data);
       } else {
-
         // NEW report
-        response = await API.post(
-          "/reports",
-          data
-        );
+        response = await API.post("/reports",data);
       }
 
-      console.log(
-        "Weekly Report Response:",
-        response.data
-      );
-
-      const successMessage =
-        response.data.message ||
+      const successMessage = response.data.message ||
         (
           editingReportId
             ? "Weekly report updated successfully."
@@ -339,21 +265,11 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
       // Refresh reports
       await fetchReports();
-
     } catch (err) {
-
-      console.error(
-        "Weekly Report Error:",
-        err
-      );
-
-      const errorMessage =
-        err.response?.data?.message ||
-        "Unable to process weekly report. Please try again.";
-
+      console.error("Weekly Report Error:",err);
+      const errorMessage = err.response?.data?.message || "Unable to process weekly report. Please try again.";
       setError(errorMessage);
       alert(errorMessage);
-
     } finally {
       setLoading(false);
     }
@@ -399,7 +315,6 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
     // Your backend serves uploads using:
     // app.use("/uploads", express.static("uploads"));
-
     return `http://localhost:5000/${attachment.replace(/\\/g, "/")}`;
   };
 
@@ -437,16 +352,10 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
                   {totalWeeks && ` (1 - ${totalWeeks})`}
                 </label>
 
-                <input
-                  type="text"
-                  id="weekNumber"
-                  name="weekNumber"
-                  placeholder="Enter week number"
-                  inputMode="numeric"
-                  pattern="[0-9]{1,2}"
-                  maxLength="2"
-                  value={formData.weekNumber}
-                  onChange={handleChange}
+                <input type="text" id="weekNumber" name="weekNumber"
+                  placeholder="Enter week number" inputMode="numeric"
+                  pattern="[0-9]{1,2}" maxLength="2"
+                  value={formData.weekNumber} onChange={handleChange}
                   onKeyDown={(e) => {
                     // Prevent e, E, +, -, ., etc.
                     if (["e", "E", "+", "-", "."].includes(e.key)) {
@@ -464,13 +373,10 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
                   Submission Date
                 </label>
 
-                <input
-                  type="date"
-                  id="submissionDate"
+                <input type="date" id="submissionDate"
                   name="submissionDate"
                   value={formData.submissionDate}
-                  onChange={handleChange}
-                  min={today}
+                  onChange={handleChange} min={today}
                   required
                 />
               </div>
@@ -479,18 +385,15 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
               <div className="profile-field">
                 <label htmlFor="taskTitle">Task Title</label>
               <input type="text" name="taskTitle"
-                placeholder="Task Title"
-                value={formData.taskTitle}
-                onChange={handleChange}
-                required
+                placeholder="Task Title" value={formData.taskTitle}
+                onChange={handleChange} required
               />
               </div>
 
               {/* Description */}
               <textarea rows="6" name="description"
                 placeholder="Describe the work completed this week... (Maximum 200 words)"
-                value={formData.description}
-                onChange={handleChange}
+                value={formData.description}onChange={handleChange}
                 required
               />
 
@@ -511,12 +414,9 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
               {/* Submit Button */}
           <div className="profile-buttons">
           {editingReportId && !loading && (
-            <button
-              type="button"
-              className="profile-btn"
+            <button type="button" className="profile-btn"
               onClick={() => {
                 setEditingReportId(null);
-
                 setFormData({
                   weekNumber: "",
                   taskTitle: "",
@@ -524,7 +424,6 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
                   attachment: null,
                   submissionDate: "",
                 });
-
                 setMessage("");
                 setError("");
               }}
@@ -532,11 +431,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
               Cancel Edit
             </button>
           )}
-          <button
-            type="submit"
-            className="profile-btn"
-            disabled={loading}
-          >
+          <button type="submit" className="profile-btn" disabled={loading}>
             {loading
               ? editingReportId
                 ? "Updating..."
@@ -566,7 +461,6 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
             <p className="progress-text">
               No weekly reports submitted yet.
             </p>
-
           ) : (
 
               //  Reports Table
@@ -584,12 +478,10 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
                 </thead>
                 <tbody>
                   {reports.map((report) => {
-
                     const attachmentUrl =
                       getAttachmentUrl(
                         report.attachment
                       );
-
                     return (
                       <tr key={report._id}>
 
@@ -617,7 +509,6 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
                             >
                               View File
                             </a>
-
                           ) : (
                             "-"
                           )}
@@ -628,7 +519,6 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
                           <span className={getStatusClass(report.status)}>
                             {report.status || "Pending"}
                           </span>
-
                           {report.status === "Rejected" &&
                             (report.remark || report.rejectionRemark) && (
                               <div className="rejection-remark">
@@ -636,11 +526,8 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
                                 {report.remark || report.rejectionRemark}
                               </div>
                             )}
-
                           {report.status === "Rejected" && (
-                            <button
-                              type="button"
-                              className="report-edit-btn"
+                            <button type="button" className="report-edit-btn"
                               onClick={() => handleEdit(report)}
                               disabled={editingReportId !== null}
                             >

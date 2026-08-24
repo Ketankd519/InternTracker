@@ -11,13 +11,11 @@ export const AuthProvider = ({ children }) => {
     const checkLoggedIn = async () => {
       const localToken = localStorage.getItem("token");
       const sessionToken = sessionStorage.getItem("token");
-
       const token = localToken || sessionToken;
 
       if (token) {
         try {
           const res = await API.get("/auth/me");
-
           setUser(res.data.user);
         } catch {
           localStorage.removeItem("token");
@@ -25,19 +23,14 @@ export const AuthProvider = ({ children }) => {
           setUser(null);
         }
       }
-
       setLoading(false);
     };
-
     checkLoggedIn();
   }, []);
 
   const login = async (email, password, rememberMe) => {
     try {
-      const res = await API.post("/auth/login", {
-        email,
-        password,
-      });
+      const res = await API.post("/auth/login", {email, password,});
 
       // Remove old tokens first
       localStorage.removeItem("token");
@@ -51,11 +44,8 @@ export const AuthProvider = ({ children }) => {
       else {
         sessionStorage.setItem("token", res.data.token);
       }
-
       setUser(res.data.user);
-
       return res.data;
-
     } catch (error) {
       throw error.response?.data || {
         message: "Login failed",
@@ -69,11 +59,8 @@ export const AuthProvider = ({ children }) => {
 
       // Registration remains persistent
       localStorage.setItem("token", res.data.token);
-
       setUser(res.data.user);
-
       return res.data;
-
     } catch (error) {
       throw error.response?.data || {
         message: "Registration failed",
@@ -84,20 +71,12 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem("token");
     sessionStorage.removeItem("token");
-
     setUser(null);
   };
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        login,
-        register,
-        logout,
-      }}
-    >
+      value={{user, loading, login, register, logout,}}>
       {children}
     </AuthContext.Provider>
   );

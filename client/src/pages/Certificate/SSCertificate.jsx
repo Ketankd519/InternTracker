@@ -17,17 +17,11 @@ export default function SSCertificate() {
       setError("");
 
       const response = await API.get("/certificates/status");
-      console.log("CERTIFICATE STATUS RESPONSE:", response.data);
-
       setCertificateData(response.data?.data || {});
     } catch (err) {
       console.error("Certificate Status Error:", err);
 
-      console.error(
-        err.response?.data?.message ||
-          "Unable to fetch certificate status."
-      );
-
+      console.error(err.response?.data?.message || "Unable to fetch certificate status.");
       setCertificateData({});
     } finally {
       setLoading(false);
@@ -46,24 +40,23 @@ export default function SSCertificate() {
     );
   }
 
-  // // ERROR
-  // if (error) {
-  //   return (
-  //     <div className="certificate-status-page">
-  //       <div className="certificate-status-card error-card">
-  //         <h2>Certificate Status</h2>
-  //         <p>{error}</p>
-
-  //         <button
-  //           className="certificate-refresh-btn"
-  //           onClick={fetchCertificateStatus}
-  //         >
-  //           Try Again
-  //         </button>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  // ERROR
+  if (error && !certificateData) {
+    return (
+      <div className="certificate-status-page">
+        <div className="certificate-status-card error-card">
+          <h2>Certificate Status</h2>
+          <p>{error}</p>
+          <button
+            className="certificate-refresh-btn"
+            onClick={fetchCertificateStatus}
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!certificateData) {
     return (
@@ -76,57 +69,54 @@ export default function SSCertificate() {
     );
   }
 
-// DATA
-const studentName = certificateData.student?.name || "Not Available";
-const companyName = certificateData.internship?.companyName || "Not Available";
-const startDate = certificateData.internship?.startDate || null;
-const endDate = certificateData.internship?.endDate || null;
-const teacherName = certificateData.certificate?.teacherName || "Teacher Name";
-const managerName = certificateData.certificate?.managerName || "Manager Name";
+  // DATA
+  const studentName = certificateData.student?.name || "Not Available";
+  const companyName = certificateData.internship?.companyName || "Not Available";
+  const startDate = certificateData.internship?.startDate || null;
+  const endDate = certificateData.internship?.endDate || null;
+  const teacherName = certificateData.certificate?.teacherName || "Teacher Name";
+  const managerName = certificateData.certificate?.managerName || "Manager Name";
 
-// Existing verification
-const teacherVerified = certificateData.existingVerification?.teacherVerified === true;
-const managerVerified = certificateData.existingVerification?.managerVerified === true;
+  // Existing verification
+  const teacherVerified = certificateData.existingVerification?.teacherVerified === true;
+  const managerVerified = certificateData.existingVerification?.managerVerified === true;
 
-// Certificate approval
-const teacherApproved = certificateData.certificate?.teacherApproved === true;
-const managerApproved = certificateData.certificate?.managerApproved === true;
+  // Certificate approval
+  const teacherApproved = certificateData.certificate?.teacherApproved === true;
+  const managerApproved = certificateData.certificate?.managerApproved === true;
 
-// Progress
-const progress = Number(certificateData.progress?.percentage) || 0;
-const internshipStatus = certificateData.internship?.status || "";
+  // Progress
+  const progress = Number(certificateData.progress?.percentage) || 0;
+  const internshipStatus = certificateData.internship?.status || "";
 
-// CERTIFICATE STATUS LOGIC
+  // CERTIFICATE STATUS LOGIC
 
-let teacherStatus = "Not Eligible";
-let managerStatus = "Not Eligible";
+  let teacherStatus = "Not Eligible";
+  let managerStatus = "Not Eligible";
 
-/*
-  STEP 1:
-  Teacher and Manager verification
+  /*
+    STEP 1:
+    Teacher and Manager verification
 
-  ❌ ❌ -> Not Eligible / Not Eligible
-  ✅ ❌ -> Eligible / Not Eligible
-  ❌ ✅ -> Not Eligible / Eligible
-  ✅ ✅ -> Progress-based status
-*/
+    ❌ ❌ -> Not Eligible / Not Eligible
+    ✅ ❌ -> Eligible / Not Eligible
+    ❌ ✅ -> Not Eligible / Eligible
+    ✅ ✅ -> Progress-based status
+  */
 
-if (!teacherVerified && !managerVerified) {
+  if (!teacherVerified && !managerVerified) {
+    teacherStatus = "Not Eligible";
+    managerStatus = "Not Eligible";
 
-  teacherStatus = "Not Eligible";
-  managerStatus = "Not Eligible";
+  } else if (teacherVerified && !managerVerified) {
+    teacherStatus = "Eligible";
+    managerStatus = "Not Eligible";
 
-} else if (teacherVerified && !managerVerified) {
+  } else if (!teacherVerified && managerVerified) {
+    teacherStatus = "Not Eligible";
+    managerStatus = "Eligible";
 
-  teacherStatus = "Eligible";
-  managerStatus = "Not Eligible";
-
-} else if (!teacherVerified && managerVerified) {
-
-  teacherStatus = "Not Eligible";
-  managerStatus = "Eligible";
-
-} else if (teacherVerified && managerVerified) {
+  } else if (teacherVerified && managerVerified) {
 
   /*
     STEP 2:
@@ -138,17 +128,14 @@ if (!teacherVerified && !managerVerified) {
   */
 
   if (progress === 100) {
-
     teacherStatus = "Waiting for Approval";
     managerStatus = "Waiting for Approval";
 
   } else if (progress > 50) {
-
     teacherStatus = "Ongoing";
     managerStatus = "Ongoing";
 
   } else {
-
     teacherStatus = "Processing";
     managerStatus = "Processing";
   }
@@ -168,7 +155,6 @@ if (!teacherVerified && !managerVerified) {
   if (managerApproved) {
     managerStatus = "Approved";
   }
-
   const certificateReady = teacherApproved && managerApproved;
 
   // DATE FORMAT
@@ -190,24 +176,14 @@ if (!teacherVerified && !managerVerified) {
   // STATUS CLASS
   const getStatusClass = (status) => {
     switch (status) {
-      case "Approved":
-        return "status-approved";
-
-      case "Processing":
-        return "status-processing";
-
-      case "Eligible":
-        return "status-eligible";
-
-      case "Waiting for Approval":
-        return "status-waiting";
-
-      case "Ongoing":
-        return "status-ongoing";
-
+      case "Approved": return "status-approved";
+      case "Processing": return "status-processing";
+      case "Eligible": return "status-eligible";
+      case "Waiting for Approval": return "status-waiting";
+      case "Ongoing": return "status-ongoing";
       case "Not Eligible":
-      default:
-        return "status-not-eligible";
+      default: 
+      return "status-not-eligible";
     }
   };
 
@@ -215,9 +191,7 @@ if (!teacherVerified && !managerVerified) {
     <div className="page active">
 
       {/* PAGE TITLE */}
-      <h2 style={{ textAlign: 'center', color: '#1e3a8a' }}>
-        Internship Completion Certificate
-      </h2>
+      <h2 style={{ textAlign: 'center', color: '#1e3a8a' }}>Internship Completion Certificate</h2>
 
       {/* CERTIFICATE STATUS CARD */}
       <div className="certificate" id="printable-certificate">
@@ -233,7 +207,6 @@ if (!teacherVerified && !managerVerified) {
           assigned projects and successfully completed
           the assigned tasks.
         </p>
-
 
         {/* VERIFICATION TABLE */}
         <table>
@@ -258,8 +231,7 @@ if (!teacherVerified && !managerVerified) {
               <td>
                 <strong>{managerName}</strong>
                 <br></br>
-                <div
-                  className={`certificate-status-badge ${getStatusClass(
+                <div className={`certificate-status-badge ${getStatusClass(
                     managerStatus
                   )}`}
                 >

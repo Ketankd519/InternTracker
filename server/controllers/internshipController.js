@@ -1,5 +1,3 @@
-// server/controllers/internshipController.js
-
 const Internship = require('../models/Internship');
 const Student = require('../models/Student');
 
@@ -46,8 +44,6 @@ const applyInternship = async (req, res) => {
     totalWeeks,
   } = req.body;
 
-  console.log("INTERNSHIP REQUEST BODY:", req.body);
-
     // Date Validation
     if (new Date(endDate) <= new Date(startDate)) {
       return res.status(400).json({
@@ -64,22 +60,22 @@ const applyInternship = async (req, res) => {
       });
     }
 
-    // Create Internship
-const internship = new Internship({
-  student: student._id,
-  companyName,
-  companyAddress,
-  internshipRole,
-  managerName,
-  managerId,
-  managerEmail,
-  managerPhone,
-  department,
-  startDate,
-  endDate,
-  totalWeeks,
-  status: "pending",
-});
+      // Create Internship
+  const internship = new Internship({
+    student: student._id,
+    companyName,
+    companyAddress,
+    internshipRole,
+    managerName,
+    managerId,
+    managerEmail,
+    managerPhone,
+    department,
+    startDate,
+    endDate,
+    totalWeeks,
+    status: "pending",
+  });
 
     const savedInternship = await internship.save();
 
@@ -127,10 +123,7 @@ const getInternshipStatus = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: {
-        status: internship.status,
-        internship,
-      },
+      data: {status: internship.status, internship,},
     });
   } catch (error) {
     res.status(500).json({

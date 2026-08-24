@@ -76,9 +76,7 @@ const getTeacherDashboard = async (req, res) => {
 
     const completedStudents = completedStudentIds.length;
 
-    // ==========================================
     // STUDENTS ASSIGNED TO CURRENT TEACHER
-    // ==========================================
     const assignedStudents = await Student.find({
       teacherId: teacherProfile.teacherId,
     }).select("_id");
@@ -89,9 +87,7 @@ const getTeacherDashboard = async (req, res) => {
 
     const assignedStudentsCount = assignedStudentIds.length;
 
-    // ==========================================
     // COMPLETED STUDENTS OF CURRENT TEACHER
-    // ==========================================
     const completedAssignedStudents =
       await Internship.countDocuments({
         student: {
@@ -193,16 +189,13 @@ const getTeacherStudents = async (req, res) => {
       students.push({
         userId: user._id,
         studentId: student._id,
-
         name: user.name,
         email: user.email,
-
         companyName: internship
           ? internship.companyName
           : "Not Assigned",
 
         currentWeek,
-
         totalWeeks: internship
           ? internship.totalWeeks
           : 0,
@@ -224,15 +217,11 @@ const getTeacherStudents = async (req, res) => {
 
       // Optional but useful for debugging
       teacherId: teacher.teacherId,
-
       count: students.length,
       students,
     });
   } catch (error) {
-    console.error(
-      "Get Teacher Students Error:",
-      error
-    );
+    console.error("Get Teacher Students Error:",error);
 
     res.status(500).json({
       success: false,
@@ -241,8 +230,6 @@ const getTeacherStudents = async (req, res) => {
     });
   }
 };
-
-
 
 // VIEW COMPLETE STUDENT PROFILE
 // GET /api/teacher/students/:studentId
@@ -315,10 +302,8 @@ const getTeacherStudentDetails = async (req, res) => {
   }
 };
 
-
 // TEACHER VERIFY STUDENT
 // PUT /api/teacher/students/:studentId/verify
-
 const verifyStudentByTeacher = async (req, res) => {
   try {
     const { studentId } = req.params;
@@ -339,7 +324,6 @@ const verifyStudentByTeacher = async (req, res) => {
 
     // Student not found
     if (!student) {
-      console.log("Student not found");
 
       return res.status(404).json({
         success: false,
@@ -347,20 +331,9 @@ const verifyStudentByTeacher = async (req, res) => {
       });
     }
 
-    console.log(
-      "Updated Student:",
-      student._id.toString()
-    );
-
-    console.log(
-      "teacherVerified:",
-      student.teacherVerified
-    );
-
     return res.status(200).json({
       success: true,
       message: "Student verified successfully",
-
       student: {
         id: student._id,
         teacherVerified: student.teacherVerified,
@@ -368,10 +341,7 @@ const verifyStudentByTeacher = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(
-      "Teacher Verification Error:",
-      error
-    );
+    console.error("Teacher Verification Error:",error);
 
     return res.status(500).json({
       success: false,
@@ -416,7 +386,6 @@ const getTeacherProfile = async (req, res) => {
     });
   }
 };
-
 
 // CREATE TEACHER PROFILE
 // POST /api/teacher/profile
@@ -526,14 +495,11 @@ const createTeacherProfile = async (req, res) => {
         prefix.length,
         prefix.length + 3
       );
-
       sequence = Number(sequencePart) + 1;
     }
 
     const sequenceNumber = String(sequence).padStart(3, "0");
-
-    const teacherId =
-      `${courseCode}${currentYear}${sequenceNumber}${departmentCode}`;
+    const teacherId = `${courseCode}${currentYear}${sequenceNumber}${departmentCode}`;
 
     const teacher = await Teacher.create({
       user: req.user._id,
@@ -558,8 +524,7 @@ const createTeacherProfile = async (req, res) => {
     if (error.code === 11000) {
       return res.status(409).json({
         success: false,
-        message:
-          "Teacher ID already exists. Please try saving the profile again.",
+        message:"Teacher ID already exists. Please try saving the profile again.",
       });
     }
 
@@ -570,7 +535,6 @@ const createTeacherProfile = async (req, res) => {
     });
   }
 };
-
 
 // UPDATE TEACHER PROFILE
 // PUT /api/teacher/profile
@@ -694,7 +658,6 @@ module.exports = {
   getTeacherStudents,
   getTeacherStudentDetails,
   verifyStudentByTeacher,
-
   getTeacherProfile,
   createTeacherProfile,
   updateTeacherProfile,

@@ -17,30 +17,15 @@ const { protect } = require("../middleware/authMiddleware");
 
 // Role-based access middleware
 const { authorize } = require("../middleware/roleMiddleware");
-
 const { signatureUpload } = require("../middleware/uploadMiddleware");
 
 // TEACHER PROFILE
-router.get(
-  "/profile",
-  protect,
-  authorize("teacher"),
-  getTeacherProfile
-);
-
-router.post(
-  "/profile",
-  protect,
-  authorize("teacher"),
-  signatureUpload.single("signature"),
+router.get("/profile",protect,authorize("teacher"),getTeacherProfile);
+router.post("/profile",protect,authorize("teacher"),signatureUpload.single("signature"),
   createTeacherProfile
 );
 
-router.put(
-  "/profile",
-  protect,
-  authorize("teacher"),
-  signatureUpload.single("signature"),
+router.put("/profile",protect,authorize("teacher"),signatureUpload.single("signature"),
   updateTeacherProfile
 );
 

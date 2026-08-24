@@ -3,11 +3,9 @@ const Student = require("../models/Student");
 const Internship = require("../models/Internship");
 const WeeklyReport = require("../models/WeeklyReport");
 
-
 // Get Student Dashboard
 // GET /api/student-dashboard
 // Private - Student
-
 const getStudentDashboard = async (req, res) => {
   try {
   
@@ -31,8 +29,7 @@ const getStudentDashboard = async (req, res) => {
     if (!student) {
       return res.status(404).json({
         success: false,
-        message:
-          "Student profile not found. Please complete your profile first.",
+        message:"Student profile not found. Please complete your profile first.",
       });
     }
 
@@ -95,8 +92,8 @@ const getStudentDashboard = async (req, res) => {
     // 9. Send dashboard data
     return res.status(200).json({
       success: true,
-
       data: {
+        
         user: {
           id: user._id,
           name: user.name,

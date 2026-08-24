@@ -18,9 +18,7 @@ export default function ManagerEvaluation() {
     try {
       setLoading(true);
       const response = await api.get("/manager/evaluation");
-
       setReports(response.data.reports || []);
-
     } catch (error) {
       console.error("Evaluation Error:", error);
       setError(
@@ -49,8 +47,7 @@ export default function ManagerEvaluation() {
       await fetchReports();
     } catch (error) {
       console.error("Approve Error:",error);
-      alert(error.response?.data?.message ||
-        "Failed to approve report."
+      alert(error.response?.data?.message || "Failed to approve report."
       );
     } finally {
       setProcessingId(null);
@@ -89,9 +86,7 @@ export default function ManagerEvaluation() {
       await fetchReports();
     } catch (error) {
       console.error("Reject Error:",error);
-      alert(error.response?.data?.message ||
-        "Failed to reject report."
-      );
+      alert(error.response?.data?.message || "Failed to reject report.");
     } finally {
       setProcessingId(null);
     }
@@ -99,17 +94,10 @@ export default function ManagerEvaluation() {
 
   const getStatusClass = (status) => {
     switch (status) {
-      case "Approved":
-        return "manager-status-approved";
-
-      case "Rejected":
-        return "manager-status-rejected";
-
-      case "Pending":
-        return "manager-status-pending";
-
-      default:
-        return "manager-status-default";
+      case "Approved": return "manager-status-approved";
+      case "Rejected": return "manager-status-rejected";
+      case "Pending": return "manager-status-pending";
+      default: return "manager-status-default";
     }
   };
   if (loading) {
@@ -131,9 +119,7 @@ export default function ManagerEvaluation() {
           <h1>Weekly Report Evaluation</h1>
           <p>Review and evaluate student weekly internship reports.</p>
         </div>
-        <div className="manager-count-badge">
-          {reports.length} Reports
-        </div>
+        <div className="manager-count-badge">{reports.length} Reports</div>
       </div>
       {error && (
         <div className="manager-error">
@@ -299,8 +285,7 @@ export default function ManagerEvaluation() {
                       )}
                     </td>
                   </tr>
-                )
-              )
+                ))
             )}
           </tbody>
         </table>

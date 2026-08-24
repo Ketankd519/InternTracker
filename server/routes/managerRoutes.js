@@ -22,37 +22,17 @@ const { authorize } = require("../middleware/roleMiddleware");
 const { managerSignatureUpload} = require("../middleware/uploadMiddleware");
 
 // MANAGER PROFILE
-router.get(
-  "/profile",
-  protect,
-  authorize("manager"),
-  getManagerProfile
-);
-
-router.post(
-  "/profile",
-  protect,
-  authorize("manager"),
-  managerSignatureUpload.single("signature"),
+router.get("/profile",protect,authorize("manager"),getManagerProfile);
+router.post("/profile",protect,authorize("manager"),managerSignatureUpload.single("signature"),
   createManagerProfile
 );
-
-router.put(
-  "/profile",
-  protect,
-  authorize("manager"),
-  managerSignatureUpload.single("signature"),
+router.put("/profile",protect,authorize("manager"),managerSignatureUpload.single("signature"),
   updateManagerProfile
 );
 
 // GET ALL MANAGERS
 // GET /api/manager/all
-router.get(
-  "/all",
-  protect,
-  authorize("student"),
-  getAllManagers
-);
+router.get("/all",protect,authorize("student"),getAllManagers);
 
 // DASHBOARD
 router.get("/dashboard",protect,authorize("manager"),getManagerDashboard);

@@ -3,7 +3,6 @@ import API from "../../services/api";
 import "./StudentStyle.css";
 
 export default function Internship() {
-
   // Internship Form Data
   const [formData, setFormData] = useState({
     companyName: "",
@@ -32,7 +31,6 @@ export default function Internship() {
   // Messages
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-
   const [managers, setManagers] = useState([]);
 
   // Fetch Student + Internship
@@ -44,19 +42,10 @@ export default function Internship() {
 
         // 0. Fetch All Managers
         let managerList = [];
-
         try {
           const managerResponse = await API.get("/manager/all");
-
-          console.log(
-            "Managers Response:",
-            managerResponse.data
-          );
-
-         const managerList =
-  managerResponse.data.managers || [];
-
-setManagers(managerList);
+          const managerList = managerResponse.data.managers || [];
+          setManagers(managerList);
         } catch (err) {
           console.error("Failed to fetch managers:", err);
           setManagers([]);
@@ -65,29 +54,17 @@ setManagers(managerList);
 
         // 1. Fetch Student Profile
         try {
-          const studentResponse =
-            await API.get("/students/profile");
-
-          console.log(
-            "Student Profile Response:",
-            studentResponse.data
-          );
-
-          const studentData =
-            studentResponse.data.data;
+          const studentResponse = await API.get("/students/profile");
+          const studentData = studentResponse.data.data;
 
           // Check whether student profile exists
-          if (
-            studentData &&
-            studentData.profileCompleted
-          ) {
+          if (studentData && studentData.profileCompleted) {
             setProfileCompleted(true);
 
             // Department comes ONLY from Student collection
             setFormData((prev) => ({
               ...prev,
-              department:
-                studentData.department || "",
+              department: studentData.department || "",
             }));
           } else {
             setProfileCompleted(false);
@@ -100,98 +77,54 @@ setManagers(managerList);
             }));
           }
         } catch {
-          console.log(
-            "Student profile not found."
-          );
-
           setProfileCompleted(false);
-
           setFormData((prev) => ({
             ...prev,
             department: "",
           }));
         }
 
-        // 2. Fetch Existing Internship
-try {
-  const internshipResponse =
-    await API.get("/internships/status");
-
-  console.log(
-    "Internship Response:",
-    internshipResponse.data
-  );
-
-  const internshipData =
-    internshipResponse.data.data?.internship;
+  // 2. Fetch Existing Internship
+  try {
+    const internshipResponse = await API.get("/internships/status");
+    const internshipData = internshipResponse.data.data?.internship;
 
   // Internship exists
-  if (internshipData) {
-    setInternshipExists(true);
+  if (internshipData) {setInternshipExists(true);
 
     // Saved Manager ID from Internship collection
-    const savedManagerId =
-      internshipData.managerId || "";
+    const savedManagerId = internshipData.managerId || "";
 
     // Find the saved manager from Manager collection
-    const savedManager = managerList.find(
-  (manager) =>
-    manager.managerId === savedManagerId
-);
-
+    const savedManager = managerList.find((manager) =>
+      manager.managerId === savedManagerId);
     setFormData((prev) => ({
       ...prev,
-
-      companyName:
-        savedManager?.companyName ||
-        internshipData.companyName ||
-        "",
-
-      internshipRole:
-        internshipData.internshipRole || "",
-
-      companyAddress:
-        internshipData.companyAddress || "",
+      companyName: savedManager?.companyName || internshipData.companyName || "",
+      internshipRole: internshipData.internshipRole || "",
+      companyAddress: internshipData.companyAddress || "",
 
       // IMPORTANT:
       // Restore saved Manager ID
       managerId: savedManagerId,
-
-      managerName:
-        savedManager?.name ||
-        internshipData.managerName ||
-        "",
-
-      managerEmail:
-        savedManager?.email ||
-        internshipData.managerEmail ||
-        "",
-
-      managerPhone:
-        savedManager?.mobileNo ||
-        internshipData.managerPhone ||
-        "",
-
-      startDate:
-        internshipData.startDate
+      managerName: savedManager?.name || internshipData.managerName || "",
+      managerEmail: savedManager?.email || internshipData.managerEmail || "",
+      managerPhone: savedManager?.mobileNo || internshipData.managerPhone || "",
+      startDate: internshipData.startDate
           ? new Date(
               internshipData.startDate
             )
               .toISOString()
               .split("T")[0]
           : "",
-
-      endDate:
-        internshipData.endDate
+      endDate: internshipData.endDate
           ? new Date(
               internshipData.endDate
             )
               .toISOString()
               .split("T")[0]
           : "",
-
-      totalWeeks:
-        internshipData.totalWeeks || "",
+      totalWeeks: internshipData.totalWeeks || "",
 
       // Department continues coming from Student.
     }));
@@ -206,22 +139,13 @@ try {
       managerEmail: "",
       managerPhone: "",
     }));
-  }
-} catch {
-  setInternshipExists(false);
-
-  console.log("No internship found.");
-}
-      } catch (err) {
-        console.error(
-          "Fetch Internship Data Error:",
-          err
-        );
-
-        setError(
-          err.response?.data?.message ||
-            "Unable to fetch internship data."
-        );
+    }
+  } catch {
+    setInternshipExists(false);
+  }} 
+  catch (err) {
+    console.error("Fetch Internship Data Error:",err);
+      setError(err.response?.data?.message || "Unable to fetch internship data.");
       } finally {
         setFetching(false);
       }
@@ -241,10 +165,7 @@ try {
 
   // Handle Input Changes
   const handleChange = (e) => {
-    const {
-      name,
-      value,
-    } = e.target;
+    const {name,value,} = e.target;
 
     // Department is read-only
     // and should never be manually changed.
@@ -277,7 +198,6 @@ try {
           managerPhone: "",
         }));
       }
-
       return;
     }
 
@@ -295,7 +215,6 @@ try {
     if (name === "endDate" && formData.startDate) {
       const start = new Date(formData.startDate);
       const end = new Date(value);
-
       const minimumEndDate = new Date(start);
       minimumEndDate.setDate(
         minimumEndDate.getDate() + 30
@@ -320,7 +239,6 @@ try {
     }
     return;
   }
-
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -330,7 +248,6 @@ try {
   // Get today's date in YYYY-MM-DD format
   const getTodayDate = () => {
     const today = new Date();
-
     const year = today.getFullYear();
     const month = String(
       today.getMonth() + 1
@@ -338,7 +255,6 @@ try {
     const day = String(
       today.getDate()
     ).padStart(2, "0");
-
     return `${year}-${month}-${day}`;
   };
 
@@ -357,13 +273,8 @@ try {
     );
 
     const year = start.getFullYear();
-    const month = String(
-      start.getMonth() + 1
-    ).padStart(2, "0");
-    const day = String(
-      start.getDate()
-    ).padStart(2, "0");
-
+    const month = String(start.getMonth() + 1).padStart(2, "0");
+    const day = String(start.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
 
@@ -373,29 +284,22 @@ try {
     setLoading(true);
     setMessage("");
     setError("");
-
     try {
 
       // Make sure Student Profile is completed
       if (!profileCompleted) {
-        const msg =
-          "Please complete your Student Profile before submitting an internship.";
-
+        const msg = "Please complete your Student Profile before submitting an internship.";
         setError(msg);
         alert(msg);
-
         setLoading(false);
         return;
       }
 
       // Make sure Department exists
     if (!formData.department) {
-      const msg =
-        "Department not found. Please complete your Student Profile first.";
-
+      const msg = "Department not found. Please complete your Student Profile first.";
       setError(msg);
       alert(msg);
-
       setLoading(false);
       return;
     }
@@ -423,46 +327,27 @@ try {
       if (!internshipExists) {
         response = await API.post("/internships", data);
 
-        const msg =
-          response.data.message ||
-          "Internship application submitted successfully.";
-
+        const msg = response.data.message || "Internship application submitted successfully.";
         setMessage(msg);
         alert(msg);
-
         setInternshipExists(true);
       }
 
       // UPDATE INTERNSHIP
       else {
         response = await API.put("/internships", data);
-
-        const msg =
-          response.data.message ||
-          "Internship details updated successfully.";
-
+        const msg = response.data.message || "Internship details updated successfully.";
         setMessage(msg);
         alert(msg);
       }
 
-      console.log("Internship Save/Update Response:",
-        response.data
-      );
-
       // Fetch Latest Data From MongoDB
       await fetchInternshipData();
     } catch (err) {
-      console.error("Internship Save/Update Error:",
-        err
-      );
-
-      const msg =
-        err.response?.data?.message ||
-        "Unable to save internship details.";
-
+      console.error("Internship Save/Update Error:",err);
+      const msg = err.response?.data?.message || "Unable to save internship details.";
       setError(msg);
       alert(msg);
-
     } finally {
       setLoading(false);
     }
@@ -520,17 +405,13 @@ try {
           <div className="profile-section">
             <h2>Company Details</h2>
             <div className="profile-grid">
-
             <div className="profile-field">
               <label htmlFor="managerId">Manager ID</label>
-              <select
-                name="managerId"
-                value={formData.managerId}
+              <select name="managerId" value={formData.managerId}
                 onChange={handleChange}
                 required
                 >
                 <option value="">Select Manager ID</option>
-
                 {managers.map((manager) => (
                   <option
                   key={manager._id}
@@ -541,7 +422,6 @@ try {
                 ))}
               </select>
             </div>
-
             <div className="profile-field">
               <label htmlFor="companyaName">Company Name</label>
               <input type="text" name="companyName"
@@ -561,43 +441,40 @@ try {
                 required
                 />
             </div>    
-
             </div>
           </div>
 
               {/* Manager Details */}
           <div className="profile-section">
             <h2>Manager Details</h2>
-
             <div className="profile-grid">
               <div className="profile-field">
                 <label htmlFor="managerName">Manager Name</label>
-              <input type="text" name="managerName"
-                placeholder="Manager Name"
-                value={formData.managerName}
-                readOnly
-                required
-                />
+                  <input type="text" name="managerName"
+                    placeholder="Manager Name"
+                    value={formData.managerName}
+                    readOnly
+                    required
+                  />
               </div>
 
               <div className="profile-field">
                 <label htmlFor="managerEmail">Manager Email</label>
-              <input type="email" name="managerEmail"
-                placeholder="Manager Email"
-                value={ formData.managerEmail}
-                readOnly
-                required
-                />
+                  <input type="email" name="managerEmail"
+                    placeholder="Manager Email"
+                    value={ formData.managerEmail}
+                    readOnly
+                    required
+                  />
               </div>
 
               <div className="profile-field">
               <label htmlFor="managerPhone">Manager Phone Number</label>  
-              <input type="text" name="managerPhone"
-                placeholder="Manager Phone"
-                maxLength="10"
-                value={ formData.managerPhone}
-                readOnly
-                required
+                <input type="text" name="managerPhone"
+                  placeholder="Manager Phone"
+                  maxLength="10" value={ formData.managerPhone}
+                  readOnly
+                  required
                 />
               </div>  
             </div>
@@ -612,33 +489,26 @@ try {
                   Comes from Student collection */}
             <div className="profile-field">
               <label htmlFor="department">Department</label>
-              <input type="text" name="department"
-                value={formData.department}
-                placeholder="Department"
-                readOnly
-              />
-              </div>
-
-              <div className="profile-field">
-                <label htmlFor="startDate">Starting Date</label>
-                <input
-                  type="date"
-                  id="startDate"
-                  name="startDate"
-                  value={formData.startDate}
-                  min={getTodayDate()}
-                  onChange={handleChange}
-                  required
+                <input type="text" name="department"
+                  value={formData.department}
+                  placeholder="Department"
+                  readOnly
                 />
               </div>
 
               <div className="profile-field">
+                <label htmlFor="startDate">Starting Date</label>
+                  <input type="date" id="startDate"
+                    name="startDate" value={formData.startDate}
+                    min={getTodayDate()} onChange={handleChange}
+                    required
+                  />
+              </div>
+
+              <div className="profile-field">
                 <label htmlFor="endDate">Ending Date</label>
-                <input
-                  type="date"
-                  id="endDate"
-                  name="endDate"
-                  value={formData.endDate}
+                <input type="date" id="endDate"
+                  name="endDate" value={formData.endDate}
                   min={getMinimumEndDate()}
                   onChange={handleChange}
                   required
@@ -647,30 +517,25 @@ try {
 
               <div className="profile-field">
                 <label htmlFor="address">Company Address</label>
-              <input type="text" name="companyAddress"
-                placeholder="Company Address"
-                value={ formData.companyAddress}
-                onChange={handleChange}
-                required
-                />
+                  <input type="text" name="companyAddress"
+                    placeholder="Company Address"
+                    value={ formData.companyAddress}
+                    onChange={handleChange}
+                    required
+                  />
               </div>
 
               <div className="profile-field">
                 <label htmlFor="totalweeks">Total Weeks</label>
-              <input type="number" name="totalWeeks"
-                placeholder="Total Weeks (1-53)"
-                min="1" max="53"
-                value={ formData.totalWeeks}
-                onChange={handleChange}
-                onKeyDown={(e) => {
-                  if (["e", "E", "+", "-", "."].includes(e.key)) {
-                    e.preventDefault();
-                  }
-                }}  
-                required
-                />
+                  <input type="number" name="totalWeeks"
+                    placeholder="Total Weeks (1-53)"
+                    min="1" max="53" value={ formData.totalWeeks}
+                    onChange={handleChange} onKeyDown={(e) => {
+                    if (["e", "E", "+", "-", "."].includes(e.key)) {
+                    e.preventDefault();}}}  
+                    required
+                  />
               </div>
-
             </div>
           </div>
 

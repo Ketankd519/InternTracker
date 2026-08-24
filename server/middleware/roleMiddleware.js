@@ -13,7 +13,6 @@ exports.authorize = (...roles) => {
         }' is not authorized to access this endpoint`,
       });
     }
-
     next();
   };
 };

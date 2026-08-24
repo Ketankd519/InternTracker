@@ -16,16 +16,8 @@ export default function Home() {
         <div className="certificate-verification-home">
           <div className="certificate-verification-content">
             <h2>Verify Your Certificate</h2>
-
-            <p>
-              Verify the authenticity of an InternTrack
-              certificate using your Certificate ID.
-            </p>
-
-            <a
-              href="/certificate-verification"
-              className="certificate-verification-btn"
-            >
+            <p>Verify the authenticity of an InternTrack certificate using your Certificate ID.</p>
+            <a href="/certificate-verification" className="certificate-verification-btn">
               Verify Your Certificate
             </a>
           </div>

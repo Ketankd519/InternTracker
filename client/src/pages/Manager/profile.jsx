@@ -34,7 +34,6 @@ export default function ManagerProfile() {
       setMessage("");
 
       const response = await API.get("/manager/profile");
-      console.log("MANAGER PROFILE RESPONSE:", response.data);
       const data = response.data;
 
       // USER COLLECTION DATA
@@ -66,10 +65,7 @@ export default function ManagerProfile() {
     } catch (err) {
       console.error("Manager Profile Fetch Error:", err);
       console.error( "Backend Response:", err.response?.data);
-
-      setError(
-        err.response?.data?.message ||
-          "Unable to load manager profile."
+      setError(err.response?.data?.message || "Unable to load manager profile."
       );
     } finally {
       setLoading(false);
@@ -77,7 +73,7 @@ export default function ManagerProfile() {
   };
 
   // HANDLE INPUT CHANGE
-const handleChange = (e) => {
+  const handleChange = (e) => {
   const { name, value, files } = e.target;
 
   // MOBILE NUMBER VALIDATION
@@ -115,32 +111,27 @@ const handleChange = (e) => {
       return false;
     }
 
-// MOBILE NUMBER
-const mobileNumber = formData.mobileNo.trim();
+  // MOBILE NUMBER
+  const mobileNumber = formData.mobileNo.trim();
 
-if (!mobileNumber) {
-  setError("Mobile number is required.");
-  return false;
-}
+  if (!mobileNumber) {
+    setError("Mobile number is required.");
+    return false;
+  }
 
-const mobileRegex = /^[0-9]{10}$/;
+  const mobileRegex = /^[0-9]{10}$/;
 
-if (!mobileRegex.test(mobileNumber)) {
-  setError("Mobile number must contain exactly 10 digits.");
-  return false;
-}
+  if (!mobileRegex.test(mobileNumber)) {
+    setError("Mobile number must contain exactly 10 digits.");
+    return false;
+  }
 
     // EXPERIENCE
     if (formData.experience !== "") {
-      const experienceNumber = Number(
-        formData.experience
-      );
-
+      const experienceNumber = Number(formData.experience);
       if (Number.isNaN(experienceNumber) || experienceNumber < 0
       ) {
-        setError(
-          "Experience must be a valid number."
-        );
+        setError("Experience must be a valid number.");
         return false;
       }
     }
@@ -161,48 +152,31 @@ if (!mobileRegex.test(mobileNumber)) {
       }
 
       // REQUEST DATA
-const requestData = new FormData();
+  const requestData = new FormData();
 
-requestData.append(
-  "mobileNo",
-  formData.mobileNo.trim()
-);
-
-requestData.append(
-  "experience",
-  formData.experience === ""
-    ? ""
-    : String(formData.experience).trim()
-);
-
-requestData.append(
-  "companyName",
-  formData.companyName.trim()
-);
-
-if (formData.signature instanceof File) {
-  requestData.append(
-    "signature",
-    formData.signature
-  );
-}
-
+  requestData.append("mobileNo",formData.mobileNo.trim());
+  requestData.append("experience",formData.experience === "" ? ""
+    : String(formData.experience).trim());
+  requestData.append("companyName",formData.companyName.trim());
+  if (formData.signature instanceof File) {
+    requestData.append(
+      "signature",
+      formData.signature
+    );
+  }
       let response;
 
       // FIRST SAVE
       // POST /api/manager/profile
       if (!profileSaved) {
-        console.log("Creating new manager profile...");
         response = await API.post("/manager/profile", requestData);
       }
 
       // UPDATE
       // PUT /api/manager/profile
       else {
-        console.log("Updating existing manager profile...");
         response = await API.put("/manager/profile", requestData);
       }
-      console.log("MANAGER PROFILE SAVE RESPONSE:", response.data);
       const data = response.data;
 
       // MANAGER DATA RETURNED FROM BACKEND
@@ -229,53 +203,40 @@ if (formData.signature instanceof File) {
       // PROFILE NOW EXISTS
       setProfileSaved(true);
 
-      alert(
-        data.message ||
-          (
+      alert(data.message || (
             profileSaved
               ? "Manager profile updated successfully."
               : "Manager profile saved successfully."
-          )
-      );
+          ));
 
       // SUCCESS MESSAGE
       setMessage(
-        data.message ||
-          (
+        data.message || (
             profileSaved
               ? "Manager profile updated successfully."
               : "Manager profile saved successfully."
-          )
-      );
-
-    } catch (err) {
-      console.error("Manager Profile Save Error:", err);
-      console.error("Backend Response:", err.response?.data);
-
-      alert(
-        err.response?.data?.message ||
-          "Unable to save manager profile."
-      )
-      setError(
-        err.response?.data?.message ||
-          "Unable to save manager profile."
-      );
+          ));
+      } catch (err) {
+        console.error("Manager Profile Save Error:", err);
+        console.error("Backend Response:", err.response?.data);
+      alert(err.response?.data?.message || "Unable to save manager profile.")
+      setError(err.response?.data?.message || "Unable to save manager profile.");
     } finally {
       setSaving(false);
     }
   };
 
-  function getSignatureUrl(signature) {
-  if (!signature) {
-    return null;
-  }
+    function getSignatureUrl(signature) {
+    if (!signature) {
+      return null;
+    }
 
-  if (
-    signature.startsWith("http://") ||
-    signature.startsWith("https://")
-  ) {
-    return signature;
-  }
+    if (
+      signature.startsWith("http://") ||
+      signature.startsWith("https://")
+    ) {
+      return signature;
+    }
 
   const cleanPath = signature
     .replace(/\\/g, "/")
@@ -284,211 +245,95 @@ if (formData.signature instanceof File) {
   return `http://localhost:5000/uploads/${cleanPath}`;
 }
 
-  // =========================================================
   // LOADING
-  // =========================================================
-
   if (loading) {
     return (
       <div className="manager-profile-page">
-
         <div className="profile-page-header">
-
           <h1>Manager Profile</h1>
-
-          <p>
-            Manage your manager profile information.
-          </p>
-
+          <p>Manage your manager profile information.</p>
         </div>
-
         <div className="manager-profile-container">
-
-          <p>
-            Loading manager profile...
-          </p>
-
+          <p>Loading manager profile...</p>
         </div>
-
       </div>
     );
   }
 
-  // =========================================================
   // PAGE
-  // =========================================================
-
   return (
     <div className="manager-profile-page">
 
-      {/* =====================================================
-          PAGE HEADER
-      ====================================================== */}
-
+          {/* PAGE HEADER */}
       <div className="profile-page-header">
-
         <h1>Manager Profile</h1>
-
-        <p>
-          Manage your manager profile information.
-        </p>
-
+        <p>Manage your manager profile information.</p>
       </div>
 
-
-      {/* =====================================================
-          MAIN PROFILE CONTAINER
-      ====================================================== */}
-
+          {/* MAIN PROFILE CONTAINER */}
       <div className="manager-profile-container">
 
-
-        {/* ===================================================
-            BASIC INFORMATION
-        ==================================================== */}
-
+            {/* BASIC INFORMATION */}
         <div className="manager-profile-section">
-
           <h2>Basic Information</h2>
-
           <div className="manager-profile-form-grid">
 
-
-            {/* =================================================
-                MANAGER NAME
-            ================================================== */}
-
+                {/* MANAGER NAME */}
             <div className="manager-profile-form-group">
+              <label>Manager Name</label>
+              <input type="text" value={formData.name} readOnly/>
+            </div>
 
-              <label>
-                Manager Name
-              </label>
+                {/* MANAGER EMAIL */}
+            <div className="manager-profile-form-group">
+              <label>Manager Email</label>
+              <input type="email" value={formData.email} readOnly/>
+            </div>
 
-              <input
-                type="text"
-                value={formData.name}
+                {/* MANAGER ID */}
+            <div className="manager-profile-form-group">
+              <label>Manager ID</label>
+              <input type="text" className="manager-profile-id"
+                value={formData.managerId || "Generated after saving"}
                 readOnly
               />
-
             </div>
 
-
-            {/* =================================================
-                MANAGER EMAIL
-            ================================================== */}
-
+                {/* MOBILE NUMBER */}
             <div className="manager-profile-form-group">
-
-              <label>
-                Manager Email
+              <label>Mobile Number
+                <span style={{fontWeight: "400", color: "#94a3b8", marginLeft: "5px",}}></span>
               </label>
 
-              <input
-                type="email"
-                value={formData.email}
-                readOnly
+              <input type="tel" name="mobileNo" value={formData.mobileNo} onChange={handleChange}
+                placeholder="Enter 10 digit mobile number" maxLength={10} inputMode="numeric"
+                pattern="[0-9]{10}" disabled={saving}
+                required
               />
-
             </div>
 
-
-            {/* =================================================
-                MANAGER ID
-            ================================================== */}
-
-            <div className="manager-profile-form-group">
-
-              <label>
-                Manager ID
-              </label>
-
-              <input
-                type="text"
-                className="manager-profile-id"
-                value={
-                  formData.managerId ||
-                  "Generated after saving"
-                }
-                readOnly
-              />
-
-            </div>
-
-
-            {/* =================================================
-                MOBILE NUMBER
-            ================================================== */}
-
-            <div className="manager-profile-form-group">
-
-              <label>
-                Mobile Number
-
-                <span
-                  style={{
-                    fontWeight: "400",
-                    color: "#94a3b8",
-                    marginLeft: "5px",
-                  }}
-                >
-                </span>
-              </label>
-
-<input
-  type="tel"
-  name="mobileNo"
-  value={formData.mobileNo}
-  onChange={handleChange}
-  placeholder="Enter 10 digit mobile number"
-  maxLength={10}
-  inputMode="numeric"
-  pattern="[0-9]{10}"
-  disabled={saving}
-  required
-/>
-
-            </div>
-
-            {/* =================================================
-                MANAGER SIGNATURE
-            ================================================== */}
-
+                {/* MANAGER SIGNATURE */}
             <div className="manager-signature-upload">
-
-              <label htmlFor="signature">
-                Manager Signature
-              </label>
-
+              <label htmlFor="signature">Manager Signature</label>
               <div className="manager-signature-preview">
-
                 {formData.signature ? (
-                  <img
-                    src={
-                      formData.signature instanceof File
-                        ? URL.createObjectURL(
+                  <img src={formData.signature instanceof File
+                          ? URL.createObjectURL(
                             formData.signature
                           )
                         : getSignatureUrl(
                             formData.signature
                           )
-                    }
+                      }
                     alt="Manager Signature"
                   />
                 ) : (
-                  <span>
-                    No signature uploaded
-                  </span>
+                  <span>No signature uploaded</span>
                 )}
-
               </div>
-
-              <input
-                type="file"
-                id="signature"
-                name="signature"
+              <input type="file" id="signature" name="signature"
                 accept="image/jpeg,image/jpg,image/png"
-                onChange={handleChange}
-                disabled={saving}
+                onChange={handleChange} disabled={saving}
                 required
               />
 
@@ -499,152 +344,77 @@ if (formData.signature instanceof File) {
             remove the <br/>background, and upload a clear transparent PNG. 
             This signature will be displayed<br/> on the certificate.
           </div>
-            </div>
-            <div className="teacher-signature-instructions">
+        </div>
+          <div className="teacher-signature-instructions">
           <strong>Signature Guidelines:</strong>
           <div className="signature-sample-image">
-              <img
-                src="/images/signature-guidelines2.png"
+              <img src="/images/signature-guidelines2.png"
                 alt="Accepted and Not Accepted signature examples"
               />
           </div>
       </div>
-            
-          </div>
+    </div>
+  </div>
 
-        </div>
-
-
-        {/* ===================================================
-            COMPANY INFORMATION
-        ==================================================== */}
-
+            {/* COMPANY INFORMATION */}
         <div className="manager-profile-section">
-
           <h2>Company Information</h2>
-
           <div className="manager-profile-form-grid">
 
-
-            {/* =================================================
-                COMPANY NAME
-            ================================================== */}
-
+                {/* COMPANY NAME */}
             <div className="manager-profile-form-group full-width">
-
-              <label>
-                Company Name
-              </label>
-
-              <input
-                type="text"
-                name="companyName"
+              <label>Company Name</label>
+              <input type="text" name="companyName"
                 value={formData.companyName}
                 onChange={handleChange}
                 placeholder="Enter company name"
                 disabled={saving}
                 required
               />
-
             </div>
-
             <div className="manager-profile-form-group full-width">
-
-              <label>
-                Experience
-
-                <span
-                  style={{
-                    fontWeight: "400",
-                    color: "#94a3b8",
-                    marginLeft: "5px",
-                  }}
-                >
+              <label>Experience
+                <span style={{fontWeight: "400", color: "#94a3b8", marginLeft: "5px",}}>
                   (Optional)
                 </span>
               </label>
-
-              <input
-                type="number"
-                name="experience"
-                value={formData.experience}
-                onChange={handleChange}
-                placeholder="Experience in years"
-                min="0"
-                step="0.1"
-                disabled={saving}
+              <input type="number" name="experience" value={formData.experience}
+                onChange={handleChange} placeholder="Experience in years"
+                min="0" step="0.1" disabled={saving}
               />
-
             </div>
-
-
           </div>
-
         </div>
 
-
-        {/* ===================================================
-            SUCCESS MESSAGE
-        ==================================================== */}
-
+            {/* SUCCESS MESSAGE */}
         {message && (
-          <div
-            className="manager-profile-message"
-            style={{
-              color: "#166534",
-              background: "#dcfce7",
-              border: "1px solid #86efac",
-            }}
-          >
+          <div className="manager-profile-message"
+            style={{color: "#166534", background: "#dcfce7", border: "1px solid #86efac",}}>
             {message}
           </div>
         )}
 
-
-        {/* ===================================================
-            ERROR MESSAGE
-        ==================================================== */}
-
+            {/* ERROR MESSAGE */}
         {error && (
-          <div
-            className="manager-profile-message"
-            style={{
-              color: "#991b1b",
-              background: "#fee2e2",
-              border: "1px solid #fca5a5",
-            }}
-          >
+          <div className="manager-profile-message"
+            style={{color: "#991b1b",background: "#fee2e2", border: "1px solid #fca5a5",}}>
             {error}
           </div>
         )}
 
-
-        {/* ===================================================
-            SAVE / UPDATE BUTTON
-        ==================================================== */}
-
+            {/* SAVE / UPDATE BUTTON */}
         <div className="manager-profile-actions">
-
-          <button
-            type="button"
-            className="manager-profile-save-btn"
-            onClick={handleSubmit}
-            disabled={saving}
+          <button type="button" className="manager-profile-save-btn"
+            onClick={handleSubmit} disabled={saving}
           >
-
             {saving
               ? "Saving..."
               : profileSaved
               ? "Update Profile"
               : "Save Profile"}
-
           </button>
-
         </div>
-
-
       </div>
-
     </div>
   );
 }

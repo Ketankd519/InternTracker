@@ -12,10 +12,7 @@ export default function Certificate() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // =========================================================
   // FETCH CERTIFICATE DATA
-  // =========================================================
-
   useEffect(() => {
     fetchCertificate();
   }, []);
@@ -26,456 +23,276 @@ export default function Certificate() {
       setError("");
 
       const response = await API.get("/certificates/status");
-
-      console.log("FINAL CERTIFICATE RESPONSE:", response.data);
-
       const data = response.data?.data || null;
 
       setCertificateData(data);
 
-      // -----------------------------------------------------
-      // QR CODE
-      // -----------------------------------------------------
-      //
-      // When someone scans the QR code, it opens the
-      // InternTrack Home page.
-      //
-      // Change "/" to another public verification route
+      // QR CODE, When someone scans the QR code, it opens the
+      // InternTrack Home page. Change "/" to another public verification route
       // later if you create one.
-      //
 
-      if (
-        data?.teacherApproved === true &&
-        data?.managerApproved === true
-      ) {
-        const homeURL = `${window.location.origin}/`;
-
-        const qr = await QRCode.toDataURL(homeURL, {
-          width: 180,
-          margin: 1,
-          errorCorrectionLevel: "H",
-        });
-
+      if (data?.teacherApproved === true && data?.managerApproved === true) 
+        {
+          const homeURL = `${window.location.origin}/`;
+          const qr = await QRCode.toDataURL(homeURL, {
+            width: 180, margin: 1, errorCorrectionLevel: "H",
+          });
         setQrCode(qr);
-      } else {
-        setQrCode("");
+        } else {
+          setQrCode("");
+        }
+
+      } catch (err) {
+        console.error("Final Certificate Fetch Error:", err);
+
+        setError( err.response?.data?.message || "Unable to fetch certificate information.");
+      } finally {
+          setLoading(false);
+      }
+    };
+
+    // LOADING
+    if (loading) {
+      return (
+        <div className="final-certificate-page">
+          <div className="certificate-loading">Loading certificate...</div>
+        </div>
+      );
+    }
+
+    // ERROR
+    if (error) {
+      return (
+        <div className="final-certificate-page">
+          <div className="certificate-error">
+            <h2>Certificate</h2>
+            <p>{error}</p>
+            <button onClick={fetchCertificate} className="certificate-refresh-btn">
+              Try Again
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // DATA
+      const data = certificateData || {};
+      const studentName = data.studentName || "Student Name";
+      const companyName = data.companyName || "Company Name";
+      const teacherName = data.teacherName || "Teacher Name";
+      const managerName = data.managerName || "Manager Name";
+      const startDate = data.internshipStartDate || null;
+      const endDate = data.internshipEndDate || null;
+
+    // APPROVAL CONDITIONS
+      const teacherApproved = data.teacherApproved === true;
+      const managerApproved = data.managerApproved === true;
+      const certificateApproved = teacherApproved && managerApproved;
+
+    // VERIFICATION CONDITIONS
+      const teacherVerified = data.teacherVerified === true;
+      const managerVerified = data.managerVerified === true;
+
+    // Certificate is not displayed until at least
+    // one side (Teacher or Manager) verifies the student.
+      const certificateVisible = teacherVerified || managerVerified;
+
+    // CERTIFICATE VISIBILITY
+    if (!certificateVisible) {
+      return (
+        <div className="final-certificate-page">
+          <div className="certificate-error">
+            <h2>Certificate</h2>
+            <p>Certificate is not available yet.</p>
+          </div>
+        </div>
+      );
+    }
+
+    // SIGNATURES
+      const teacherSignature = data.teacherSignature || "";
+      const managerSignature = data.managerSignature || "";
+
+    // CERTIFICATE NUMBER
+      const certificateNumber = data.certificateId || "";
+
+    // DATE FORMAT
+      const formatDate = (date) => {
+      if (!date) {
+        return "Not Available";
       }
 
-    } catch (err) {
-      console.error(
-        "Final Certificate Fetch Error:",
-        err
-      );
+      const parsedDate = new Date(date);
 
-      setError(
-        err.response?.data?.message ||
-          "Unable to fetch certificate information."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // =========================================================
-  // LOADING
-  // =========================================================
-
-  if (loading) {
-    return (
-      <div className="final-certificate-page">
-        <div className="certificate-loading">
-          Loading certificate...
-        </div>
-      </div>
-    );
-  }
-
-  // =========================================================
-  // ERROR
-  // =========================================================
-
-  if (error) {
-    return (
-      <div className="final-certificate-page">
-        <div className="certificate-error">
-          <h2>Certificate</h2>
-
-          <p>{error}</p>
-
-          <button
-            onClick={fetchCertificate}
-            className="certificate-refresh-btn"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // =========================================================
-  // DATA
-  // =========================================================
-
-  const data = certificateData || {};
-
-  const studentName =
-    data.studentName || "Student Name";
-
-  const companyName =
-    data.companyName || "Company Name";
-
-  const teacherName =
-    data.teacherName || "Teacher Name";
-
-  const managerName =
-    data.managerName || "Manager Name";
-
-  const startDate =
-    data.internshipStartDate || null;
-
-  const endDate =
-    data.internshipEndDate || null;
-
-  // =========================================================
-  // APPROVAL CONDITIONS
-  // =========================================================
-
-  const teacherApproved =
-    data.teacherApproved === true;
-
-  const managerApproved =
-    data.managerApproved === true;
-
-  const certificateApproved =
-    teacherApproved &&
-    managerApproved;
-
-  // =========================================================
-  // VERIFICATION CONDITIONS
-  // =========================================================
-
-
-const teacherVerified =
-  data.teacherVerified === true;
-
-const managerVerified =
-  data.managerVerified === true;
-
-  // Certificate is not displayed until at least
-  // one side (Teacher or Manager) verifies the student.
-  const certificateVisible =
-    teacherVerified || managerVerified;
-
-  // =========================================================
-  // CERTIFICATE VISIBILITY
-  // =========================================================
-
-  if (!certificateVisible) {
-    return (
-      <div className="final-certificate-page">
-        <div className="certificate-error">
-          <h2>Certificate</h2>
-
-          <p>
-            Certificate is not available yet.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-
-  // =========================================================
-  // SIGNATURES
-  // =========================================================
-
-  const teacherSignature =
-    data.teacherSignature || "";
-
-  const managerSignature =
-    data.managerSignature || "";
-
-  // =========================================================
-  // CERTIFICATE NUMBER
-  // =========================================================
-
- const certificateNumber =
-  data.certificateId || "";
-
-  // =========================================================
-  // DATE FORMAT
-  // =========================================================
-
-  const formatDate = (date) => {
-    if (!date) {
-      return "Not Available";
-    }
-
-    const parsedDate = new Date(date);
-
-    if (Number.isNaN(parsedDate.getTime())) {
-      return "Not Available";
-    }
-
-    return parsedDate.toLocaleDateString(
-      "en-GB",
-      {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
+      if (Number.isNaN(parsedDate.getTime())) {
+        return "Not Available";
       }
-    );
-  };
 
-  // =========================================================
-  // DOWNLOAD CERTIFICATE
-  // =========================================================
+      return parsedDate.toLocaleDateString(
+        "en-GB",
+        {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        }
+      );
+    };
 
-  const downloadCertificate = () => {
-    if (!certificateApproved) {
-      return;
-    }
+    // DOWNLOAD CERTIFICATE
+      const downloadCertificate = () => {
+        if (!certificateApproved) {
+          return;
+        }
 
-    const element =
-      certificateRef.current;
+      const element = certificateRef.current;
+        if (!element) {
+          return;
+        }
 
-    if (!element) {
-      return;
-    }
+      const options = {
+        margin: 0,
 
-    const options = {
-      margin: 0,
-
-      filename:
-        `InternTrack-Certificate-${studentName
+        filename: `InternTrack-Certificate-${studentName 
           .replace(/\s+/g, "-")
           .toLowerCase()}.pdf`,
 
-      image: {
-        type: "jpeg",
-        quality: 1,
-      },
+        image: {
+          type: "jpeg",
+          quality: 1,
+        },
 
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#ffffff",
-      },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: "#ffffff",
+        },
 
-      jsPDF: {
-        unit: "px",
-        format: [1536, 1024],
-        orientation: "landscape",
-      },
+        jsPDF: {
+          unit: "px",
+          format: [1536, 1024],
+          orientation: "landscape",
+        },
+      };
+
+      html2pdf()
+        .set(options)
+        .from(element)
+        .save();
     };
 
-    html2pdf()
-      .set(options)
-      .from(element)
-      .save();
-  };
-
-  // =========================================================
   // RENDER
-  // =========================================================
-
   return (
     <div className="final-certificate-page">
 
-      {/* =====================================================
-          PAGE HEADING
-      ====================================================== */}
-
+          {/* PAGE HEADING */}
       <div className="final-certificate-heading">
-        <h2>
-          Internship Completion Certificate
-        </h2>
-
-        <p>
-          Final Certificate
-        </p>
+        <h2>Internship Completion Certificate</h2>
+        <p>Final Certificate</p>
       </div>
 
-      {/* =====================================================
-          CERTIFICATE
-      ====================================================== */}
-
-      <div
-        ref={certificateRef}
-        id="final-certificate"
-        className={`final-certificate ${
-          certificateApproved
+          {/* CERTIFICATE */}
+      <div ref={certificateRef} id="final-certificate"
+        className={`final-certificate 
+          ${certificateApproved
             ? "certificate-unlocked"
             : "certificate-locked"
-        }`}
-      >
+          }`}>
 
-        {/* ---------------------------------------------------
-            BACKGROUND TEMPLATE
-        ---------------------------------------------------- */}
-
-        <img
-          src="/certificate-template.png"
+            {/* BACKGROUND TEMPLATE */}
+        <img src="/certificate-template.png"
           className="certificate-template"
           alt="InternTrack Certificate"
           crossOrigin="anonymous"
         />
 
-        {/* =================================================
-            STUDENT NAME
-        ================================================== */}
-
+            {/* STUDENT NAME */}
         <div className="certificate-student-name">
           {studentName}
         </div>
 
-        {/* =================================================
-            COMPANY NAME
-        ================================================== */}
-
+            {/* COMPANY NAME */}
         <div className="certificate-company-name">
           {companyName}
         </div>
 
-        {/* =================================================
-            START DATE
-        ================================================== */}
-
+            {/* START DATE */}
         <div className="certificate-start-date">
           {formatDate(startDate)}
         </div>
 
-        {/* =================================================
-            END DATE
-        ================================================== */}
-
+            {/* END DATE */}
         <div className="certificate-end-date">
           {formatDate(endDate)}
         </div>
 
-        {/* =================================================
-            TEACHER APPROVAL
-        ================================================== */}
-
+            {/* TEACHER APPROVAL */}
         {teacherApproved && (
-          <div className="teacher-approved-mark">
-            ✓
-          </div>
+          <div className="teacher-approved-mark"> ✓ </div>
         )}
 
-        {/* =================================================
-            MANAGER APPROVAL
-        ================================================== */}
-
+            {/* MANAGER APPROVAL */}
         {managerApproved && (
-          <div className="manager-approved-mark">
-            ✓
-          </div>
+          <div className="manager-approved-mark"> ✓ </div>
         )}
 
-        {/* =================================================
-            TEACHER NAME
-        ================================================== */}
-
-        <div
-          className={
-            `certificate-teacher-name ${
-              teacherVerified
+            {/* TEACHER NAME */}
+        <div className={`certificate-teacher-name 
+              ${teacherVerified
                 ? "visible"
                 : "hidden"
-            }`
-          }
-        >
+              }`
+            }>
           Teacher: {teacherName}
         </div>
 
-        {/* =================================================
-            MANAGER NAME
-        ================================================== */}
-
-        <div
-          className={
-            `certificate-manager-name ${
-              managerVerified
+            {/* MANAGER NAME */}
+        <div className={`certificate-manager-name 
+              ${managerVerified
                 ? "visible"
                 : "hidden"
-            }`
-          }
-        >
+              }`
+            }>
           Manager: {managerName}
         </div>
 
-        {/* =================================================
-            TEACHER SIGNATURE
-        ================================================== */}
-
-        {teacherApproved &&
-          teacherSignature && (
+            {/* TEACHER SIGNATURE */}
+        {teacherApproved && teacherSignature && (
             <div className="teacher-signature">
-              <img
-                src={teacherSignature}
+              <img src={teacherSignature}
                 alt="Teacher Digital Signature"
                 crossOrigin="anonymous"
               />
             </div>
           )}
 
-        {/* =================================================
-            MANAGER SIGNATURE
-        ================================================== */}
-
-        {managerApproved &&
-          managerSignature && (
+            {/* MANAGER SIGNATURE */}
+        {managerApproved && managerSignature && (
             <div className="manager-signature">
-              <img
-                src={managerSignature}
+              <img src={managerSignature}
                 alt="Manager Digital Signature"
                 crossOrigin="anonymous"
               />
             </div>
           )}
 
-        {/* =================================================
-            QR CODE
-        ================================================== */}
-
-        {certificateApproved &&
-          qrCode && (
+            {/* QR CODE */}
+        {certificateApproved && qrCode && (
             <div className="certificate-qr-area">
-
-              <img
-                src={qrCode}
-                alt="Certificate QR Code"
-              />
-
+              <img src={qrCode} alt="Certificate QR Code"/>
             </div>
           )}
 
-        {/* =================================================
-            CERTIFICATE NUMBER
-        ================================================== */}
-
-        {certificateApproved &&
-          certificateNumber && (
+            {/* CERTIFICATE NUMBER */}
+        {certificateApproved && certificateNumber && (
             <div className="certificate-number">
-
-              <span>
-                {certificateNumber}
-              </span>
-
+              <span>{certificateNumber}</span>
             </div>
           )}
-
       </div>
 
-      {/* =====================================================
-          DOWNLOAD SECTION
-      ====================================================== */}
-
+          {/* DOWNLOAD SECTION */}
       <div className="certificate-download-section">
-
         {!certificateApproved && (
           <p className="certificate-download-disabled-message">
             Certificate download will be available after
@@ -489,25 +306,18 @@ const managerVerified =
           </p>
         )}
 
-        <button
-          type="button"
-          className={
-            `certificate-download-btn ${
-              certificateApproved
-                ? "enabled"
-                : "disabled"
+        <button type="button" className={`certificate-download-btn 
+            ${certificateApproved
+              ? "enabled"
+              : "disabled"
             }`
-          }
-          disabled={!certificateApproved}
-          onClick={downloadCertificate}
+          } disabled={!certificateApproved} onClick={downloadCertificate}
         >
-          {certificateApproved
-            ? "Download Certificate"
-            : "Certificate Not Approved"}
+            {certificateApproved
+              ? "Download Certificate"
+              : "Certificate Not Approved"}
         </button>
-
       </div>
-
     </div>
   );
 }

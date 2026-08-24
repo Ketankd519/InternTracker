@@ -17,20 +17,13 @@ export default function ForgotPassword() {
 
     try {
       setLoading(true);
-
       const res = await API.post("/auth/check-email", {
         email,
       });
-
       alert(res.data.message);
-
       setEmailVerified(true);
-
     } catch (error) {
-      alert(
-        error.response?.data?.message ||
-          "Email not found"
-      );
+      alert(error.response?.data?.message || "Email not found");
     } finally {
       setLoading(false);
     }
@@ -51,21 +44,11 @@ export default function ForgotPassword() {
 
     try {
       setLoading(true);
-
-      const res = await API.put("/auth/update-password", {
-        email,
-        newPassword,
-      });
-
+      const res = await API.put("/auth/update-password", {email, newPassword,});
       alert(res.data.message);
-
       navigate("/login");
-
     } catch (error) {
-      alert(
-        error.response?.data?.message ||
-          "Password update failed"
-      );
+      alert(error.response?.data?.message || "Password update failed");
     } finally {
       setLoading(false);
     }
@@ -73,51 +56,28 @@ export default function ForgotPassword() {
 
   return (
     <div className="auth-page">
-
       <div className="auth-card">
-
         <h1>Forgot Password</h1>
-
-        <p className="auth-subtitle">
-          Reset your InternTrack account password
+        <p className="auth-subtitle">Reset your InternTrack account password
         </p>
 
         {!emailVerified ? (
-
           <form onSubmit={handleVerifyEmail}>
-
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) =>
+            <input type="email" placeholder="Enter your email"
+              value={email} onChange={(e) =>
                 setEmail(e.target.value)
               }
               required
             />
-
-            <button
-              type="submit"
-              className="auth-btn"
-              disabled={loading}
-            >
+            <button type="submit" className="auth-btn" disabled={loading}>
               {loading ? "Checking..." : "Continue"}
             </button>
-
           </form>
-
         ) : (
-
           <form onSubmit={handleUpdatePassword}>
-
-            <input
-              type="email"
-              value={email}
-              readOnly
-            />
-
-            <input
-              type="password"
+            <input type="email" value={email} readOnly/>
+            
+            <input type="password"
               placeholder="Enter new password"
               value={newPassword}
               onChange={(e) =>
@@ -127,8 +87,7 @@ export default function ForgotPassword() {
               required
             />
 
-            <input
-              type="password"
+            <input type="password"
               placeholder="Confirm new password"
               value={confirmPassword}
               onChange={(e) =>
@@ -145,24 +104,15 @@ export default function ForgotPassword() {
             >
               {loading ? "Updating..." : "Update Password"}
             </button>
-
           </form>
-
         )}
 
         <div className="create-account">
-
-          <button
-            type="button"
-            onClick={() => navigate("/login")}
-          >
+          <button type="button" onClick={() => navigate("/login")}>
             Back to Login
           </button>
-
         </div>
-
       </div>
-
     </div>
   );
 }

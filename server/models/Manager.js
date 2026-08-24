@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const managerSchema = new mongoose.Schema(
   {
     user: {
@@ -45,6 +44,7 @@ const managerSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    
     signature: {
       type: String,
       default: "",

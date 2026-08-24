@@ -1,5 +1,4 @@
 const express = require("express");
-
 const router = express.Router();
 
 const {
@@ -14,74 +13,35 @@ const {
 const { protect } = require("../middleware/authMiddleware");
 const { authorize } = require("../middleware/roleMiddleware");
 
-// ======================================================
 // STUDENT
 // Get own certificate status
-// ======================================================
+router.get("/status", protect, authorize("student"), getMyCertificateStatus);
 
-router.get(
-  "/status",
-  protect,
-  authorize("student"),
-  getMyCertificateStatus
-);
-
-// ======================================================
 // TEACHER / MANAGER
 // Get certificate student list
-// ======================================================
+router.get("/students",protect, authorize("teacher", "manager"),
+ getCertificateStudentList);
 
-router.get(
-  "/students",
-  protect,
-  authorize("teacher", "manager"),
-  getCertificateStudentList
-);
-
-// ======================================================
 // TEACHER / MANAGER
 // Get particular student's certificate
-// ======================================================
-
-router.get(
-  "/student/:studentId",
-  protect,
-  authorize("teacher", "manager"),
+router.get("/student/:studentId", protect, authorize("teacher", "manager"),
   getStudentCertificate
 );
 
-// ======================================================
 // PUBLIC CERTIFICATE VERIFICATION
 // No login required
 // GET /api/certificates/verify/:certificateId
-// ======================================================
+router.get("/verify/:certificateId", verifyCertificate);
 
-router.get(
-  "/verify/:certificateId",
-  verifyCertificate
-);
-
-// ======================================================
 // TEACHER
 // Approve certificate
-// ======================================================
-
-router.put(
-  "/:studentId/teacher-approve",
-  protect,
-  authorize("teacher"),
+router.put("/:studentId/teacher-approve", protect, authorize("teacher"),
   approveCertificateByTeacher
 );
 
-// ======================================================
 // MANAGER
 // Approve certificate
-// ======================================================
-
-router.put(
-  "/:studentId/manager-approve",
-  protect,
-  authorize("manager"),
+router.put("/:studentId/manager-approve", protect, authorize("manager"),
   approveCertificateByManager
 );
 

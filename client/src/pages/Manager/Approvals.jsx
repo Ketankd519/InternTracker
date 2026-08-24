@@ -21,22 +21,11 @@ export default function ManagerApprovals() {
   const fetchStudents = async () => {
     try {
       setLoading(true);
-
       const response = await api.get("/manager/students");
-
       setStudents( response.data.students || []);
-
     } catch (error) {
-      console.error(
-        "Manager Students Error:",
-        error
-      );
-
-      setError(
-        error.response?.data?.message ||
-        "Failed to load students"
-      );
-
+      console.error("Manager Students Error:",error);
+      setError(error.response?.data?.message || "Failed to load students");
     } finally {
       setLoading(false);
     }
@@ -71,12 +60,10 @@ export default function ManagerApprovals() {
           <h1>Student Approvals</h1>
           <p>Review student internship information and verify student records.</p>
         </div>
-
         <div className="manager-count-badge">
           {students.length} Students
         </div>
       </div>
-
       {error && (
         <div className="manager-error">
           {error}
@@ -100,26 +87,17 @@ export default function ManagerApprovals() {
               <th>Action</th>
             </tr>
           </thead>
-
           <tbody>
             {students.length === 0 ? (
               <tr>
-                <td
-                  colSpan="10"
-                  className="manager-empty-table"
-                >
+                <td colSpan="10" className="manager-empty-table">
                   No students found.
                 </td>
               </tr>
             ) : (
               students.map(
                 (student, index) => (
-                  <tr
-                    key={
-                      student.studentId ||
-                      student.userId
-                    }
-                  >
+                  <tr key={ student.studentId || student.userId }>
                     <td>
                       {index + 1}
                     </td>
@@ -138,20 +116,13 @@ export default function ManagerApprovals() {
                       {student.companyName}
                     </td>
                     <td>
-                      <strong>
-                        Week {student.currentWeek}
-                      </strong>
+                      <strong>Week {student.currentWeek}</strong>
                     </td>
                     <td>
                       {student.totalWeeks || "-"}
                     </td>
-
-
-
                     <td>
-                      <span className={
-                          `manager-status-badge ${
-                            getStatusClass(
+                      <span className={ `manager-status-badge ${ getStatusClass(
                             student.internshipStatus
                             )
                           }`
@@ -160,28 +131,17 @@ export default function ManagerApprovals() {
                         {student.internshipStatus}
                       </span>
                     </td>
-
-
-
-
-                  <td>
-
-                    {student.teacherVerified ? (
-
-                      <span className="manager-verified-badge">
-                        ✓ Verified
-                      </span>
-
-                    ) : (
-
-                      <span className="manager-not-verified-badge">
-                        Not Verified
-                      </span>
-
+                    <td>
+                      {student.teacherVerified ? (
+                        <span className="manager-verified-badge">
+                          ✓ Verified
+                        </span>
+                      ) : (
+                        <span className="manager-not-verified-badge">
+                          Not Verified
+                        </span>
                     )}
-
                   </td>
-
                     <td>
                       {student.managerVerified ? (
                         <span className="manager-verified-badge">✓ Verified</span>
@@ -189,9 +149,6 @@ export default function ManagerApprovals() {
                         <span className="manager-not-verified-badge">Not Verified</span>
                       )}
                     </td>
-
-
-
                     <td>
                       <button
                         className="manager-view-btn"

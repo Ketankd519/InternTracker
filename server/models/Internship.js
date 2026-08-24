@@ -81,8 +81,7 @@ const internshipSchema = new mongoose.Schema(
     },
 
     // Manager Verification
-    // Manager verifies the
-    // student's internship
+    // Manager verifies the student's internship
     managerVerified: {
       type: Boolean,
       default: false,

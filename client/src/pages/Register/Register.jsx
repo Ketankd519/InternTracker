@@ -13,7 +13,6 @@ export default function Register() {
       const data = await register(formData);
       alert('Registration successful');
       navigate(`/${data.user.role}/dashboard`);
-
     } catch (err) {
       alert(err.response?.data?.message || 'Registration failed');
     }

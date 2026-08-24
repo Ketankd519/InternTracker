@@ -10,9 +10,7 @@ export default function Card({ title, description, link, role }) {
     // User is not logged in
     if (!user) {
       navigate('/login', {
-        state: {
-          from: link,
-        },
+        state: {from: link,},
       });
       return;
     }
@@ -31,7 +29,6 @@ export default function Card({ title, description, link, role }) {
     <div className="card">
       <h2>{title}</h2>
       <p>{description}</p>
-
       <button className="btn" onClick={handleOpen}>
         Open
       </button>

@@ -36,17 +36,13 @@ const menuItems = [
 
   return (
     <aside className="teacher-sidebar">
-
       <div className="teacher-sidebar-header">
         <h2>InternTrack</h2>
         <p>Teacher Panel</p>
        </div>
-
       <ul className="teacher-sidebar-menu">
-
       {menuItems.map((item) => (
           <li key={item.name}>
-
             {item.disabled ? (
               <div className="teacher-sidebar-link disabled">
                 <span className="teacher-sidebar-icon">
@@ -69,7 +65,6 @@ const menuItems = [
                 <span className="teacher-sidebar-icon">
                   {item.icon}
                 </span>
-
                 <span>{item.name}</span>
               </NavLink>
             )}

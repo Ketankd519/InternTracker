@@ -34,9 +34,7 @@ export default function Dashboard() {
 
         // Student verification comes from STUDENTS
         if (result.profileExists && result.data) {
-          setTeacherVerified(
-            result.data.teacherVerified === true
-          );
+          setTeacherVerified(result.data.teacherVerified === true);
         } else {
           setTeacherVerified(false);
         }
@@ -52,18 +50,12 @@ export default function Dashboard() {
       try {
         const response = await API.get("/internships/status");
         const internshipData = response.data?.data?.internship;
-
         if (internshipData) {
           setInternship(internshipData);
-
-          setTotalWeeks(
-            Number(internshipData.totalWeeks) || 0
-          );
+          setTotalWeeks(Number(internshipData.totalWeeks) || 0);
 
           // Manager verifies internship
-          setManagerVerified(
-            internshipData.managerVerified === true
-          );
+          setManagerVerified(internshipData.managerVerified === true);
         } else {
           setInternship(null);
           setTotalWeeks(0);
@@ -74,8 +66,6 @@ export default function Dashboard() {
         setInternship(null);
         setTotalWeeks(0);
         setManagerVerified(false);
-
-        console.log("No internship found.");
       }
 
       // 3. WEEKLY REPORTS
@@ -87,24 +77,18 @@ export default function Dashboard() {
         setSubmittedReports(reports.length);
 
         // Pending
-        setPendingReports(
-          reports.filter(
-            (report) => report.status === "Pending"
-          ).length
+        setPendingReports(reports.filter((report) => 
+          report.status === "Pending").length
         );
 
         // Approved
-        setApprovedReports(
-          reports.filter(
-            (report) => report.status === "Approved"
-          ).length
+        setApprovedReports(reports.filter((report) => 
+          report.status === "Approved").length
         );
 
         // Rejected
-        setRejectedReports(
-          reports.filter(
-            (report) => report.status === "Rejected"
-          ).length
+        setRejectedReports(reports.filter((report) => 
+          report.status === "Rejected").length
         );
       } catch  {
         // New user = zero reports
@@ -112,52 +96,32 @@ export default function Dashboard() {
         setPendingReports(0);
         setApprovedReports(0);
         setRejectedReports(0);
-
-        console.log("No weekly reports found.");
       }
       setLoading(false);
     };
-
     fetchDashboardData();
   }, []);
 
   // Completion
-  const completion =
-    totalWeeks > 0
-      ? Math.min(
-          Math.round(
-            (submittedReports / totalWeeks) * 100
-          ),
+  const completion = totalWeeks > 0
+          ? Math.min(Math.round((submittedReports / totalWeeks) * 100),
           100
-        )
-      : 0;
+        ): 0;
 
   // Internship Status
   let internshipStatus = "No Internship";
-
   if (internship) {
     switch (internship.status) {
       case "pending":
-      case "ongoing":
-        internshipStatus = "✔ Active";
-        break;
-
-      case "completed":
-        internshipStatus = "✔ Completed";
-        break;
-
-      case "rejected":
-        internshipStatus = "❌ Rejected";
-        break;
-
-      default:
-        internshipStatus = "No Internship";
+      case "ongoing": internshipStatus = "✔ Active"; break;
+      case "completed": internshipStatus = "✔ Completed"; break;
+      case "rejected": internshipStatus = "❌ Rejected"; break;
+      default: internshipStatus = "No Internship";
     }
   }
 
   // Student Verification
   // Teacher + Manager
-
   let verificationStatus = "NOT VERIFIED";
   let verificationClass = "danger";
 
@@ -195,8 +159,7 @@ export default function Dashboard() {
         <div className="dashboard-cards">
           <div className="status-card">
             <h3>Internship Status</h3>
-            <h2
-              className={`internship-status ${
+            <h2 className={`internship-status ${
                 internship?.status || "none"
               }`}
             >
@@ -219,9 +182,7 @@ export default function Dashboard() {
 
           <div className="progress-container">
             <div className="progress-fill"
-              style={{
-                width: `${completion}%`,
-              }}
+              style={{ width: `${completion}%`,}}
             />
           </div>
 
@@ -238,8 +199,7 @@ export default function Dashboard() {
             <div className="verification-users">
 
               {/* Teacher verification */}
-              <span
-                className={
+              <span className={
                   teacherVerified
                     ? "verified"
                     : "not-verified"
@@ -249,8 +209,7 @@ export default function Dashboard() {
               </span>
 
               {/* Manager verification */}
-              <span
-                className={
+              <span className={
                   managerVerified
                     ? "verified"
                     : "not-verified"
@@ -258,10 +217,8 @@ export default function Dashboard() {
               >
                 {managerVerified ? "✔" : "❌"} Manager
               </span>
-
             </div>
           </div>
-
           <div className={`verification-status ${verificationClass}`}>
             {verificationStatus}
           </div>
@@ -270,7 +227,6 @@ export default function Dashboard() {
             {/* Quick Stats */}
         <div className="dashboard-box">
           <h3>Quick Stats</h3>
-          
           <div className="stats-grid">
             <div className="stat-item">
               <h2>{submittedReports}</h2>
@@ -291,7 +247,6 @@ export default function Dashboard() {
               <h2>{rejectedReports}</h2>
               <p>Rejected</p>
             </div>
- 
           </div>
         </div>
       </div>

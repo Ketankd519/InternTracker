@@ -46,7 +46,6 @@ header {
   color: white;
 }
 
-
 /* ==========================================
    LOGIN / AUTH PAGE
 ========================================== */
@@ -282,37 +281,6 @@ header {
   background: #ecfdf5;
 }
 
-/* ==========================================
-   LOGIN RESPONSIVE
-========================================== */
-
-@media (max-width: 600px) {
-  .auth-page {
-    padding: 25px 15px;
-  }
-
-  .auth-card {
-    padding: 25px 20px;
-  }
-
-  .auth-card h1 {
-    font-size: 26px;
-  }
-
-  .create-account {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .create-account button {
-    margin-left: 0;
-  }
-}
-
-
-
-
 .btn {
   background: #2563eb;
   color: white;
@@ -386,7 +354,6 @@ header {
   box-shadow: 0 14px 30px rgba(15, 23, 42, 0.17);
 }
 
-
 /* ==========================================
    CERTIFICATE VERIFICATION HOME SECTION
 ========================================== */
@@ -424,7 +391,6 @@ header {
   line-height: 1.6;
   max-width: 800px;
 }
-
 
 /* ==========================================
    VERIFY CERTIFICATE BUTTON
@@ -620,6 +586,34 @@ footer {
   margin-bottom: 10px;
 }
 
+/* ==========================================
+   LOGIN RESPONSIVE
+========================================== */
+
+@media (max-width: 600px) {
+  .auth-page {
+    padding: 25px 15px;
+  }
+
+  .auth-card {
+    padding: 25px 20px;
+  }
+
+  .auth-card h1 {
+    font-size: 26px;
+  }
+
+  .create-account {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .create-account button {
+    margin-left: 0;
+  }
+}
+
 @media(max-width: 800px) {
   .dashboard {
     grid-template-columns: 1fr;
@@ -656,7 +650,6 @@ footer {
     padding: 30px 25px 34px;
   }
 }
-
 
 @media (max-width: 600px) {
 

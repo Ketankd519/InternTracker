@@ -142,8 +142,7 @@ const getStudentReports = async (req, res) => {
     });
 
     // Count reports
-    const totalReportsCount =
-      await WeeklyReport.countDocuments({
+    const totalReportsCount = await WeeklyReport.countDocuments({
         student: studentId,
       });
 
@@ -176,8 +175,7 @@ const verifyReport = async (req, res) => {
     } = req.body;
 
     // Determine Verification
-    const isVerified =
-      managerVerified !== undefined
+    const isVerified = managerVerified !== undefined
         ? managerVerified
         : true;
 
@@ -187,14 +185,12 @@ const verifyReport = async (req, res) => {
       : "Rejected";
 
     // Rejection Remark
-    const remark =
-      isVerified === false
+    const remark = isVerified === false
         ? rejectionRemark || ""
         : "";
 
     // Update Report
-    const updatedReport =
-      await WeeklyReport.findByIdAndUpdate(
+    const updatedReport = await WeeklyReport.findByIdAndUpdate(
         id,
         {
           $set: {
@@ -220,17 +216,13 @@ const verifyReport = async (req, res) => {
     // Response
     return res.status(200).json({
       success: true,
-      message:
-        isVerified === false
+      message: isVerified === false
           ? "Weekly report rejected successfully"
           : "Weekly report approved successfully",
       data: updatedReport,
     });
   } catch (error) {
-    console.error(
-      "Verify Weekly Report Error:",
-      error
-    );
+    console.error("Verify Weekly Report Error:",error);
 
     return res.status(500).json({
       success: false,
@@ -290,8 +282,7 @@ const updateReport = async (req, res) => {
     if (!taskTitle || !description || !submissionDate) {
       return res.status(400).json({
         success: false,
-        message:
-          "Task title, description and submission date are required.",
+        message:"Task title, description and submission date are required.",
       });
     }
 
@@ -310,7 +301,6 @@ const updateReport = async (req, res) => {
     // IMPORTANT:
     // weekNumber is intentionally NOT taken from req.body.
     // Therefore student cannot change the week number.
-
     // Update editable fields
     report.taskTitle = taskTitle;
     report.description = description;
@@ -332,8 +322,7 @@ const updateReport = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message:
-        `Weekly report for Week ${report.weekNumber} updated successfully and sent for manager approval.`,
+      message:`Weekly report for Week ${report.weekNumber} updated successfully and sent for manager approval.`,
       data: updatedReport,
     });
 

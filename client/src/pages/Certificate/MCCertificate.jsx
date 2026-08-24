@@ -20,7 +20,6 @@ export default function MCCertificate() {
       setLoading(true);
       setError("");
       const response = await API.get(`/certificates/student/${studentId}`);
-      console.log("MANAGER CERTIFICATE RESPONSE:",response.data);
       setCertificateData(response.data?.data || null);
     } catch (err) {
       console.error("Manager Certificate Fetch Error:",err);
@@ -37,15 +36,12 @@ export default function MCCertificate() {
       if (!studentId) return;
       setApproving(true);
       const response = await API.put(`/certificates/${studentId}/manager-approve`);
-
-      console.log("MANAGER APPROVAL RESPONSE:", response.data);
       alert(response.data?.message || "Certificate approved successfully.");     
 
       // Refresh certificate data
       await fetchCertificate();
     } catch (err) {
       console.error("Manager Certificate Approval Error:",err);
-
       alert(err.response?.data?.message || "Unable to approve certificate.");
     } finally {
       setApproving(false);
@@ -114,7 +110,6 @@ const managerApproved = certificateData.certificate?.managerApproved === true;
 const progress = Number(certificateData.progress?.percentage) || 0;
 const internshipStatus = certificateData.internship?.status || "Not Available";
 
-
 let teacherStatus = "Not Eligible";
 let managerStatus = "Not Eligible";
 
@@ -129,17 +124,14 @@ let managerStatus = "Not Eligible";
 */
 
 if (!teacherVerified && !managerVerified) {
-
   teacherStatus = "Not Eligible";
   managerStatus = "Not Eligible";
 
 } else if (teacherVerified && !managerVerified) {
-
   teacherStatus = "Eligible";
   managerStatus = "Not Eligible";
 
 } else if (!teacherVerified && managerVerified) {
-
   teacherStatus = "Not Eligible";
   managerStatus = "Eligible";
 
@@ -155,17 +147,14 @@ if (!teacherVerified && !managerVerified) {
   */
 
   if (progress === 100) {
-
     teacherStatus = "Waiting for Approval";
     managerStatus = "Waiting for Approval";
 
   } else if (progress > 50) {
-
     teacherStatus = "Ongoing";
     managerStatus = "Ongoing";
 
   } else {
-
     teacherStatus = "Processing";
     managerStatus = "Processing";
   }
@@ -200,7 +189,7 @@ if (!teacherVerified && !managerVerified) {
     });
   };
 
-    // STATUS CLASS
+// STATUS CLASS
   const getStatusClass = (status) => {
     switch (status) {
       case "Approved": return "status-approved";
@@ -213,16 +202,16 @@ if (!teacherVerified && !managerVerified) {
   };
 
     if (!certificateData) {
-    return (
-      <div className="student-certificate-page">
-        <h2 className="certificate-page-title">Student Certificate</h2>
-        <div className="certificate">
-          <h2>No Certificate Data</h2>
-          <p> Certificate information for this student is not available.</p>
+      return (
+        <div className="student-certificate-page">
+          <h2 className="certificate-page-title">Student Certificate</h2>
+          <div className="certificate">
+            <h2>No Certificate Data</h2>
+            <p> Certificate information for this student is not available.</p>
+          </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
   // RENDER
   return (
@@ -239,25 +228,19 @@ if (!teacherVerified && !managerVerified) {
         <p>has successfully completed an internship at</p>
         <h2>{companyName}</h2>
         <p>Duration:</p>
-        <h3>
-          {formatDate(startDate)} -{" "}
-          {formatDate(endDate)}
+        <h3>{formatDate(startDate)} -{" "} {formatDate(endDate)}
         </h3>
         <p>During this internship, the student worked on
           assigned projects and successfully completed
           the assigned tasks.
         </p>
 
-            {/* VERIFICATION TABLE */}
+          {/* VERIFICATION TABLE */}
         <table>
           <thead>
             <tr>
-              <th>
-                Verified By Teacher
-              </th>
-              <th>
-                Verified By Manager
-              </th>
+              <th>Verified By Teacher</th>
+              <th>Verified By Manager</th>
             </tr>
           </thead>
           <tbody>
@@ -265,22 +248,18 @@ if (!teacherVerified && !managerVerified) {
               <td>
                 <strong>{teacherName}</strong>
                 <br></br>
-                <div
-                  className={`certificate-status-badge ${getStatusClass(
-                    teacherStatus
-                  )}`}
-                >
+                <div className={`certificate-status-badge 
+                    ${getStatusClass(teacherStatus)}
+                    `}>
                   {teacherStatus}
                 </div>
               </td>
               <td>
                 <strong>{managerName}</strong>
                 <br></br>
-                <div
-                  className={`certificate-status-badge ${getStatusClass(
-                    managerStatus
-                  )}`}
-                >
+                <div className={`certificate-status-badge 
+                    ${getStatusClass(managerStatus)}
+                    `}>
                   {managerStatus}
                 </div>
               </td>
@@ -290,37 +269,22 @@ if (!teacherVerified && !managerVerified) {
 
             {/* INTERNSHIP INFORMATION */}
         <div className="certificate-progress">
-          <p>
-            <strong>Internship Progress:</strong>{" "}{progress}%
-          </p>
-          <p>
-            <strong>Internship Status:</strong>{" "}{internshipStatus || "Not Available"}
-          </p>
+          <p><strong>Internship Progress:</strong>{" "}{progress}%</p>
+          <p><strong>Internship Status:</strong>{" "}{internshipStatus || "Not Available"}</p>
         </div>
-
 
             {/* MANAGER APPROVAL SECTION */}
         <div style={{marginTop: "25px", textAlign: "center",}}>
           {managerApproved ? (
-            <div
-              className="certificate-status-badge status-approved"
-              style={{
-                display: "inline-block",
-                padding: "12px 25px",
-                fontSize: "16px",
-              }}
+            <div className="certificate-status-badge status-approved"
+              style={{display: "inline-block",padding: "12px 25px",fontSize: "16px",}}
             >
               ✔ Certificate Approved by Manager
             </div>
           ) : (
-            <button
-              className="btn"
-              onClick={handleManagerApprove}
-              disabled={approving}
-              style={{
-                padding: "12px 28px",
-                fontSize: "16px",
-                cursor: approving
+            <button className="btn" onClick={handleManagerApprove} disabled={approving}
+              style={{ padding: "12px 28px", fontSize: "16px", cursor: 
+                approving
                   ? "not-allowed"
                   : "pointer",
               }}
@@ -330,14 +294,10 @@ if (!teacherVerified && !managerVerified) {
                 : "Verify Certificate"}
             </button>
           )}
-          
         </div>
 
         {/* BACK BUTTON */}
-        <button
-          className="teacher-back-button"
-          onClick={() => navigate(-1)}
-        >
+        <button className="teacher-back-button" onClick={() => navigate(-1)}>
           ← Back to Student Certificates
         </button>
       </div>

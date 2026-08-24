@@ -39,17 +39,9 @@ export default function Progress() {
     // 1. Fetch Internship
     try {
       const response = await API.get("/internships/status");
-
-      console.log("Progress Internship Response:",
-        response.data
-      );
-
       const internshipData = response.data.data?.internship;
-
       if (internshipData) {
-        setTotalWeeks(
-          Number(internshipData.totalWeeks) || 0
-        );
+        setTotalWeeks(Number(internshipData.totalWeeks) || 0);
       } else {
         setTotalWeeks(0);
       }
@@ -57,38 +49,27 @@ export default function Progress() {
       // New user may not have internship.
       // This means total weeks = 0.
       setTotalWeeks(0);
-
-      console.log("No internship found for progress.");
     }
 
     // 2. Fetch Weekly Reports
     try {
       const response = await API.get("/reports");
-      console.log("Progress Reports Response:",response.data);
       const reports = response.data.data || [];
 
       // Total Submitted Reports
-      setSubmittedReports(
-        reports.length
-      );
+      setSubmittedReports(reports.length);
 
       // Pending Reports
-      const pending =
-        reports.filter((report) =>
-            report.status === "Pending"
-        ).length;
+      const pending = reports.filter((report) =>
+            report.status === "Pending").length;
 
       // Approved Reports
-      const approved =
-        reports.filter((report) =>
-            report.status === "Approved"
-        ).length;
+      const approved = reports.filter((report) =>
+            report.status === "Approved").length;
 
       // Rejected Reports
-      const rejected =
-        reports.filter((report) =>
-            report.status === "Rejected"
-        ).length;
+      const rejected = reports.filter((report) =>
+            report.status === "Rejected").length;
 
       setPendingReports(pending);
       setApprovedReports(approved);
@@ -99,32 +80,27 @@ export default function Progress() {
       setPendingReports(0);
       setApprovedReports(0);
       setRejectedReports(0);
-
-      console.log("No weekly reports found for progress.");
     }
     setLoading(false);
   };
 
   // Completion
-  const completion =
-    totalWeeks > 0
-      ? Math.min(
-          Math.round(
-            (submittedReports /
+  const completion = totalWeeks > 0
+          ? Math.min(
+              Math.round((submittedReports /
               totalWeeks) *
               100
-          ),
+            ),
           100
         )
       : 0;
-
     const RScompletion = totalWeeks > 0
         ? Math.min(
             Math.round(
               (approvedReports / totalWeeks ) * 100
             ),
             100
-        )
+          )
       : 0;
 
   // Progress Status
@@ -187,10 +163,8 @@ export default function Progress() {
           </div>
           <div className="progress-container">
             <div className="progress-fill"
-              style={{
-                width: `${completion}%`,
-              }}
-            ></div>
+              style={{width: `${completion}%`,}}>
+            </div>
           </div>
           <p className="progress-text">
             {submittedReports} of{" "}

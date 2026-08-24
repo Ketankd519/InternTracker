@@ -21,7 +21,6 @@ const { profileUpload } = require('../middleware/uploadMiddleware');
 
 router
   .route('/profile')
-  
   .post(protect,authorize('student'),profileUpload.single('profilePhoto'),createStudentProfile)
   .get(protect,authorize('student'),getStudentProfile)
   .put(protect,authorize('student'),profileUpload.single('profilePhoto'),updateStudentProfile);

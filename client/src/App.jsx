@@ -3,7 +3,6 @@ import { AuthProvider } from './context/AuthContext';
 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import ProtectedRoute from './components/ProtectedRoute';
 
 import Home from './pages/Home/Home';
 import Login from './pages/Login/Login';
@@ -14,7 +13,7 @@ import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
 import Certificate from "./pages/Certificate/Certificate";
 import SSCertificate from "./pages/Certificate/SSCertificate";
 
-import StudentLayout from './layouts/StudentLayout';
+import StudentLayout from './Layouts/StudentLayout';
 import StudentDashboard from './pages/Student/Dashboard';
 import StudentProfile from "./pages/Student/StudentProfile";
 import Internship from "./pages/Student/Internship";
@@ -44,158 +43,48 @@ function App() {
   return (
     <AuthProvider>
       <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-
-          {/* Public Certificate Verification */}
-        <Route
-          path="/certificate-verification"
-          element={<CertificateVerification />}
-        />
-
-        <Route path="/forgot-password" element={<ForgotPassword />}/>
+        <Routes>
+          
+          //HOME ROUTES
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/certificate-verification" element={<CertificateVerification />}/>
+          <Route path="/forgot-password" element={<ForgotPassword />}/>
       
-    // STUDENT ROUTES
-      <Route path="/student" element={<StudentLayout/>}>
+          // STUDENT ROUTES
+          <Route path="/student" element={<StudentLayout />}>
+            <Route path="dashboard" element={<StudentDashboard />}/>
+            <Route path="profile" element={<StudentProfile />}/>
+            <Route path="internship" element={<Internship />}/>
+            <Route path="weekly-report" element={<WeeklyReport />}/>
+            <Route path="progress" element={<Progress />}/>
+            <Route path="certificate-status" element={<SSCertificate />}/>
+            <Route path="certificate" element={<Certificate />}/>
+          </Route>
 
-        <Route path="dashboard" element={
-            // <ProtectedRoute allowedRoles={['student', 'admin']}>
-              <StudentDashboard />
-            // </ProtectedRoute>
-          }
-        />
+          // TEACHER ROUTES
+          <Route path="/teacher" element={<TeacherLayout />}>
+            <Route path="dashboard" element={<TeacherDashboard />}/>
+            <Route path="/teacher/profile" element={<TeacherProfile />}/>
+            <Route path="students" element={<TeacherStudents />}/>
+            <Route path="students/:studentId" element={<ViewStudent />}/>
+            <Route path="student-certificates" element={<StdCertificateList />}/>
+            <Route path="student-certificate/:studentId" element={<TCCertificate />}/>
+          </Route>
 
-        <Route path="profile" element={
-            // <ProtectedRoute allowedRoles={['student', 'admin']}>
-              <StudentProfile />
-            // </ProtectedRoute>
-          }
-        />
+          // MANAGER ROUTES 
+          <Route path="/manager" element={<ManagerLayout />}>
+            <Route path="dashboard" element={<ManagerDashboard />}/>
+            <Route path="/manager/profile" element={<ManagerProfile />}/>
+            <Route path="approvals" element={<ManagerApprovals />}/>
+            <Route path="students/:studentId" element={<ManagerViewStudent />}/>
+            <Route path="evaluation" element={<ManagerEvaluation />}/>
+            <Route path="student-certificates" element={<ManagerCertificateList />}/>
+            <Route path="student-certificate/:studentId" element={<MCCertificate />}/>
+          </Route>
 
-        <Route path="internship" element={
-            // <ProtectedRoute allowedRoles={['student', 'admin']}>
-              <Internship />
-            // </ProtectedRoute>
-          }
-          />
-
-        <Route path="weekly-report" element={
-            // <ProtectedRoute allowedRoles={['student', 'admin']}>
-              <WeeklyReport />
-            // </ProtectedRoute>
-          }
-        />
-
-        <Route path="progress" element={
-          //  <ProtectedRoute allowedRoles={['student', 'admin']}>
-              <Progress />
-          //  </ProtectedRoute>
-         }
-        />
-
-        <Route path="certificate-status" element={<SSCertificate />}
-        />
-
-        <Route
-          path="certificate"
-          element={
-            // <ProtectedRoute allowedRoles={["student"]}>
-              <Certificate />
-            // </ProtectedRoute>
-          }
-        />
-      </Route>
-
-
-
-<Route path="/teacher" element={<TeacherLayout />}>
-
-  <Route
-    path="dashboard"
-    element={<TeacherDashboard />}
-  />
-
-  <Route
-    path="/teacher/profile"
-    element={<TeacherProfile />}
-  />
-
-  <Route
-    path="students"
-    element={<TeacherStudents />}
-  />
-
-  <Route
-    path="students/:studentId"
-    element={<ViewStudent />}
-  />
-
-  <Route
-    path="student-certificates"
-    element={<StdCertificateList />}
-  />
-
-  <Route
-    path="student-certificate/:studentId"
-    element={<TCCertificate />}
-  />
-
-</Route>
-
-<Route
-  path="/manager"
-  element={<ManagerLayout />}
->
-
-  <Route
-    path="dashboard"
-    element={<ManagerDashboard />}
-  />
-
-  <Route
-    path="/manager/profile"
-    element={<ManagerProfile />}
-  />
-
-  <Route
-    path="approvals"
-    element={<ManagerApprovals />}
-  />
-
-  <Route
-    path="students/:studentId"
-    element={<ManagerViewStudent />}
-  />
-
-  <Route
-    path="evaluation"
-    element={<ManagerEvaluation />}
-  />
-
-  <Route
-    path="student-certificates"
-    element={<ManagerCertificateList />}
-  />
-
-  <Route
-    path="student-certificate/:studentId"
-    element={<MCCertificate />}
-  />
-
-</Route>
-
-        <Route
-          path="/certificate"
-          element={
-            <ProtectedRoute allowedRoles={['student', 'teacher', 'manager', 'admin']}>
-              <Certificate />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-
+        </Routes>
       <Footer />
     </AuthProvider>
   );
