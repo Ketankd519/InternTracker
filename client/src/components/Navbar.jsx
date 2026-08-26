@@ -65,10 +65,14 @@ export default function Navbar() {
           </>
         )}
 
-        {/* ================================
-            Teacher / Manager certificate
-            buttons will be added later
-        ================================= */}
+        {/* Admin*/}
+        {user?.role === 'admin' && (
+          <>
+            <Link to="admin/dashboard">
+              <button>Admin</button>
+            </Link>
+          </>
+        )}
 
         {/* Logout */}
         {user ? (

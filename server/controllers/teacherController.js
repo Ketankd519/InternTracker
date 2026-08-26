@@ -23,7 +23,7 @@ const getTeacherDashboard = async (req, res) => {
     // stores the teacher's unique teacherId, not MongoDB _id.
     const teacherProfile = await Teacher.findOne({
       user: req.user._id,
-    }).select("teacherId");
+    }).select("teacherId warnings");
 
     if (!teacherProfile) {
       return res.status(404).json({
@@ -104,6 +104,7 @@ const getTeacherDashboard = async (req, res) => {
         name: teacher.name,
         email: teacher.email,
         teacherId: teacherProfile.teacherId,
+        warnings: teacherProfile.warnings || [],  
       },
 
       statistics: {
@@ -122,6 +123,41 @@ const getTeacherDashboard = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to load teacher dashboard",
+      error: error.message,
+    });
+  }
+};
+
+// TEACHER DISMISS / DELETE WARNING
+// DELETE /api/teacher/warnings/:warningId
+const deleteTeacherWarning = async (req, res) => {
+  try {
+    const { warningId } = req.params;
+
+    const teacher = await Teacher.findOne({ user: req.user._id });
+    if (!teacher) {
+      return res.status(404).json({
+        success: false,
+        message: "Teacher profile not found",
+      });
+    }
+
+    teacher.warnings = teacher.warnings.filter(
+      (w) => w._id.toString() !== warningId
+    );
+
+    await teacher.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Warning dismissed successfully",
+      warnings: teacher.warnings,
+    });
+  } catch (error) {
+    console.error("Delete Warning Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to dismiss warning",
       error: error.message,
     });
   }
@@ -662,4 +698,5 @@ module.exports = {
   createTeacherProfile,
   updateTeacherProfile,
   getTeachersByDepartment,
+  deleteTeacherWarning,
 };

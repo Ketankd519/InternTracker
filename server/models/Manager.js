@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+
 const managerSchema = new mongoose.Schema(
   {
     user: {
@@ -44,11 +45,26 @@ const managerSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    
+
     signature: {
       type: String,
       default: "",
     },
+
+    // Warnings Array for Admin functionality
+    warnings: [
+      {
+        remark: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   {
     timestamps: true,

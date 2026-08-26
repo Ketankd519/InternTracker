@@ -37,6 +37,16 @@ import ManagerCertificateList from "./pages/Manager/stdCertificateList";
 import MCCertificate from "./pages/Certificate/MCCertificate";
 import ManagerProfile from "./pages/Manager/profile";
 
+import AdminLayout from './Layouts/AdminLayouts';
+import AdminDashboard from './pages/Admin/Dashboard';
+import AdminRoute from "./components/AdminRoute";
+import AdminStudents from "./pages/Admin/Students";
+import AdminViewStudent from "./pages/Admin/ViewStudent";
+import AdminTeachers from "./pages/Admin/Teachers";
+import AdminViewTeacher from "./pages/Admin/ViewTeacher";
+import AdminManagers from "./pages/Admin/Managers";
+import AdminViewManager from "./pages/Admin/ViewManager";
+
 import './App.css';
 
 function App() {
@@ -84,6 +94,19 @@ function App() {
             <Route path="student-certificate/:studentId" element={<MCCertificate />}/>
           </Route>
 
+          // ADMIN ROUTES
+          <Route element={<AdminRoute />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="students" element={<AdminStudents />} />
+              <Route path="students/:studentId" element={<AdminViewStudent />} />
+              <Route path="teachers" element={<AdminTeachers />} />
+              <Route path="teachers/:teacherId" element={<AdminViewTeacher />} />
+              <Route path="managers" element={<AdminManagers />} />
+              <Route path="managers/:managerId" element={<AdminViewManager />} />
+            </Route>
+          </Route>
+          
         </Routes>
       <Footer />
     </AuthProvider>

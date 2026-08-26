@@ -17,6 +17,7 @@ const certificateRoutes = require("./routes/certificateRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const teacherRoutes = require("./routes/teacherRoutes");
 const managerRoutes = require("./routes/managerRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 // Error Middleware
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
@@ -44,6 +45,7 @@ app.use("/api/certificates", certificateRoutes);
 app.use("/api/student-dashboard", dashboardRoutes);
 app.use("/api/teacher", teacherRoutes);
 app.use("/api/manager", managerRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Home Route
 app.get("/", (req, res) => {

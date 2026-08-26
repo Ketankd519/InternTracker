@@ -24,7 +24,7 @@ const getManagerDashboard = async (req, res) => {
     const managerProfile = await Manager.findOne({
       user: req.user._id,
     })
-      .select("managerId")
+      .select("managerId warnings")
       .lean();
 
     if (!managerProfile) {
@@ -144,6 +144,7 @@ const getManagerDashboard = async (req, res) => {
         email: manager.email,
         role: manager.role,
         managerId: managerProfile.managerId,
+        warnings: managerProfile.warnings || [],
       },
 
       statistics: {
@@ -170,6 +171,41 @@ const getManagerDashboard = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to load manager dashboard",
+      error: error.message,
+    });
+  }
+};
+
+// MANAGER DISMISS / DELETE WARNING
+// DELETE /api/manager/warnings/:warningId
+const deleteManagerWarning = async (req, res) => {
+  try {
+    const { warningId } = req.params;
+
+    const manager = await Manager.findOne({ user: req.user._id });
+    if (!manager) {
+      return res.status(404).json({
+        success: false,
+        message: "Manager profile not found",
+      });
+    }
+
+    manager.warnings = manager.warnings.filter(
+      (w) => w._id.toString() !== warningId
+    );
+
+    await manager.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Warning dismissed successfully",
+      warnings: manager.warnings,
+    });
+  } catch (error) {
+    console.error("Delete Manager Warning Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to dismiss warning",
       error: error.message,
     });
   }
@@ -912,4 +948,5 @@ module.exports = {
   createManagerProfile,
   updateManagerProfile,
   getAllManagers,
+  deleteManagerWarning,
 };

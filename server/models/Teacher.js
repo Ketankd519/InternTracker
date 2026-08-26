@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+
 const teacherSchema = new mongoose.Schema(
   {
     user: {
@@ -55,6 +56,21 @@ const teacherSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+
+    // Warnings Array for Admin functionality
+    warnings: [
+      {
+        remark: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   {
     timestamps: true,

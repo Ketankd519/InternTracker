@@ -6,10 +6,13 @@ import "./ManagerStyle.css";
 export default function ManagerDashboard() {
   const navigate = useNavigate();
   const [manager, setManager] = useState(null);
+  const [warnings, setWarnings] = useState([]);
   const [statistics, setStatistics] = useState({
     totalStudents: 0,
     activeStudents: 0,
     completedStudents: 0,
+    assignedStudents: 0,
+    completedAssignedStudents: 0,
     totalWeeklyReports: 0,
     pendingWeeklyReports: 0,
     approvedWeeklyReports: 0,
@@ -20,13 +23,7 @@ export default function ManagerDashboard() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-
-    //The syntax error show because this function is colling but not using.
-    //This is because the new user register function can not fetch the data.
-    //If Already register stuent with complete profile the data is fetching and the function is using.
-    // so ignore this error.
     fetchDashboard();
-
   }, []);
 
   const fetchDashboard = async () => {
@@ -34,73 +31,110 @@ export default function ManagerDashboard() {
       setLoading(true);
       const response = await api.get("/manager/dashboard");
       setManager(response.data.manager);
+      setWarnings(response.data.manager?.warnings || []);
       setStatistics(response.data.statistics);
     } catch (error) {
-      console.error("Manager Dashboard Error:",error);
-      setError( error.response?.data?.message || "Failed to load dashboard");
+      console.error("Manager Dashboard Error:", error);
+      setError(error.response?.data?.message || "Failed to load dashboard");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDismissWarning = async (warningId) => {
+    if (!window.confirm("Are you sure you want to dismiss this warning?")) return;
+    try {
+      await api.delete(`/manager/warnings/${warningId}`);
+      setWarnings((prev) => prev.filter((w) => w._id !== warningId));
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to dismiss warning");
     }
   };
 
   if (loading) {
     return (
       <div className="manager-page">
-        <div className="manager-loading">
-          Loading dashboard...
-        </div>
+        <div className="manager-loading">Loading dashboard...</div>
       </div>
     );
   }
 
   return (
     <div className="manager-page">
-      {error && (
-        <div className="manager-error">
-          {error}
-        </div>
-      )}
+      {error && <div className="manager-error">{error}</div>}
 
-          {/* WELCOME */}
+      {/* WELCOME */}
       <div className="manager-welcome">
         <div>
-          <h1> Welcome,{" "} {manager?.name || "Manager"} 👋</h1>
+          <h1>Welcome, {manager?.name || "Manager"} 👋</h1>
           <p>Here is an overview of students, internships and weekly reports.</p>
         </div>
       </div>
 
-          {/* STUDENT STATISTICS */}
+      {/* ================= ADMIN WARNINGS SECTION ================= */}
+      {warnings.length > 0 && (
+        <div className="manager-warning-banner">
+          <div className="warning-banner-header">
+            <h3>⚠️ Admin Notices & Warnings ({warnings.length})</h3>
+            <p>Please review and acknowledge the remarks below issued by the Portal Administrator.</p>
+          </div>
+          <div className="warning-list">
+            {warnings.map((item) => (
+              <div key={item._id} className="warning-item">
+                <div className="warning-item-content">
+                  <p className="warning-remark">{item.remark}</p>
+                  <small className="warning-date">
+                    Issued on: {new Date(item.createdAt).toLocaleDateString("en-IN", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </small>
+                </div>
+                <button
+                  className="btn-dismiss-warning"
+                  onClick={() => handleDismissWarning(item._id)}
+                >
+                  ✕ Dismiss
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* STUDENT STATISTICS */}
       <div className="manager-stat-grid">
         <div className="manager-stat-card">
-          <div className="manager-stat-icon">👨‍🎓 </div>
+          <div className="manager-stat-icon">👨‍🎓</div>
           <div>
             <p>Total Students on portal</p>
             <h2>{statistics.totalStudents}</h2>
           </div>
         </div>
         <div className="manager-stat-card">
-          <div className="manager-stat-icon">📚 </div>
+          <div className="manager-stat-icon">📚</div>
           <div>
             <p>Active Students on portal</p>
             <h2>{statistics.activeStudents}</h2>
           </div>
         </div>
         <div className="manager-stat-card">
-          <div className="manager-stat-icon">✅ </div>
+          <div className="manager-stat-icon">✅</div>
           <div>
             <p>Completed students on portal</p>
             <h2>{statistics.completedStudents}</h2>
           </div>
         </div>
         <div className="teacher-stat-card">
-      <div className="teacher-stat-icon">🙋‍♂️</div>
-        <div>
-          <p>Students Assigned {manager?.name || "Manager"}</p>
-          <h2>{statistics.assignedStudents}</h2>
+          <div className="teacher-stat-icon">🙋‍♂️</div>
+          <div>
+            <p>Students Assigned {manager?.name || "Manager"}</p>
+            <h2>{statistics.assignedStudents}</h2>
+          </div>
         </div>
-      </div>
-      <div className="teacher-stat-card">
-        <div className="teacher-stat-icon">✅</div>
+        <div className="teacher-stat-card">
+          <div className="teacher-stat-icon">✅</div>
           <div>
             <p>Completed student of {manager?.name || "Manager"}</p>
             <h2>{statistics.completedAssignedStudents}</h2>
@@ -108,7 +142,7 @@ export default function ManagerDashboard() {
         </div>
       </div>
 
-          {/* WEEKLY REPORT STATISTICS */}
+      {/* WEEKLY REPORT STATISTICS */}
       <div className="manager-section">
         <div className="manager-section-header">
           <div>
@@ -148,16 +182,15 @@ export default function ManagerDashboard() {
         </div>
       </div>
 
-          {/* QUICK ACTIONS */}
+      {/* QUICK ACTIONS */}
       <div className="manager-section">
         <div className="manager-section-header">
           <h2>Quick Access</h2>
         </div>
         <div className="manager-quick-grid">
-          <button className="manager-quick-card"
-             onClick={() =>
-                navigate("/manager/approvals")
-            }
+          <button
+            className="manager-quick-card"
+            onClick={() => navigate("/manager/approvals")}
           >
             <span>📋</span>
             <div>
@@ -165,10 +198,9 @@ export default function ManagerDashboard() {
               <p>Review student internship information and verify student records.</p>
             </div>
           </button>
-          <button className="manager-quick-card"
-            onClick={() =>
-              navigate("/manager/evaluation")
-            }
+          <button
+            className="manager-quick-card"
+            onClick={() => navigate("/manager/evaluation")}
           >
             <span>📝</span>
             <div>

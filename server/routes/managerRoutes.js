@@ -14,6 +14,7 @@ const {
   createManagerProfile,
   updateManagerProfile,
   getAllManagers,
+  deleteManagerWarning,
 } = require("../controllers/managerController");
 
 // Middleware
@@ -54,5 +55,10 @@ router.put("/reports/:reportId/approve",protect,authorize("manager"),approveWeek
 
 // REJECT WEEKLY REPORT
 router.put("/reports/:reportId/reject",protect,authorize("manager"),rejectWeeklyReport);
+
+// Add this route:
+// DISMISS WARNING
+// DELETE /api/manager/warnings/:warningId
+router.delete("/warnings/:warningId",protect,authorize("manager"),deleteManagerWarning);
 
 module.exports = router;

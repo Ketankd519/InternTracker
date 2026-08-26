@@ -10,6 +10,7 @@ const {
   createTeacherProfile,
   updateTeacherProfile,
   getTeachersByDepartment,
+  deleteTeacherWarning,
 } = require("../controllers/teacherController");
 
 // Authentication middleware
@@ -48,5 +49,10 @@ router.get("/students/:studentId",protect,authorize("teacher"),getTeacherStudent
 // VERIFY STUDENT
 // PUT /api/teacher/students/:studentId/verify
 router.put("/students/:studentId/verify",protect,authorize("teacher"),verifyStudentByTeacher);
+
+// Add this route:
+// DISMISS WARNING
+// DELETE /api/teacher/warnings/:warningId
+router.delete("/warnings/:warningId",protect,authorize("teacher"),deleteTeacherWarning);
 
 module.exports = router;

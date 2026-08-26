@@ -1167,6 +1167,85 @@
     font-size: 12px;
   }
 
+  /* =========================================
+   TEACHER ADMIN WARNING BANNER
+========================================= */
+
+.teacher-warning-banner {
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-left: 5px solid #e53e3e;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.06);
+}
+
+.warning-banner-header h3 {
+  margin: 0 0 4px 0;
+  color: #9b2c2c;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.warning-banner-header p {
+  margin: 0 0 16px 0;
+  color: #742a2a;
+  font-size: 13.5px;
+}
+
+.warning-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.warning-item {
+  background: #ffffff;
+  border: 1px solid #feb2b2;
+  border-radius: 9px;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.warning-item-content {
+  flex: 1;
+}
+
+.warning-remark {
+  margin: 0 0 5px 0;
+  color: #1a202c;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.warning-date {
+  color: #a0aec0;
+  font-size: 12px;
+}
+
+.btn-dismiss-warning {
+  background: #fff5f5;
+  color: #e53e3e;
+  border: 1px solid #feb2b2;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.btn-dismiss-warning:hover {
+  background: #e53e3e;
+  color: #ffffff;
+}
+
     /* MOBILE */
  @media (max-width: 768px) {
 
