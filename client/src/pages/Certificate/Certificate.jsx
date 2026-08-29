@@ -35,7 +35,7 @@ export default function Certificate() {
         data?.managerApproved === true &&
         isCompleted
       ) {
-        const homeURL = `${window.location.origin}/`;
+        const homeURL = `${window.location.origin}/certificate-verification`;
         const qr = await QRCode.toDataURL(homeURL, {
           width: 180,
           margin: 1,

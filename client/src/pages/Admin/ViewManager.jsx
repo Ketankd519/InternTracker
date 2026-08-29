@@ -85,7 +85,7 @@ export default function AdminViewManager() {
 
   const manager = data?.manager;
   const user = manager?.user;
-  const assignedStudents = data?.assignedStudents || [];
+  const assignedStudents = data?.assignedInternships || data?.assignedStudents || [];
   const warnings = data?.warnings || [];
   const signatureUrl = getSignatureUrl(manager?.signature);
 
@@ -117,7 +117,7 @@ export default function AdminViewManager() {
         </div>
       </div>
 
-      {/* ================= ADMIN DELETION & RESET AUDIT NOTICE ================= */}
+      {/* ADMIN DELETION & RESET AUDIT NOTICE */}
       {user?.isDeleted && user?.deletionReason && (
         <div
           style={{
@@ -267,7 +267,7 @@ export default function AdminViewManager() {
         </div>
       </div>
 
-      {/* ASSIGNED INTERNSHIP STUDENTS */}
+      {/* ASSIGNED STUDENTS (NAME-ONLY SHEET CELL TILES) */}
       <div className="teacher-detail-card">
         <div className="detail-card-header">
           <h2>Assigned Students / Internships ({assignedStudents.length})</h2>
@@ -275,35 +275,74 @@ export default function AdminViewManager() {
         {assignedStudents.length === 0 ? (
           <div className="empty-details">No student internships assigned to this manager yet.</div>
         ) : (
-          <div className="admin-table-container" style={{ border: "none", boxShadow: "none" }}>
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Sr No</th>
-                  <th>Student Name</th>
-                  <th>Roll No</th>
-                  <th>Job Role</th>
-                  <th>Duration</th>
-                  <th>Verification Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {assignedStudents.map((std, idx) => (
-                  <tr key={std._id}>
-                    <td>{idx + 1}</td>
-                    <td className="font-semibold">{std.studentName}</td>
-                    <td>{std.rollNo}</td>
-                    <td>{std.jobRole}</td>
-                    <td>{std.totalWeeks} Weeks</td>
-                    <td>
-                      <span className={`status-badge ${std.managerVerified ? "badge-success" : "badge-warning"}`}>
-                        {std.managerVerified ? "Verified" : "Not Verified"}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+              gap: "12px",
+              padding: "20px",
+            }}
+          >
+            {assignedStudents.map((item) => {
+              // Resolves ID and student name whether data comes populated as internship or direct student object
+              const targetStudentId = item.student?._id || item.student || item._id;
+              const studentName =
+                item.student?.user?.name ||
+                item.student?.fullName ||
+                item.student?.name ||
+                item.studentName ||
+                "Student";
+
+              return (
+                <div
+                  key={item._id || targetStudentId}
+                  onClick={() => {
+                    if (targetStudentId) {
+                      navigate(`/admin/students/${targetStudentId}`);
+                    }
+                  }}
+                  style={{
+                    background: "#ffffff",
+                    border: "1.5px solid #e2e8f0",
+                    borderRadius: "8px",
+                    padding: "12px 16px",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease-in-out",
+                    boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "#3b82f6";
+                    e.currentTarget.style.background = "#eff6ff";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 4px 6px -1px rgba(0,0,0,0.08)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "#e2e8f0";
+                    e.currentTarget.style.background = "#ffffff";
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "0 1px 2px rgba(0,0,0,0.04)";
+                  }}
+                >
+                  <span style={{ fontSize: "16px" }}>🎓</span>
+                  <span
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      color: "#1e293b",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                    title={studentName}
+                  >
+                    {studentName}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -393,7 +432,7 @@ export default function AdminViewManager() {
   );
 }
 
-// ================= HELPER FUNCTION FOR SIGNATURE =================
+// HELPER FUNCTION FOR SIGNATURE
 function getSignatureUrl(signature) {
   if (!signature) return null;
   if (signature.startsWith("http://") || signature.startsWith("https://")) return signature;

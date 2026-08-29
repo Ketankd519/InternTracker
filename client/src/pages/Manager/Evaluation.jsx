@@ -6,6 +6,7 @@ export default function ManagerEvaluation() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [processingId, setProcessingId] = useState(null);
   const [rejectingId, setRejectingId] = useState(null);
   const [remark, setRemark] = useState("");
@@ -25,7 +26,6 @@ export default function ManagerEvaluation() {
         error.response?.data?.message ||
         "Failed to load weekly reports"
       );
-
     } finally {
       setLoading(false);
     }
@@ -34,8 +34,8 @@ export default function ManagerEvaluation() {
   // APPROVE
   const handleApprove = async (reportId) => {
     const confirmed = window.confirm(
-        "Are you sure you want to approve this weekly report?"
-      );
+      "Are you sure you want to approve this weekly report?"
+    );
 
     if (!confirmed) {
       return;
@@ -46,9 +46,8 @@ export default function ManagerEvaluation() {
       alert("Weekly report approved successfully.");
       await fetchReports();
     } catch (error) {
-      console.error("Approve Error:",error);
-      alert(error.response?.data?.message || "Failed to approve report."
-      );
+      console.error("Approve Error:", error);
+      alert(error.response?.data?.message || "Failed to approve report.");
     } finally {
       setProcessingId(null);
     }
@@ -74,18 +73,15 @@ export default function ManagerEvaluation() {
     }
     try {
       setProcessingId(reportId);
-      await api.put(`/manager/reports/${reportId}/reject`,
-        {
-          rejectionRemark:
-            remark.trim(),
-        }
-      );
+      await api.put(`/manager/reports/${reportId}/reject`, {
+        rejectionRemark: remark.trim(),
+      });
       alert("Weekly report rejected successfully.");
       setRejectingId(null);
       setRemark("");
       await fetchReports();
     } catch (error) {
-      console.error("Reject Error:",error);
+      console.error("Reject Error:", error);
       alert(error.response?.data?.message || "Failed to reject report.");
     } finally {
       setProcessingId(null);
@@ -100,6 +96,25 @@ export default function ManagerEvaluation() {
       default: return "manager-status-default";
     }
   };
+
+  // SEARCH FILTER
+  const filteredReports = reports.filter((report) => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+    const weekStr = `week ${report.weekNumber || ""}`.toLowerCase();
+    return (
+      report.studentName?.toLowerCase().includes(q) ||
+      report.rollNo?.toLowerCase().includes(q) ||
+      report.taskTitle?.toLowerCase().includes(q) ||
+      report.description?.toLowerCase().includes(q) ||
+      report.status?.toLowerCase().includes(q) ||
+      weekStr.includes(q)
+    );
+  });
+
+  // DISPLAY LIMIT: Maximum 10 items shown
+  const displayedReports = filteredReports.slice(0, 10);
+
   if (loading) {
     return (
       <div className="manager-page">
@@ -113,29 +128,55 @@ export default function ManagerEvaluation() {
   return (
     <div className="manager-page">
 
-          {/* HEADER */}
+      {/* HEADER */}
       <div className="manager-page-header">
         <div>
           <h1>Weekly Report Evaluation</h1>
-          <p>Review and evaluate student weekly internship reports.</p>
+          <p>Review and evaluate student weekly internship reports. (Showing max 10 records)</p>
         </div>
         <div className="manager-count-badge">{reports.length} Reports</div>
       </div>
+
+      {/* SEARCH BAR */}
+      <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+        <input
+          type="text"
+          placeholder="Search by student, roll no, week, task title, status..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{
+            width: "100%",
+            maxWidth: "420px",
+            padding: "10px 16px",
+            borderRadius: "8px",
+            border: "1px solid #cbd5e1",
+            fontSize: "14px",
+            outline: "none",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+          }}
+        />
+        {searchQuery && (
+          <span style={{ fontSize: "13px", color: "#64748b" }}>
+            Found {filteredReports.length} match{filteredReports.length === 1 ? "" : "es"}
+          </span>
+        )}
+      </div>
+
       {error && (
         <div className="manager-error">
           {error}
         </div>
       )}
 
-          {/* REPORT TABLE */}
+      {/* REPORT TABLE */}
       <div className="manager-table-container">
         <table className="manager-table evaluation-table">
           <thead>
             <tr>
               <th>Sr No</th>
+              <th>Student Name</th>
               <th>Roll No</th>
               <th>Submission Date</th>
-              <th>Student Name</th>
               <th>Week</th>
               <th>Task Title</th>
               <th>Description</th>
@@ -145,147 +186,142 @@ export default function ManagerEvaluation() {
             </tr>
           </thead>
           <tbody>
-            {reports.length === 0 ? (
+            {displayedReports.length === 0 ? (
               <tr>
                 <td colSpan="10" className="manager-empty-table">
-                  No weekly reports found.
+                  {searchQuery ? "No matching weekly reports found." : "No weekly reports found."}
                 </td>
               </tr>
             ) : (
-              reports.map((report) => (
-                  <tr key={report.reportId}>
-                    {/* Sr No */}
-                    <td>{report.srNo}</td>
+              displayedReports.map((report, index) => (
+                <tr key={report.reportId || index}>
+                  {/* Sr No */}
+                  <td>{report.srNo || index + 1}</td>
+                  
+                  {/* Student Name */}
+                  <td>
+                    <strong>{report.studentName}</strong>
+                  </td>
 
-                    {/* Roll No */}
-                    <td>{report.rollNo || "-"}</td>
+                  {/* Roll No */}
+                  <td>{report.rollNo || "-"}</td>
 
-                    {/* Submission Date */}
-                    <td>{formatDate(report.submissionDate)}
-                    </td>
+                  {/* Submission Date */}
+                  <td>{formatDate(report.submissionDate)}</td>
 
-                    {/* Student Name */}
-                    <td>
-                      <strong>{report.studentName}</strong>
-                    </td>
+                  {/* Week */}
+                  <td>
+                    <strong>Week {report.weekNumber}</strong>
+                  </td>
 
-                    {/* Week */}
-                    <td>
-                      <strong>Week{" "}{report.weekNumber}</strong>
-                    </td>
+                  {/* Task */}
+                  <td>{report.taskTitle || "-"}</td>
 
-                    {/* Task */}
-                    <td>{report.taskTitle || "-"}</td>
+                  {/* Description */}
+                  <td className="evaluation-description">
+                    {report.description || "-"}
+                  </td>
 
-                    {/* Description */}
-                    <td className="evaluation-description">
-                      {report.description || "-"}
-                    </td>
+                  {/* Attachment */}
+                  <td>
+                    {report.attachment ? (
+                      <a
+                        href={getAttachmentUrl(report.attachment)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="manager-attachment-link"
+                      >
+                        View Attachment
+                      </a>
+                    ) : (
+                      "No Attachment"
+                    )}
+                  </td>
 
-                    {/* Attachment */}
-                    <td>
-                      {report.attachment ? (
-                        <a href={getAttachmentUrl(report.attachment)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="manager-attachment-link"
-                        >View Attachment</a>
-                      ) : (
-                        "No Attachment"
-                      )}
-                    </td>
+                  {/* Manager Verification */}
+                  <td>
+                    <span
+                      className={`manager-status-badge ${getStatusClass(
+                        report.status
+                      )}`}
+                    >
+                      {report.status}
+                    </span>
 
-                    {/* Manager Verification */}
-                    <td>
-                      <span className={`manager-status-badge ${getStatusClass(
-                              report.status
-                            )}`}
-                      > {report.status}
+                    {report.managerVerified && (
+                      <span className="manager-small-verified">
+                        ✓ Verified
                       </span>
+                    )}
 
-                      {report.managerVerified && (
-                        <span className="manager-small-verified">
-                          ✓ Verified
-                        </span>
-                      )}
+                    {report.rejectionRemark && (
+                      <div className="manager-existing-remark">
+                        <strong>Remark:</strong>{" "}
+                        {report.rejectionRemark}
+                      </div>
+                    )}
+                  </td>
 
-                      {report.rejectionRemark && (
-                        <div className="manager-existing-remark">
-                          <strong>Remark:</strong>{" "}
-                          {report.rejectionRemark}
-                        </div>
-                      )}
-                    </td>
+                  {/* ACTION */}
+                  <td>
+                    {report.status === "Pending" ? (
+                      <div className="manager-action-area">
+                        <button
+                          className="manager-approve-btn"
+                          onClick={() => handleApprove(report.reportId)}
+                          disabled={processingId === report.reportId}
+                        >
+                          {processingId === report.reportId
+                            ? "Processing..."
+                            : "Approve"}
+                        </button>
 
-                    {/* ACTION */}
-                    <td>
-                      {report.status === "Pending" ? (
-                        <div className="manager-action-area">
-                          <button className="manager-approve-btn"
-                            onClick={() =>
-                              handleApprove(report.reportId)
-                            }
-                            disabled={
-                              processingId === report.reportId
-                            }
-                          >
-                            {processingId === report.reportId
-                              ? "Processing..."
-                              : "Approve"}
-                          </button>
+                        <button
+                          className="manager-reject-btn"
+                          onClick={() => showRejectBox(report.reportId)}
+                          disabled={processingId === report.reportId}
+                        >
+                          Reject
+                        </button>
 
-                          <button className="manager-reject-btn"
-                            onClick={() =>
-                              showRejectBox(report.reportId)
-                            }
-                            disabled={
-                              processingId === report.reportId
-                            }
-                          >
-                            Reject
-                          </button>
+                        {rejectingId === report.reportId && (
+                          <div className="manager-reject-box">
+                            <textarea
+                              value={remark}
+                              onChange={(e) => setRemark(e.target.value)}
+                              placeholder="Enter rejection remark..."
+                              rows="4"
+                            />
 
-                          {rejectingId === report.reportId && (
-                            <div className="manager-reject-box">
-                              <textarea value={remark}
-                                onChange={(e) =>
-                                  setRemark(e.target.value)
-                                }
-                                placeholder="Enter rejection remark..."
-                                rows="4"
-                              />
+                            <div className="manager-reject-actions">
+                              <button
+                                className="manager-confirm-reject-btn"
+                                onClick={() => handleReject(report.reportId)}
+                                disabled={processingId === report.reportId}
+                              >
+                                Confirm Reject
+                              </button>
 
-                              <div className="manager-reject-actions">
-                                <button className="manager-confirm-reject-btn"
-                                  onClick={() =>
-                                    handleReject( report.reportId)
-                                  }
-                                  disabled={
-                                    processingId === report.reportId
-                                  }
-                                >
-                                  Confirm Reject
-                                </button>
-
-                                <button className="manager-cancel-reject-btn"
-                                  onClick={ cancelReject }
-                                >
-                                  Cancel
-                                </button>
-                              </div>
+                              <button
+                                className="manager-cancel-reject-btn"
+                                onClick={cancelReject}
+                              >
+                                Cancel
+                              </button>
                             </div>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="manager-action-completed">
-                          {report.status === "Approved"
-                            ? "Approved"
-                            : "Rejected"}
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="manager-action-completed">
+                        {report.status === "Approved"
+                          ? "Approved"
+                          : "Rejected"}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))
             )}
           </tbody>
         </table>
@@ -300,15 +336,11 @@ function formatDate(date) {
     return "-";
   }
 
-  return new Date(date)
-    .toLocaleDateString(
-      "en-IN",
-      {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      }
-    );
+  return new Date(date).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 function getAttachmentUrl(attachment) {
@@ -316,7 +348,6 @@ function getAttachmentUrl(attachment) {
     return "#";
   }
 
-  // Already a complete URL
   if (
     attachment.startsWith("http://") ||
     attachment.startsWith("https://")
@@ -324,15 +355,8 @@ function getAttachmentUrl(attachment) {
     return attachment;
   }
 
-  // Convert Windows backslashes to normal URL slashes
   let cleanPath = attachment.replace(/\\/g, "/");
 
-  /*
-    Handle absolute Windows path:
-    C:/Users/ASUS/.../server/uploads/reports/file.pdf
-    We only need:
-    reports/file.pdf
-  */
   const uploadsIndex = cleanPath.indexOf("/uploads/");
 
   if (uploadsIndex !== -1) {
@@ -341,8 +365,6 @@ function getAttachmentUrl(attachment) {
     );
   }
 
-  // Handle path already stored as:
-  // uploads/reports/file.pdf
   cleanPath = cleanPath.replace(/^uploads\//, "");
 
   return `http://localhost:5000/uploads/${cleanPath}`;

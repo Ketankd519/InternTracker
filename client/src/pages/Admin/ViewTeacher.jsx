@@ -116,7 +116,7 @@ export default function AdminViewTeacher() {
         </div>
       </div>
 
-      {/* ================= ADMIN DELETION & RESET AUDIT NOTICE ================= */}
+      {/* ADMIN DELETION & RESET AUDIT NOTICE */}
       {user?.isDeleted && user?.deletionReason && (
         <div
           style={{
@@ -274,7 +274,7 @@ export default function AdminViewTeacher() {
         </div>
       </div>
 
-      {/* ASSIGNED STUDENTS */}
+      {/* ASSIGNED STUDENTS (NAME-ONLY SHEET CELL TILES) */}
       <div className="teacher-detail-card">
         <div className="detail-card-header">
           <h2>Assigned Students ({assignedStudents.length})</h2>
@@ -282,33 +282,62 @@ export default function AdminViewTeacher() {
         {assignedStudents.length === 0 ? (
           <div className="empty-details">No students assigned to this teacher yet.</div>
         ) : (
-          <div className="admin-table-container" style={{ border: "none", boxShadow: "none" }}>
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Sr No</th>
-                  <th>Student Name</th>
-                  <th>Roll No</th>
-                  <th>Department</th>
-                  <th>Verification Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {assignedStudents.map((std, idx) => (
-                  <tr key={std._id}>
-                    <td>{idx + 1}</td>
-                    <td className="font-semibold">{std.user?.name || std.name || "N/A"}</td>
-                    <td>{std.rollNo || "N/A"}</td>
-                    <td>{std.department || "N/A"}</td>
-                    <td>
-                      <span className={`status-badge ${std.teacherVerified ? "badge-success" : "badge-warning"}`}>
-                        {std.teacherVerified ? "Verified" : "Not Verified"}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+              gap: "12px",
+              padding: "20px",
+            }}
+          >
+            {assignedStudents.map((std) => {
+              const studentName = std.user?.name || std.name || "Student";
+              return (
+                <div
+                  key={std._id}
+                  onClick={() => navigate(`/admin/students/${std._id}`)}
+                  style={{
+                    background: "#ffffff",
+                    border: "1.5px solid #e2e8f0",
+                    borderRadius: "8px",
+                    padding: "12px 16px",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease-in-out",
+                    boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "#3b82f6";
+                    e.currentTarget.style.background = "#eff6ff";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 4px 6px -1px rgba(0,0,0,0.08)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "#e2e8f0";
+                    e.currentTarget.style.background = "#ffffff";
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "0 1px 2px rgba(0,0,0,0.04)";
+                  }}
+                >
+                  <span style={{ fontSize: "16px" }}>🎓</span>
+                  <span
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      color: "#1e293b",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                    title={studentName}
+                  >
+                    {studentName}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -398,7 +427,7 @@ export default function AdminViewTeacher() {
   );
 }
 
-// ================= HELPER FUNCTION FOR SIGNATURE =================
+// HELPER FUNCTION FOR SIGNATURE
 function getSignatureUrl(signature) {
   if (!signature) return null;
   if (signature.startsWith("http://") || signature.startsWith("https://")) return signature;
@@ -406,14 +435,5 @@ function getSignatureUrl(signature) {
   let cleanPath = signature.replace(/\\/g, "/").replace(/^\/+/, "");
   cleanPath = cleanPath.replace(/^server\/uploads\//, "").replace(/^uploads\//, "");
 
-  if (
-    cleanPath.startsWith("signatures/") ||
-    cleanPath.startsWith("signature/") ||
-    cleanPath.startsWith("teacherSignatures/")
-  ) {
-    return `http://localhost:5000/uploads/${cleanPath}`;
-  }
-
-  // If stored with general uploads
   return `http://localhost:5000/uploads/${cleanPath}`;
 }

@@ -9,12 +9,12 @@ export default function StdCertificateList() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchCertificateStudents();
   }, []);
 
-  // FETCH CERTIFICATE STUDENTS
   const fetchCertificateStudents = async () => {
     try {
       setLoading(true);
@@ -23,15 +23,12 @@ export default function StdCertificateList() {
       setStudents(response.data?.data || []);
     } catch (err) {
       console.error("Manager Certificate List Error:", err);
-      setError(
-        err.response?.data?.message || "Unable to fetch certificate students."
-      );
+      setError(err.response?.data?.message || "Unable to fetch certificate students.");
     } finally {
       setLoading(false);
     }
   };
 
-  // VIEW CERTIFICATE
   const handleViewCertificate = (studentId) => {
     if (!studentId) {
       console.error("Student ID is missing");
@@ -40,35 +37,47 @@ export default function StdCertificateList() {
     navigate(`/manager/student-certificate/${studentId}`);
   };
 
-  // INTERNSHIP STATUS CLASS
   const getStatusClass = (status) => {
     switch (status?.toLowerCase()) {
-      case "completed":
-        return "manager-status-completed";
-      case "ongoing":
-        return "manager-status-ongoing";
-      case "pending":
-        return "manager-status-pending";
-      case "rejected":
-        return "manager-status-rejected";
-      default:
-        return "manager-status-pending";
+      case "completed": return "manager-status-completed";
+      case "ongoing": return "manager-status-ongoing";
+      case "pending": return "manager-status-pending";
+      case "rejected": return "manager-status-rejected";
+      default: return "manager-status-pending";
     }
   };
 
-  // MANAGER APPROVAL CLASS
   const getManagerApprovalClass = (approved) => {
     return approved ? "manager-approved" : "manager-not-approved";
   };
 
-  // TEACHER APPROVAL CLASS
   const getTeacherApprovalClass = (approved) => {
-    return approved
-      ? "manager-teacher-approved"
-      : "manager-teacher-not-approved";
+    return approved ? "manager-teacher-approved" : "manager-teacher-not-approved";
   };
 
-  // LOADING
+  // SEARCH FILTER
+  const filteredStudents = students.filter((student) => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+    const studentName =
+      student.studentName ||
+      student.student?.user?.name ||
+      student.name ||
+      "";
+    const internshipStatus =
+      student.internshipStatus ||
+      student.internship?.status ||
+      "";
+
+    return (
+      studentName.toLowerCase().includes(q) ||
+      internshipStatus.toLowerCase().includes(q)
+    );
+  });
+
+  // DISPLAY LIMIT: Maximum 10 items shown
+  const displayedStudents = filteredStudents.slice(0, 10);
+
   if (loading) {
     return (
       <div className="manager-certificate-page">
@@ -80,7 +89,6 @@ export default function StdCertificateList() {
     );
   }
 
-  // ERROR
   if (error) {
     return (
       <div className="manager-certificate-page">
@@ -95,28 +103,50 @@ export default function StdCertificateList() {
     );
   }
 
-  // PAGE
   return (
     <div className="manager-certificate-page">
       {/* HEADER */}
       <div className="manager-certificate-header">
         <div>
           <h1>Student Certificates</h1>
-          <p>Students verified by manager are displayed below.</p>
+          <p>Students verified by manager are displayed below. (Showing max 10 records)</p>
         </div>
         <div className="manager-certificate-count">
           Total Students: <strong>{students.length}</strong>
         </div>
       </div>
 
+      {/* SEARCH BAR */}
+      <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+        <input
+          type="text"
+          placeholder="Search by student name, status..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{
+            width: "100%",
+            maxWidth: "420px",
+            padding: "10px 16px",
+            borderRadius: "8px",
+            border: "1px solid #cbd5e1",
+            fontSize: "14px",
+            outline: "none",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+          }}
+        />
+        {searchQuery && (
+          <span style={{ fontSize: "13px", color: "#64748b" }}>
+            Found {filteredStudents.length} match{filteredStudents.length === 1 ? "" : "es"}
+          </span>
+        )}
+      </div>
+
       {/* TABLE */}
       <div className="manager-certificate-table-container">
-        {students.length === 0 ? (
+        {displayedStudents.length === 0 ? (
           <div className="manager-no-certificates">
-            <h3>No Verified Students</h3>
-            <p>
-              No students are currently available for certificate processing.
-            </p>
+            <h3>{searchQuery ? "No Matching Students" : "No Verified Students"}</h3>
+            <p>{searchQuery ? "No students match your search criteria." : "No students are currently available for certificate processing."}</p>
           </div>
         ) : (
           <table className="manager-certificate-table">
@@ -131,9 +161,8 @@ export default function StdCertificateList() {
               </tr>
             </thead>
             <tbody>
-              {students.map((student, index) => {
-                const studentId =
-                  student.studentId || student._id || student.student?._id;
+              {displayedStudents.map((student, index) => {
+                const studentId = student.studentId || student._id || student.student?._id;
                 const studentName =
                   student.studentName ||
                   student.student?.user?.name ||
@@ -152,49 +181,25 @@ export default function StdCertificateList() {
 
                 return (
                   <tr key={studentId || index}>
-                    {/* SR NO */}
                     <td>{index + 1}</td>
-
-                    {/* STUDENT NAME */}
                     <td>
                       <div className="manager-student-name">{studentName}</div>
                     </td>
-
-                    {/* INTERNSHIP STATUS */}
                     <td>
-                      <span
-                        className={`manager-internship-status ${getStatusClass(
-                          internshipStatus
-                        )}`}
-                      >
-                        {internshipStatus.charAt(0).toUpperCase() +
-                          internshipStatus.slice(1)}
+                      <span className={`manager-internship-status ${getStatusClass(internshipStatus)}`}>
+                        {internshipStatus.charAt(0).toUpperCase() + internshipStatus.slice(1)}
                       </span>
                     </td>
-
-                    {/* TEACHER APPROVAL */}
                     <td>
-                      <span
-                        className={`manager-teacher-certificate-status ${getTeacherApprovalClass(
-                          teacherApproved
-                        )}`}
-                      >
+                      <span className={`manager-teacher-certificate-status ${getTeacherApprovalClass(teacherApproved)}`}>
                         {teacherApproved ? "✓ Approved" : "Not Approved"}
                       </span>
                     </td>
-
-                    {/* MANAGER APPROVAL */}
                     <td>
-                      <span
-                        className={`manager-certificate-badge ${getManagerApprovalClass(
-                          managerApproved
-                        )}`}
-                      >
+                      <span className={`manager-certificate-badge ${getManagerApprovalClass(managerApproved)}`}>
                         {managerApproved ? "✓ Approved" : "Not Approved"}
                       </span>
                     </td>
-
-                    {/* ACTION */}
                     <td>
                       <button
                         className="manager-view-certificate-btn"

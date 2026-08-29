@@ -31,9 +31,20 @@ exports.getAllTeachers = async (req, res) => {
 
         // Total students approved by this teacher in certificates collection
         const studentIds = assignedStudents.map((std) => std._id);
+        // Count approved certificates across all matching identifier fields
         const totalApproved = await Certificate.countDocuments({
-          studentId: { $in: studentIds },
-          teacherApproved: true,
+          $and: [
+            {
+              $or: [
+                { student: { $in: studentIds } },
+                { studentId: { $in: studentIds } },
+                { certificateId: { $in: studentIds } },
+                { teacherName: teacher.name },
+                { teacherName: teacher.user?.name },
+              ],
+            },
+            { teacherApproved: true },
+          ],
         });
 
         return {

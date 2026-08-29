@@ -85,7 +85,7 @@ exports.getManagerProfile = async (req, res) => {
       return res.status(404).json({ success: false, message: "Manager not found" });
     }
 
-    // Fetch assigned internships without strict populate
+    // Fetch assigned internships
     const internships = await Internship.find({
       $or: [
         { managerId: manager.managerId },
@@ -96,7 +96,7 @@ exports.getManagerProfile = async (req, res) => {
       ],
     }).lean();
 
-    // Fetch student information manually to avoid StrictPopulateError
+    // Fetch student information manually to attach the real Student _id
     const assignedStudents = await Promise.all(
       internships.map(async (item) => {
         const studentRef = item.student || item.studentId || item.user || item.userId;
@@ -113,13 +113,18 @@ exports.getManagerProfile = async (req, res) => {
             .lean();
         }
 
+        // Use the resolved student's actual MongoDB _id
+        const actualStudentId = studentDetails?._id || studentRef;
+
         return {
-          _id: item._id,
+          _id: actualStudentId, // <--- Passes the valid Student ID
+          studentId: actualStudentId,
+          internshipId: item._id,
           studentName:
             studentDetails?.user?.name ||
             studentDetails?.name ||
             item.studentName ||
-            "N/A",
+            "Student",
           rollNo: studentDetails?.rollNo || studentDetails?.rollNumber || "N/A",
           companyName: item.companyName || manager.companyName,
           jobRole: item.jobRole || item.title || "Intern",

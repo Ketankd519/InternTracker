@@ -8,6 +8,7 @@ export default function TeacherStudents() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchStudents();
@@ -28,18 +29,29 @@ export default function TeacherStudents() {
 
   const getStatusClass = (status) => {
     switch (status) {
-      case "completed":
-        return "status-completed";
-      case "ongoing":
-        return "status-ongoing";
-      case "pending":
-        return "status-pending";
-      case "rejected":
-        return "status-rejected";
-      default:
-        return "status-default";
+      case "completed": return "status-completed";
+      case "ongoing": return "status-ongoing";
+      case "pending": return "status-pending";
+      case "rejected": return "status-rejected";
+      default: return "status-default";
     }
   };
+
+  // SEARCH FILTER
+  const filteredStudents = students.filter((student) => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      student.name?.toLowerCase().includes(q) ||
+      student.email?.toLowerCase().includes(q) ||
+      student.rollNo?.toLowerCase().includes(q) ||
+      student.companyName?.toLowerCase().includes(q) ||
+      student.internshipStatus?.toLowerCase().includes(q)
+    );
+  });
+
+  // DISPLAY LIMIT: Maximum 10 items shown
+  const displayedStudents = filteredStudents.slice(0, 10);
 
   if (loading) {
     return (
@@ -55,11 +67,36 @@ export default function TeacherStudents() {
       <div className="teacher-page-header">
         <div>
           <h1>Students</h1>
-          <p>View all students and their internship progress.</p>
+          <p>View assigned students and their internship progress. (Showing max 10 records)</p>
         </div>
         <div className="student-count-badge">
-          {students.length} Students
+          {students.length} Total Students
         </div>
+      </div>
+
+      {/* SEARCH BAR */}
+      <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+        <input
+          type="text"
+          placeholder="Search by student name, roll no, company, status..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{
+            width: "100%",
+            maxWidth: "420px",
+            padding: "10px 16px",
+            borderRadius: "8px",
+            border: "1px solid #cbd5e1",
+            fontSize: "14px",
+            outline: "none",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+          }}
+        />
+        {searchQuery && (
+          <span style={{ fontSize: "13px", color: "#64748b" }}>
+            Found {filteredStudents.length} match{filteredStudents.length === 1 ? "" : "es"}
+          </span>
+        )}
       </div>
 
       {error && <div className="teacher-error">{error}</div>}
@@ -82,14 +119,14 @@ export default function TeacherStudents() {
             </tr>
           </thead>
           <tbody>
-            {students.length === 0 ? (
+            {displayedStudents.length === 0 ? (
               <tr>
                 <td colSpan="10" className="empty-table">
-                  No students found.
+                  {searchQuery ? "No matching students found." : "No students found."}
                 </td>
               </tr>
             ) : (
-              students.map((student, index) => (
+              displayedStudents.map((student, index) => (
                 <tr key={student.studentId || student.userId}>
                   <td>{index + 1}</td>
                   <td>
@@ -97,7 +134,7 @@ export default function TeacherStudents() {
                     <small className="student-email">{student.email}</small>
                   </td>
                   <td>
-                    {student.rollNo || "-"}
+                    <strong>{student.rollNo || "-"}</strong>
                   </td>
                   <td>{student.companyName}</td>
                   <td>
@@ -105,11 +142,7 @@ export default function TeacherStudents() {
                   </td>
                   <td>{student.totalWeeks || "-"}</td>
                   <td>
-                    <span
-                      className={`status-badge ${getStatusClass(
-                        student.internshipStatus
-                      )}`}
-                    >
+                    <span className={`status-badge ${getStatusClass(student.internshipStatus)}`}>
                       {student.internshipStatus}
                     </span>
                   </td>
@@ -130,9 +163,7 @@ export default function TeacherStudents() {
                   <td>
                     <button
                       className="view-student-btn"
-                      onClick={() =>
-                        navigate(`/teacher/students/${student.studentId}`)
-                      }
+                      onClick={() => navigate(`/teacher/students/${student.studentId}`)}
                     >
                       View Profile
                     </button>

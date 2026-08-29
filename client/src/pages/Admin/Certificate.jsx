@@ -41,15 +41,20 @@ export default function AdminCertificates() {
   };
 
   const filteredCertificates = certificates.filter((item) => {
-    const q = searchQuery.toLowerCase();
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
     return (
       item.studentName?.toLowerCase().includes(q) ||
       item.rollNumber?.toLowerCase().includes(q) ||
       item.companyName?.toLowerCase().includes(q) ||
       item.teacherName?.toLowerCase().includes(q) ||
-      item.managerName?.toLowerCase().includes(q)
+      item.managerName?.toLowerCase().includes(q) ||
+      item.internshipStatus?.toLowerCase().includes(q)
     );
   });
+
+  // DISPLAY LIMIT: Maximum 10 items shown
+  const displayedCertificates = filteredCertificates.slice(0, 10);
 
   return (
     <div className="teacher-page" style={{ padding: "30px", background: "#f8fafc", minHeight: "100vh" }}>
@@ -60,13 +65,13 @@ export default function AdminCertificates() {
             Eligible Certificates ({certificates.length})
           </h1>
           <p style={{ color: "#64748b", margin: "4px 0 0 0", fontSize: "14px" }}>
-            Review students eligible for certificate issuance and their approval matrix.
+            Review students eligible for certificate issuance and their approval matrix. (Showing max 10 records)
           </p>
         </div>
       </div>
 
       {/* SEARCH BAR */}
-      <div style={{ marginBottom: "20px" }}>
+      <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
         <input
           type="text"
           placeholder="Search by student, roll no, company, teacher, manager..."
@@ -80,8 +85,14 @@ export default function AdminCertificates() {
             border: "1px solid #cbd5e1",
             fontSize: "14px",
             outline: "none",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
           }}
         />
+        {searchQuery && (
+          <span style={{ fontSize: "13px", color: "#64748b" }}>
+            Found {filteredCertificates.length} match{filteredCertificates.length === 1 ? "" : "es"}
+          </span>
+        )}
       </div>
 
       {/* ERROR / LOADING */}
@@ -104,14 +115,14 @@ export default function AdminCertificates() {
               </tr>
             </thead>
             <tbody>
-              {filteredCertificates.length === 0 ? (
+              {displayedCertificates.length === 0 ? (
                 <tr>
                   <td colSpan="7" style={{ textAlign: "center", padding: "32px", color: "#64748b" }}>
-                    No eligible certificate records found.
+                    {searchQuery ? "No matching certificate records found." : "No eligible certificate records found."}
                   </td>
                 </tr>
               ) : (
-                filteredCertificates.map((item, index) => (
+                displayedCertificates.map((item, index) => (
                   <tr key={item._id}>
                     <td>{index + 1}</td>
                     <td>
@@ -147,6 +158,7 @@ export default function AdminCertificates() {
                           border: `1.5px solid ${item.teacherApproved ? "#22c55e" : "#ef4444"}`,
                         }}
                       >
+                        {item.teacherApproved ? "✓ " : "✕ "}
                         {item.teacherName}
                       </span>
                     </td>
@@ -165,6 +177,7 @@ export default function AdminCertificates() {
                           border: `1.5px solid ${item.managerApproved ? "#22c55e" : "#ef4444"}`,
                         }}
                       >
+                        {item.managerApproved ? "✓ " : "✕ "}
                         {item.managerName}
                       </span>
                     </td>
@@ -198,7 +211,7 @@ export default function AdminCertificates() {
         </div>
       )}
 
-      {/* ================= VIEW CERTIFICATE MODAL ================= */}
+      {/* VIEW CERTIFICATE MODAL */}
       {selectedCert && (
         <div className="modal-overlay">
           <div className="modal-card" style={{ maxWidth: "560px", padding: "24px" }}>

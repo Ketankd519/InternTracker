@@ -51,6 +51,44 @@ export default function ManagerViewStudent() {
     }
   };
 
+  // Specific color badge for Internship Status (pending=yellow, ongoing=blue, completed=green, rejected=red)
+  const getInternshipStatusBadgeStyle = (status) => {
+    const s = (status || "").toLowerCase().trim();
+    if (s === "pending") {
+      return {
+        background: "#fef9c3",
+        color: "#854d0e",
+        border: "1px solid #fde047",
+      };
+    }
+    if (s === "ongoing") {
+      return {
+        background: "#e0f2fe",
+        color: "#0369a1",
+        border: "1px solid #7dd3fc",
+      };
+    }
+    if (s === "completed") {
+      return {
+        background: "#dcfce7",
+        color: "#15803d",
+        border: "1px solid #86efac",
+      };
+    }
+    if (s === "rejected") {
+      return {
+        background: "#fee2e2",
+        color: "#b91c1c",
+        border: "1px solid #fca5a5",
+      };
+    }
+    return {
+      background: "#f1f5f9",
+      color: "#475569",
+      border: "1px solid #cbd5e1",
+    };
+  };
+
   // LOADING
   if (loading) {
     return (
@@ -83,6 +121,12 @@ export default function ManagerViewStudent() {
   const user = data?.user;
   const student = data?.student;
   const internship = data?.internship;
+
+  // REJECTION STATE CHECK
+  const internshipStatus = (internship?.status || "").toLowerCase();
+  const isRejected = internshipStatus === "rejected";
+  const rejectionReason = internship?.rejectionReason || "";
+  const rejectedAt = internship?.rejectedAt || null;
 
   // PROFILE PHOTO
   const profilePhoto = getProfilePhotoUrl(student?.profilePhoto);
@@ -305,40 +349,106 @@ export default function ManagerViewStudent() {
             No internship information found.
           </div>
         ) : (
-          <div className="manager-detail-grid">
-            {Object.entries(internship)
-              .filter(
-                ([key]) =>
-                  ![
-                    "_id",
-                    "student",
-                    "__v",
-                    "createdAt",
-                    "updatedAt",
-                  ].includes(key)
-              )
-              .map(([key, value]) => (
-                <div className="manager-detail-item" key={key}>
-                  <label>{formatLabel(key)}</label>
-                  <p>{formatValue(value, key)}</p>
-                </div>
-              ))}
+          <div>
+            <div className="manager-detail-grid">
+              {Object.entries(internship)
+                .filter(
+                  ([key]) =>
+                    ![
+                      "_id",
+                      "student",
+                      "__v",
+                      "createdAt",
+                      "updatedAt",
+                      "status",
+                      "rejectionReason",
+                      "rejectedAt",
+                      "managerVerified",
+                    ].includes(key)
+                )
+                .map(([key, value]) => (
+                  <div className="manager-detail-item" key={key}>
+                    <label>{formatLabel(key)}</label>
+                    <p>{formatValue(value, key)}</p>
+                  </div>
+                ))}
 
-            {/* Manager Verification */}
-            <div className="manager-detail-item">
-              <label>Manager Verification</label>
-              <p>
-                {internship?.managerVerified ? (
-                  <span className="manager-verified-badge">
-                    ✓ Verified
+              {/* Internship Status (Custom Styled Badge) */}
+              <div className="manager-detail-item">
+                <label>Internship Status</label>
+                <p>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      padding: "4px 12px",
+                      borderRadius: "14px",
+                      fontSize: "12.5px",
+                      fontWeight: "600",
+                      textTransform: "capitalize",
+                      ...getInternshipStatusBadgeStyle(internship?.status),
+                    }}
+                  >
+                    {internship?.status || "Pending"}
                   </span>
-                ) : (
-                  <span className="manager-not-verified-badge">
-                    Not Verified
-                  </span>
-                )}
-              </p>
+                </p>
+              </div>
+
+              {/* Manager Verification */}
+              <div className="manager-detail-item">
+                <label>Manager Verification</label>
+                <p>
+                  {internship?.managerVerified ? (
+                    <span className="manager-verified-badge">
+                      ✓ Verified
+                    </span>
+                  ) : (
+                    <span className="manager-not-verified-badge">
+                      Not Verified
+                    </span>
+                  )}
+                </p>
+              </div>
             </div>
+
+            {/* ================= DANGER RED REJECTION BOX (BY ADMIN) ================= */}
+            {isRejected && (
+              <div
+                style={{
+                  margin: "18px 20px 8px 20px",
+                  padding: "14px 18px",
+                  background: "#fef2f2",
+                  border: "1.5px solid #ef4444",
+                  borderRadius: "8px",
+                  color: "#991b1b",
+                  textAlign: "left",
+                  fontSize: "14px",
+                  lineHeight: "1.5",
+                  boxShadow: "0 1px 3px rgba(239, 68, 68, 0.1)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    marginBottom: "4px",
+                  }}
+                >
+                  <span style={{ fontSize: "16px" }}>❌</span>
+                  <strong style={{ fontSize: "14.5px" }}>
+                    Internship Rejected by Admin
+                  </strong>
+                </div>
+                <p style={{ margin: "4px 0", color: "#7f1d1d" }}>
+                  <strong>Rejection Reason:</strong> {rejectionReason || "No specific reason provided."}
+                </p>
+                {rejectedAt && (
+                  <small style={{ color: "#b91c1c", fontSize: "12px" }}>
+                    <strong>Rejected Date:</strong> {formatDate(rejectedAt)}
+                  </small>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -357,7 +467,7 @@ export default function ManagerViewStudent() {
           <button
             className="manager-verify-button"
             onClick={handleVerify}
-            disabled={verifying || !internship}
+            disabled={verifying || !internship || isRejected}
           >
             {verifying ? "Verifying..." : "Verify Internship"}
           </button>
@@ -373,10 +483,8 @@ function getProfilePhotoUrl(photo) {
     return null;
   }
 
-  // Convert Windows path to normal URL path
   let cleanPhoto = photo.replace(/\\/g, "/");
 
-  // Complete URL
   if (
     cleanPhoto.startsWith("http://") ||
     cleanPhoto.startsWith("https://")
@@ -384,20 +492,16 @@ function getProfilePhotoUrl(photo) {
     return cleanPhoto;
   }
 
-  // Remove leading slash
   cleanPhoto = cleanPhoto.replace(/^\/+/, "");
 
-  // If database contains: uploads/profile/filename.jpg
   if (cleanPhoto.startsWith("uploads/")) {
     return `http://localhost:5000/${cleanPhoto}`;
   }
 
-  // If database contains: profile/filename.jpg
   if (cleanPhoto.startsWith("profile/")) {
     return `http://localhost:5000/uploads/${cleanPhoto}`;
   }
 
-  // If database contains only: filename.jpg
   return `http://localhost:5000/uploads/profile/${cleanPhoto}`;
 }
 
@@ -448,13 +552,13 @@ function isDateField(key, value) {
     "submissionDate",
     "createdAt",
     "updatedAt",
+    "rejectedAt",
   ];
 
   if (dateKeys.includes(key)) {
     return true;
   }
 
-  // Also detect ISO date strings
   if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
     return true;
   }

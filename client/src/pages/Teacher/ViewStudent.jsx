@@ -59,6 +59,44 @@ export default function ViewStudent() {
     }
   }
 
+  // Specific color badge for Internship Status (pending=yellow, ongoing=blue, completed=green, rejected=red)
+  const getInternshipStatusBadgeStyle = (status) => {
+    const s = (status || "").toLowerCase().trim();
+    if (s === "pending") {
+      return {
+        background: "#fef9c3",
+        color: "#854d0e",
+        border: "1px solid #fde047",
+      };
+    }
+    if (s === "ongoing") {
+      return {
+        background: "#e0f2fe",
+        color: "#0369a1",
+        border: "1px solid #7dd3fc",
+      };
+    }
+    if (s === "completed") {
+      return {
+        background: "#dcfce7",
+        color: "#15803d",
+        border: "1px solid #86efac",
+      };
+    }
+    if (s === "rejected") {
+      return {
+        background: "#fee2e2",
+        color: "#b91c1c",
+        border: "1px solid #fca5a5",
+      };
+    }
+    return {
+      background: "#f1f5f9",
+      color: "#475569",
+      border: "1px solid #cbd5e1",
+    };
+  };
+
   // LOADING
   if (loading) {
     return (
@@ -89,6 +127,12 @@ export default function ViewStudent() {
   const student = data?.student;
   const internship = data?.internship;
   const weeklyReports = data?.weeklyReports || [];
+
+  // REJECTION STATE CHECK
+  const internshipStatus = (internship?.status || "").toLowerCase();
+  const isRejected = internshipStatus === "rejected";
+  const rejectionReason = internship?.rejectionReason || "";
+  const rejectedAt = internship?.rejectedAt || null;
 
   // PROFILE PHOTO
   const profilePhoto = getProfilePhotoUrl(student?.profilePhoto);
@@ -305,39 +349,106 @@ export default function ViewStudent() {
             No internship information found.
           </div>
         ) : (
-          <div className="detail-grid">
-            {Object.entries(internship)
-              .filter(
-                ([key]) =>
-                  ![
-                    "_id",
-                    "student",
-                    "__v",
-                    "createdAt",
-                    "updatedAt",
-                  ].includes(key)
-              )
-              .map(([key, value]) => (
-                <div className="detail-item" key={key}>
-                  <label>{formatLabel(key)}</label>
-                  <p>{formatValue(value, key)}</p>
-                </div>
-              ))}
-            {/* Manager Verification */}
-            <div className="detail-item">
-              <label>Manager Verification</label>
-              <p>
-                {internship?.managerVerified ? (
-                  <span className="verified-badge">
-                    ✓ Verified
+          <div>
+            <div className="detail-grid">
+              {Object.entries(internship)
+                .filter(
+                  ([key]) =>
+                    ![
+                      "_id",
+                      "student",
+                      "__v",
+                      "createdAt",
+                      "updatedAt",
+                      "status",
+                      "rejectionReason",
+                      "rejectedAt",
+                      "managerVerified",
+                    ].includes(key)
+                )
+                .map(([key, value]) => (
+                  <div className="detail-item" key={key}>
+                    <label>{formatLabel(key)}</label>
+                    <p>{formatValue(value, key)}</p>
+                  </div>
+                ))}
+
+              {/* Internship Status (Custom Styled Badge) */}
+              <div className="detail-item">
+                <label>Internship Status</label>
+                <p>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      padding: "4px 12px",
+                      borderRadius: "14px",
+                      fontSize: "12.5px",
+                      fontWeight: "600",
+                      textTransform: "capitalize",
+                      ...getInternshipStatusBadgeStyle(internship?.status),
+                    }}
+                  >
+                    {internship?.status || "Pending"}
                   </span>
-                ) : (
-                  <span className="not-verified-badge">
-                    Not Verified
-                  </span>
-                )}
-              </p>
+                </p>
+              </div>
+
+              {/* Manager Verification */}
+              <div className="detail-item">
+                <label>Manager Verification</label>
+                <p>
+                  {internship?.managerVerified ? (
+                    <span className="verified-badge">
+                      ✓ Verified
+                    </span>
+                  ) : (
+                    <span className="not-verified-badge">
+                      Not Verified
+                    </span>
+                  )}
+                </p>
+              </div>
             </div>
+
+            {/* ================= DANGER RED REJECTION BOX (BY ADMIN) ================= */}
+            {isRejected && (
+              <div
+                style={{
+                  margin: "18px 20px 8px 20px",
+                  padding: "14px 18px",
+                  background: "#fef2f2",
+                  border: "1.5px solid #ef4444",
+                  borderRadius: "8px",
+                  color: "#991b1b",
+                  textAlign: "left",
+                  fontSize: "14px",
+                  lineHeight: "1.5",
+                  boxShadow: "0 1px 3px rgba(239, 68, 68, 0.1)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    marginBottom: "4px",
+                  }}
+                >
+                  <span style={{ fontSize: "16px" }}>❌</span>
+                  <strong style={{ fontSize: "14.5px" }}>
+                    Internship Rejected by Admin
+                  </strong>
+                </div>
+                <p style={{ margin: "4px 0", color: "#7f1d1d" }}>
+                  <strong>Rejection Reason:</strong> {rejectionReason || "No specific reason provided."}
+                </p>
+                {rejectedAt && (
+                  <small style={{ color: "#b91c1c", fontSize: "12px" }}>
+                    <strong>Rejected Date:</strong> {formatDate(rejectedAt)}
+                  </small>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
