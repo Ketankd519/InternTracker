@@ -57,13 +57,20 @@ const teacherSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // Warnings Array for Admin functionality
+    // In server/models/Teacher.js under warnings schema:
     warnings: [
       {
         remark: {
           type: String,
           required: true,
-          trim: true,
+        },
+        isDismissed: {
+          type: Boolean,
+          default: false,
+        },
+        dismissedAt: {
+          type: Date,
+          default: null,
         },
         createdAt: {
           type: Date,

@@ -115,7 +115,7 @@ exports.getAllStudents = async (req, res) => {
 exports.getStudentProfile = async (req, res) => {
   try {
     const student = await Student.findById(req.params.id)
-      .populate("user", "name email role")
+      .populate("user", "name email role isDeleted deletionReason deletedAt")
       .lean();
 
     if (!student) {

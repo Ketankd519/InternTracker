@@ -116,6 +116,77 @@ export default function AdminViewTeacher() {
         </div>
       </div>
 
+      {/* ================= ADMIN DELETION & RESET AUDIT NOTICE ================= */}
+      {user?.isDeleted && user?.deletionReason && (
+        <div
+          style={{
+            background: "#fff5f5",
+            border: "1px solid #feb2b2",
+            borderLeft: "5px solid #e53e3e",
+            borderRadius: "12px",
+            padding: "18px 22px",
+            marginBottom: "24px",
+            boxShadow: "0 2px 8px rgba(229, 62, 62, 0.08)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "8px",
+            }}
+          >
+            <span style={{ fontSize: "20px" }}>⚠️</span>
+            <h3
+              style={{
+                margin: 0,
+                color: "#9b2c2c",
+                fontSize: "16px",
+                fontWeight: "700",
+              }}
+            >
+              Admin Audit / Record Reset History
+            </h3>
+          </div>
+          <p
+            style={{
+              margin: "0 0 8px 0",
+              color: "#2d3748",
+              fontSize: "14px",
+              lineHeight: "1.5",
+            }}
+          >
+            <strong>Deletion Reason:</strong> {user.deletionReason}
+          </p>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "24px",
+              color: "#718096",
+              fontSize: "12.5px",
+            }}
+          >
+            <span>
+              <strong>isDeleted:</strong> {user.isDeleted ? "true (Reset by Admin)" : "false"}
+            </span>
+            <span>
+              <strong>Deleted At:</strong>{" "}
+              {user.deletedAt
+                ? new Date(user.deletedAt).toLocaleDateString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "-"}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* TEACHER DETAILS */}
       <div className="teacher-detail-card">
         <div className="detail-card-header">

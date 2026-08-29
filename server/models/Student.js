@@ -8,6 +8,11 @@ const studentSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    fullName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
 
     // Personal Details
     phone: {

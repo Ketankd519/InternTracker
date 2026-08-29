@@ -20,7 +20,6 @@ export default function SSCertificate() {
       setCertificateData(response.data?.data || {});
     } catch (err) {
       console.error("Certificate Status Error:", err);
-
       console.error(err.response?.data?.message || "Unable to fetch certificate status.");
       setCertificateData({});
     } finally {
@@ -85,68 +84,50 @@ export default function SSCertificate() {
   const teacherApproved = certificateData.certificate?.teacherApproved === true;
   const managerApproved = certificateData.certificate?.managerApproved === true;
 
-  // Progress
+  // Progress and Status
   const progress = Number(certificateData.progress?.percentage) || 0;
-  const internshipStatus = certificateData.internship?.status || "";
+  const rawInternshipStatus = certificateData.internship?.status || certificateData.internshipStatus || "";
+  const internshipStatus = rawInternshipStatus.toLowerCase();
+  const rejectionReason =
+    certificateData.internship?.rejectionReason ||
+    certificateData.rejectionReason ||
+    "";
+  const rejectedAt =
+    certificateData.internship?.rejectedAt ||
+    certificateData.rejectedAt ||
+    null;
+
+  const isCompleted = internshipStatus === "completed";
+  const isRejected = internshipStatus === "rejected";
+
+  // CERTIFICATE READY: Strictly requires Teacher Approved + Manager Approved + Internship Status is Completed
+  const certificateReady = teacherApproved && managerApproved && isCompleted;
 
   // CERTIFICATE STATUS LOGIC
-
   let teacherStatus = "Not Eligible";
   let managerStatus = "Not Eligible";
-
-  /*
-    STEP 1:
-    Teacher and Manager verification
-
-    ❌ ❌ -> Not Eligible / Not Eligible
-    ✅ ❌ -> Eligible / Not Eligible
-    ❌ ✅ -> Not Eligible / Eligible
-    ✅ ✅ -> Progress-based status
-  */
 
   if (!teacherVerified && !managerVerified) {
     teacherStatus = "Not Eligible";
     managerStatus = "Not Eligible";
-
   } else if (teacherVerified && !managerVerified) {
     teacherStatus = "Eligible";
     managerStatus = "Not Eligible";
-
   } else if (!teacherVerified && managerVerified) {
     teacherStatus = "Not Eligible";
     managerStatus = "Eligible";
-
   } else if (teacherVerified && managerVerified) {
-
-  /*
-    STEP 2:
-    Both Teacher and Manager verified.
-
-    0% - 50%  -> Processing
-    51% - 99%  -> Ongoing
-    100%       -> Waiting for Approval
-  */
-
-  if (progress === 100) {
-    teacherStatus = "Waiting for Approval";
-    managerStatus = "Waiting for Approval";
-
-  } else if (progress > 50) {
-    teacherStatus = "Ongoing";
-    managerStatus = "Ongoing";
-
-  } else {
-    teacherStatus = "Processing";
-    managerStatus = "Processing";
+    if (progress === 100) {
+      teacherStatus = "Waiting for Approval";
+      managerStatus = "Waiting for Approval";
+    } else if (progress > 50) {
+      teacherStatus = "Ongoing";
+      managerStatus = "Ongoing";
+    } else {
+      teacherStatus = "Processing";
+      managerStatus = "Processing";
+    }
   }
-}
-
-  /*
-    Final certificate approval
-    certificates.teacherApproved === true
-    certificates.managerApproved === true
-    => Approved / Approved
-  */
 
   if (teacherApproved) {
     teacherStatus = "Approved";
@@ -155,7 +136,6 @@ export default function SSCertificate() {
   if (managerApproved) {
     managerStatus = "Approved";
   }
-  const certificateReady = teacherApproved && managerApproved;
 
   // DATE FORMAT
   const formatDate = (date) => {
@@ -183,15 +163,14 @@ export default function SSCertificate() {
       case "Ongoing": return "status-ongoing";
       case "Not Eligible":
       default: 
-      return "status-not-eligible";
+        return "status-not-eligible";
     }
   };
 
   return (
     <div className="page active">
-
       {/* PAGE TITLE */}
-      <h2 style={{ textAlign: 'center', color: '#1e3a8a' }}>Internship Completion Certificate</h2>
+      <h2 style={{ textAlign: "center", color: "#1e3a8a" }}>Internship Completion Certificate</h2>
 
       {/* CERTIFICATE STATUS CARD */}
       <div className="certificate" id="printable-certificate">
@@ -202,8 +181,9 @@ export default function SSCertificate() {
         <h2>{companyName}</h2>
         <p>Duration:</p>
         <h3>{formatDate(startDate)} - {formatDate(endDate)}</h3>
-        <br/>
-        <p>During this internship, the student worked on
+        <br />
+        <p>
+          During this internship, the student worked on
           assigned projects and successfully completed
           the assigned tasks.
         </p>
@@ -220,21 +200,15 @@ export default function SSCertificate() {
             <tr>
               <td>
                 <strong>{teacherName}</strong>
-                <br></br>
-                <div className={`certificate-status-badge ${getStatusClass(
-                    teacherStatus
-                  )}`}
-                >
+                <br />
+                <div className={`certificate-status-badge ${getStatusClass(teacherStatus)}`}>
                   {teacherStatus}
                 </div>
               </td>
               <td>
                 <strong>{managerName}</strong>
-                <br></br>
-                <div className={`certificate-status-badge ${getStatusClass(
-                    managerStatus
-                  )}`}
-                >
+                <br />
+                <div className={`certificate-status-badge ${getStatusClass(managerStatus)}`}>
                   {managerStatus}
                 </div>
               </td>
@@ -244,28 +218,86 @@ export default function SSCertificate() {
 
         {/* PROGRESS INFORMATION */}
         <div className="certificate-progress">
-          <p><strong>Internship Progress:</strong>{" "}
-            {progress}%
+          <p>
+            <strong>Internship Progress:</strong> {progress}%
           </p>
           <p>
             <strong>Internship Status:</strong>{" "}
-            {internshipStatus || "Not Available"}
+            <span style={{ textTransform: "capitalize", fontWeight: "600" }}>
+              {rawInternshipStatus || "Not Available"}
+            </span>
           </p>
         </div>
 
-        {/* DOWNLOAD MESSAGE */}
-        {certificateReady && (
+        {/* REJECTED STATE BANNER */}
+        {isRejected && (
+          <div
+            style={{
+              marginTop: "20px",
+              padding: "16px 20px",
+              background: "#fff5f5",
+              border: "1px solid #feb2b2",
+              borderLeft: "5px solid #e53e3e",
+              borderRadius: "8px",
+              textAlign: "left",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
+              <span style={{ fontSize: "18px" }}>❌</span>
+              <strong style={{ color: "#9b2c2c", fontSize: "15px" }}>
+                Internship Rejected by Admin
+              </strong>
+            </div>
+            {rejectionReason ? (
+              <p style={{ margin: "0 0 6px 0", color: "#2d3748", fontSize: "14px", lineHeight: "1.5" }}>
+                <strong>Rejection Reason:</strong> {rejectionReason}
+              </p>
+            ) : (
+              <p style={{ margin: "0 0 6px 0", color: "#2d3748", fontSize: "14px" }}>
+                Your internship record has been marked as rejected. Certificate issuance is disabled.
+              </p>
+            )}
+            {rejectedAt && (
+              <small style={{ color: "#718096", fontSize: "12px" }}>
+                Rejected Date: {formatDate(rejectedAt)}
+              </small>
+            )}
+          </div>
+        )}
+
+        {/* READY / APPROVED STATE */}
+        {!isRejected && certificateReady && (
           <div className="certificate-download-message">
             <p>
               <strong>
-                Your certificate has been approved by
-                both Teacher and Manager.
+                Your certificate has been approved by both Teacher and Manager, and your internship is Completed.
               </strong>
             </p>
-            <p>You can now download your certificate.</p>
+            <p>You can now download your official certificate.</p>
             <Link to="/student/certificate" className="certificate-download-link">
               Download Certificate
             </Link>
+          </div>
+        )}
+
+        {/* PENDING / INCOMPLETE STATE */}
+        {!isRejected && !certificateReady && (
+          <div
+            style={{
+              marginTop: "20px",
+              padding: "14px 18px",
+              background: "#f8fafc",
+              border: "1px solid #e2e8f0",
+              borderRadius: "8px",
+              color: "#475569",
+              fontSize: "13.5px",
+            }}
+          >
+            <p style={{ margin: 0 }}>
+              {!isCompleted
+                ? "⏳ Certificate will become available once your internship is marked as Completed and approved by both Teacher and Manager."
+                : "⏳ Waiting for final approvals from Teacher and Manager."}
+            </p>
           </div>
         )}
       </div>

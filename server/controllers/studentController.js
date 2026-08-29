@@ -117,7 +117,7 @@ const getStudentProfile = async (req, res) => {
 
     // ALWAYS get user information
     const user = await User.findById(userId).select(
-      "name email role"
+      "name email role isDeleted deletionReason deletedAt"
     );
 
     if (!user) {
@@ -131,7 +131,7 @@ const getStudentProfile = async (req, res) => {
     const profile = await Student.findOne({
       user: userId,
     })
-      .populate("user", "name email role")
+      .populate("user", "name email role isDeleted deletionReason deletedAt")
       // .populate("teacherId", "name email");
 
     // NEW USER
@@ -146,6 +146,9 @@ const getStudentProfile = async (req, res) => {
             name: user.name,
             email: user.email,
             role: user.role,
+            isDeleted: user.isDeleted || false,
+            deletionReason: user.deletionReason || "",
+            deletedAt: user.deletedAt || null,
           },
         },
       });

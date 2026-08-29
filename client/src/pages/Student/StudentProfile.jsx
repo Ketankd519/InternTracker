@@ -497,7 +497,7 @@ const StudentProfile = () => {
               </div>
 
               <div className="profile-field">
-                <label htmlFor="address">Address</label>
+                <label htmlFor="address">City</label>
                   <input type="text" name="city"
                     placeholder="City" value={formData.city}
                     onChange={handleChange}

@@ -140,7 +140,7 @@ export default function ManagerEvaluation() {
               <th>Task Title</th>
               <th>Description</th>
               <th>Attachment</th>
-              <th>Manager Verification</th>
+              <th>Report Status</th>
               <th>Action</th>
             </tr>
           </thead>

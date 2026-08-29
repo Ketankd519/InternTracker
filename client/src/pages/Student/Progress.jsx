@@ -211,7 +211,7 @@ export default function Progress() {
             {/* Completion */}
             <div className="stat-item">
               <h2>{RScompletion}%</h2>
-              <p>Completion</p>
+              <p>Actual Completion</p>
             </div>
           </div>
         </div>
@@ -221,11 +221,11 @@ export default function Progress() {
           </div>
           <div
             className={`verification-status ${
-              completion === 100
+              RScompletion === 100
                 ? "success"
-                : completion >= 50
+                : RScompletion >= 50
                 ? "info"
-                : completion > 0
+                : RScompletion > 0
                 ? "warning"
                 : "danger"
             }`}

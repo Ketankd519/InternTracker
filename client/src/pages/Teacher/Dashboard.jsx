@@ -73,6 +73,55 @@ export default function TeacherDashboard() {
         </div>
       </div>
 
+      {/* ================= ADMIN DELETION / RESET NOTICE BANNER ================= */}
+      {teacher?.isDeleted && teacher?.deletionReason && (
+        <div
+          style={{
+            background: "#fff5f5",
+            border: "1px solid #fed7d7",
+            borderLeft: "5px solid #e53e3e",
+            borderRadius: "12px",
+            padding: "18px 22px",
+            marginBottom: "24px",
+            boxShadow: "0 2px 8px rgba(229, 62, 62, 0.08)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "6px",
+            }}
+          >
+            <span style={{ fontSize: "20px" }}>⚠️</span>
+            <h3
+              style={{
+                margin: 0,
+                color: "#9b2c2c",
+                fontSize: "16px",
+                fontWeight: "700",
+              }}
+            >
+              Account / Profile Reset Notice
+            </h3>
+          </div>
+          <p
+            style={{
+              margin: "0 0 6px 0",
+              color: "#2d3748",
+              fontSize: "14px",
+              lineHeight: "1.5",
+            }}
+          >
+            <strong>Admin Reason:</strong> {teacher.deletionReason}
+          </p>
+          <small style={{ color: "#718096", fontSize: "12.5px" }}>
+            Your teacher profile details were reset by the portal administrator. Please set up your profile again from the Profile section.
+          </small>
+        </div>
+      )}
+
       {/* ================= ADMIN WARNINGS SECTION ================= */}
       {warnings.length > 0 && (
         <div className="teacher-warning-banner">

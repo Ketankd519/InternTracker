@@ -4,48 +4,26 @@ const Internship = require("../models/Internship");
 const WeeklyReport = require("../models/WeeklyReport");
 const Manager = require("../models/Manager");
 
-// MANAGER DASHBOARD
 // GET /api/manager/dashboard
 const getManagerDashboard = async (req, res) => {
   try {
+    // 1. Fetch user from USERS collection (always exists)
+    const user = await User.findById(req.user._id).select(
+      "name email role isDeleted deletionReason deletedAt"
+    );
 
-    // CURRENT LOGGED-IN MANAGER
-    const manager = await User.findById(req.user._id)
-      .select("name email role");
-
-    if (!manager) {
+    if (!user) {
       return res.status(404).json({
         success: false,
-        message: "Manager not found",
+        message: "User account not found",
       });
     }
 
-    // GET MANAGER PROFILE
-    const managerProfile = await Manager.findOne({
-      user: req.user._id,
-    })
-      .select("managerId warnings")
-      .lean();
+    // 2. Global portal statistics (can be calculated regardless of manager profile)
+    const totalStudents = await User.countDocuments({ role: "student" });
 
-    if (!managerProfile) {
-      return res.status(404).json({
-        success: false,
-        message: "Manager profile not found",
-      });
-    }
-
-    // TOTAL STUDENTS
-    // ALL STUDENTS ON PORTAL
-    const totalStudents = await User.countDocuments({
-      role: "student",
-    });
-
-    // ACTIVE STUDENTS
-    // ALL STUDENTS ON PORTAL
     const activeInternships = await Internship.find({
-      status: {
-        $in: ["pending", "ongoing", "completed"],
-      },
+      status: { $in: ["pending", "ongoing", "completed"] },
     }).select("student");
 
     const activeStudentIds = [
@@ -55,11 +33,8 @@ const getManagerDashboard = async (req, res) => {
           .map((item) => item.student.toString())
       ),
     ];
-
     const activeStudents = activeStudentIds.length;
 
-    // COMPLETED STUDENTS
-    // ALL STUDENTS ON PORTAL
     const completedInternships = await Internship.find({
       status: "completed",
     }).select("student");
@@ -71,112 +46,102 @@ const getManagerDashboard = async (req, res) => {
           .map((item) => item.student.toString())
       ),
     ];
-
     const completedStudents = completedStudentIds.length;
 
-    // INTERNSHIPS ASSIGNED TO CURRENT MANAGER
-    const managerInternships = await Internship.find({
-      managerId: managerProfile.managerId,
-    }).select("student status");
+    // 3. Manager specific profile check
+    const managerProfile = await Manager.findOne({
+      user: req.user._id,
+    })
+      .select("managerId warnings")
+      .lean();
 
-    // Get student IDs assigned to this manager
-    const managerStudentIds = [
-      ...new Set(
-        managerInternships
-          .filter((item) => item.student)
-          .map((item) => item.student.toString())
-      ),
-    ];
+    let assignedStudents = 0;
+    let completedAssignedStudents = 0;
+    let totalWeeklyReports = 0;
+    let pendingWeeklyReports = 0;
+    let approvedWeeklyReports = 0;
+    let rejectedWeeklyReports = 0;
+    let activeWarnings = [];
 
-    // ASSIGNED STUDENTS COUNT
-    const assignedStudents = managerStudentIds.length;
-
-    // COMPLETED ASSIGNED STUDENTS
-    const completedAssignedStudents =
-      managerInternships.filter(
-        (item) =>
-          item.student &&
-          item.status === "completed"
-      ).length;
-
-    // WEEKLY REPORTS OF CURRENT MANAGER'S
-    // STUDENTS ONLY
-    const reportFilter = {
-      student: {
-        $in: managerStudentIds,
-      },
-    };
-
-    // TOTAL WEEKLY REPORTS
-    const totalWeeklyReports =
-      await WeeklyReport.countDocuments(
-        reportFilter
+    // If profile exists, calculate assigned items
+    if (managerProfile) {
+      activeWarnings = (managerProfile.warnings || []).filter(
+        (w) => !w.isDismissed
       );
 
-    // PENDING WEEKLY REPORTS
-    const pendingWeeklyReports =
-      await WeeklyReport.countDocuments({
-        ...reportFilter,
-        status: "Pending",
-      });
-
-    // APPROVED WEEKLY REPORTS
-    const approvedWeeklyReports =
-      await WeeklyReport.countDocuments({
-        ...reportFilter,
-        status: "Approved",
-      });
-
-    // REJECTED WEEKLY REPORTS
-    const rejectedWeeklyReports =
-      await WeeklyReport.countDocuments({
-        ...reportFilter,
-        status: "Rejected",
-      });
-
-    // RESPONSE
-    res.status(200).json({
-      success: true,
-
-      manager: {
-        id: manager._id,
-        name: manager.name,
-        email: manager.email,
-        role: manager.role,
+      const managerInternships = await Internship.find({
         managerId: managerProfile.managerId,
-        warnings: managerProfile.warnings || [],
-      },
+      }).select("student status");
 
+      const managerStudentIds = [
+        ...new Set(
+          managerInternships
+            .filter((item) => item.student)
+            .map((item) => item.student.toString())
+        ),
+      ];
+
+      assignedStudents = managerStudentIds.length;
+      completedAssignedStudents = managerInternships.filter(
+        (item) => item.student && item.status === "completed"
+      ).length;
+
+      if (managerStudentIds.length > 0) {
+        const reportFilter = { student: { $in: managerStudentIds } };
+        totalWeeklyReports = await WeeklyReport.countDocuments(reportFilter);
+        pendingWeeklyReports = await WeeklyReport.countDocuments({
+          ...reportFilter,
+          status: "Pending",
+        });
+        approvedWeeklyReports = await WeeklyReport.countDocuments({
+          ...reportFilter,
+          status: "Approved",
+        });
+        rejectedWeeklyReports = await WeeklyReport.countDocuments({
+          ...reportFilter,
+          status: "Rejected",
+        });
+      }
+    }
+
+    // ALWAYS return success with user info from users collection
+    return res.status(200).json({
+      success: true,
+      profileExists: Boolean(managerProfile),
+      manager: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        managerId: managerProfile?.managerId || "Not Created",
+        warnings: activeWarnings,
+        isDeleted: Boolean(user.isDeleted),
+        deletionReason: user.deletionReason || "",
+        deletedAt: user.deletedAt || null,
+      },
       statistics: {
-        // Existing portal-wide statistics
         totalStudents,
         activeStudents,
         completedStudents,
-
-        // Current manager statistics
         assignedStudents,
         completedAssignedStudents,
-
-        // Current manager's weekly reports only
         totalWeeklyReports,
         pendingWeeklyReports,
         approvedWeeklyReports,
         rejectedWeeklyReports,
       },
     });
-
   } catch (error) {
     console.error("Manager Dashboard Error:", error);
-
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Failed to load manager dashboard",
+      message: "Failed to load dashboard data",
       error: error.message,
     });
   }
 };
 
-// MANAGER DISMISS / DELETE WARNING
+// MANAGER DISMISS WARNING (SOFT DISMISSAL)
 // DELETE /api/manager/warnings/:warningId
 const deleteManagerWarning = async (req, res) => {
   try {
@@ -190,16 +155,23 @@ const deleteManagerWarning = async (req, res) => {
       });
     }
 
-    manager.warnings = manager.warnings.filter(
-      (w) => w._id.toString() !== warningId
-    );
+    // Find the specific warning and flag it as dismissed
+    const warning = manager.warnings.id(warningId);
+    if (!warning) {
+      return res.status(404).json({
+        success: false,
+        message: "Warning not found",
+      });
+    }
+
+    warning.isDismissed = true;
+    warning.dismissedAt = new Date();
 
     await manager.save();
 
     res.status(200).json({
       success: true,
-      message: "Warning dismissed successfully",
-      warnings: manager.warnings,
+      message: "Warning dismissed from dashboard successfully",
     });
   } catch (error) {
     console.error("Delete Manager Warning Error:", error);
@@ -321,26 +293,33 @@ const getManagerStudents = async (req, res) => {
 };
 
 // VIEW STUDENT DETAILS
-// Weekly Reports intentionally NOT returned.
 // GET /api/manager/students/:studentId
 const getManagerStudentDetails = async (req, res) => {
   try {
     const { studentId } = req.params;
 
-    // Student
-    const student = await Student.findById(
-      studentId
-    ).lean();
+    if (!studentId) {
+      return res.status(400).json({
+        success: false,
+        message: "Student ID is required",
+      });
+    }
+
+    // 1. Find Student by _id or user ObjectId
+    const student = await Student.findOne({
+      $or: [{ _id: studentId }, { user: studentId }],
+    }).lean();
 
     if (!student) {
       return res.status(404).json({
         success: false,
-        message: "Student not found",
+        message: "Student profile not found",
       });
     }
 
-    // User
-    const user = await User.findById(student.user)
+    // 2. Find User with deletion audit fields
+    const userId = student.user?._id || student.user;
+    const user = await User.findById(userId)
       .select("-password")
       .lean();
 
@@ -351,28 +330,27 @@ const getManagerStudentDetails = async (req, res) => {
       });
     }
 
-    // Internship
-    const internship =
-      await Internship.findOne({
-        student: student._id,
-      }).lean();
+    // 3. Find Internship
+    const internship = await Internship.findOne({
+      $or: [
+        { student: student._id },
+        { studentId: student._id },
+        ...(userId ? [{ user: userId }, { userId: userId }] : []),
+      ],
+    }).lean();
 
-    // Response
-    // NO weeklyReports here
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-
       student: {
         user,
         student,
         internship,
       },
     });
-
   } catch (error) {
-    console.error("Manager Student Details Error:",error);
+    console.error("Manager Student Details Error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to fetch student details",
       error: error.message,

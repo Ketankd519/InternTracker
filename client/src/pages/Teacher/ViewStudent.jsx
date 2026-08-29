@@ -33,31 +33,31 @@ export default function ViewStudent() {
 
   // VERIFY STUDENT
   const handleVerify = async () => {
-  const confirmed = window.confirm("Are you sure you want to verify this student?");
-  if (!confirmed) {
-    return;
-  }
-  try {
-    setVerifying(true);
-    const response = await api.put(`/teacher/students/${studentId}/verify`);
-    alert(response.data?.message || "Student verified successfully.");
-    await fetchStudentDetails();
-  } catch (error) {
-    console.error("Verification Error:", error);
-    alert(error.response?.data?.message || "Failed to verify student.");
-  } finally {
-    setVerifying(false);
-  }
-};
+    const confirmed = window.confirm("Are you sure you want to verify this student?");
+    if (!confirmed) {
+      return;
+    }
+    try {
+      setVerifying(true);
+      const response = await api.put(`/teacher/students/${studentId}/verify`);
+      alert(response.data?.message || "Student verified successfully.");
+      await fetchStudentDetails();
+    } catch (error) {
+      console.error("Verification Error:", error);
+      alert(error.response?.data?.message || "Failed to verify student.");
+    } finally {
+      setVerifying(false);
+    }
+  };
 
-function getReportStatusClass(status) {
-  switch (status) {
-    case "Approved": return "status-approved";
-    case "Rejected": return "status-rejected";
-    case "Pending": return "status-pending";
-    default: return "status-default";
+  function getReportStatusClass(status) {
+    switch (status) {
+      case "Approved": return "status-approved";
+      case "Rejected": return "status-rejected";
+      case "Pending": return "status-pending";
+      default: return "status-default";
+    }
   }
-}
 
   // LOADING
   if (loading) {
@@ -74,9 +74,7 @@ function getReportStatusClass(status) {
   if (error) {
     return (
       <div className="teacher-page">
-        <button className="back-btn"
-          onClick={() => navigate("/teacher/students")}
-        >
+        <button className="back-btn" onClick={() => navigate("/teacher/students")}>
           ← Back to Students
         </button>
         <div className="teacher-error">
@@ -94,34 +92,38 @@ function getReportStatusClass(status) {
 
   // PROFILE PHOTO
   const profilePhoto = getProfilePhotoUrl(student?.profilePhoto);
+
   return (
     <div className="teacher-page">
-
-          {/* BACK BUTTON */}
+      {/* BACK BUTTON */}
       <button className="back-btn" onClick={() => navigate("/teacher/students")}>
         ← Back to Students
       </button>
 
-          {/* PROFILE HEADER */}
+      {/* PROFILE HEADER */}
       <div className="student-profile-header">
-
         {/* Profile Photo */}
         <div className="student-profile-photo-wrapper">
           {profilePhoto ? (
-            <img src={profilePhoto} alt={`${user?.name || "Student"} profile`}
-              className="student-profile-photo" onError={(e) => {
+            <img
+              src={profilePhoto}
+              alt={`${user?.name || "Student"} profile`}
+              className="student-profile-photo"
+              onError={(e) => {
                 e.currentTarget.style.display = "none";
                 const placeholder = e.currentTarget.parentElement.querySelector(
-                    ".student-profile-placeholder"
-                  );
+                  ".student-profile-placeholder"
+                );
                 if (placeholder) {
                   placeholder.style.display = "flex";
                 }
               }}
             />
           ) : null}
-          <div className="student-profile-placeholder"
-            style={{ display: profilePhoto ? "none" : "flex", }}>
+          <div
+            className="student-profile-placeholder"
+            style={{ display: profilePhoto ? "none" : "flex" }}
+          >
             👨‍🎓
           </div>
         </div>
@@ -149,7 +151,78 @@ function getReportStatusClass(status) {
         </div>
       </div>
 
-          {/* PAGE HEADER */}
+      {/* ================= ADMIN DELETION & RESET AUDIT NOTICE ================= */}
+      {user?.isDeleted && user?.deletionReason && (
+        <div
+          style={{
+            background: "#fff5f5",
+            border: "1px solid #feb2b2",
+            borderLeft: "5px solid #e53e3e",
+            borderRadius: "12px",
+            padding: "18px 22px",
+            marginBottom: "24px",
+            boxShadow: "0 2px 8px rgba(229, 62, 62, 0.08)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "8px",
+            }}
+          >
+            <span style={{ fontSize: "20px" }}>⚠️</span>
+            <h3
+              style={{
+                margin: 0,
+                color: "#9b2c2c",
+                fontSize: "16px",
+                fontWeight: "700",
+              }}
+            >
+              Admin Audit / Record Reset History
+            </h3>
+          </div>
+          <p
+            style={{
+              margin: "0 0 8px 0",
+              color: "#2d3748",
+              fontSize: "14px",
+              lineHeight: "1.5",
+            }}
+          >
+            <strong>Deletion Reason:</strong> {user.deletionReason}
+          </p>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "24px",
+              color: "#718096",
+              fontSize: "12.5px",
+            }}
+          >
+            <span>
+              <strong>isDeleted:</strong> {user.isDeleted ? "true (Reset by Admin)" : "false"}
+            </span>
+            <span>
+              <strong>Deleted At:</strong>{" "}
+              {user.deletedAt
+                ? new Date(user.deletedAt).toLocaleDateString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "-"}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* PAGE HEADER */}
       <div className="teacher-page-header">
         <div>
           <h1>Student Profile</h1>
@@ -157,7 +230,7 @@ function getReportStatusClass(status) {
         </div>
       </div>
 
-          {/* ACCOUNT INFORMATION */}
+      {/* ACCOUNT INFORMATION */}
       <div className="teacher-detail-card">
         <div className="detail-card-header">
           <h2>Account Information</h2>
@@ -178,7 +251,7 @@ function getReportStatusClass(status) {
         </div>
       </div>
 
-          {/* STUDENT INFORMATION */}
+      {/* STUDENT INFORMATION */}
       <div className="teacher-detail-card">
         <div className="detail-card-header">
           <h2>Student Information</h2>
@@ -207,7 +280,8 @@ function getReportStatusClass(status) {
           {/* Teacher Verification */}
           <div className="detail-item">
             <label>Teacher Verification</label>
-            <p>{student?.teacherVerified ? (
+            <p>
+              {student?.teacherVerified ? (
                 <span className="verified-badge">
                   ✓ Verified
                 </span>
@@ -221,7 +295,7 @@ function getReportStatusClass(status) {
         </div>
       </div>
 
-          {/* INTERNSHIP INFORMATION */}
+      {/* INTERNSHIP INFORMATION */}
       <div className="teacher-detail-card">
         <div className="detail-card-header">
           <h2>Internship Information</h2>
@@ -249,25 +323,26 @@ function getReportStatusClass(status) {
                   <p>{formatValue(value, key)}</p>
                 </div>
               ))}
-              {/* Manager Verification */}
-          <div className="detail-item">
-            <label>Manager Verification</label>
-            <p>{internship?.managerVerified ? (
-                <span className="verified-badge">
-                  ✓ Verified
-                </span>
-              ) : (
-                <span className="not-verified-badge">
-                  Not Verified
-                </span>
-              )}
-            </p>
-          </div>
+            {/* Manager Verification */}
+            <div className="detail-item">
+              <label>Manager Verification</label>
+              <p>
+                {internship?.managerVerified ? (
+                  <span className="verified-badge">
+                    ✓ Verified
+                  </span>
+                ) : (
+                  <span className="not-verified-badge">
+                    Not Verified
+                  </span>
+                )}
+              </p>
+            </div>
           </div>
         )}
       </div>
 
-          {/* WEEKLY REPORTS */}
+      {/* WEEKLY REPORTS */}
       <div className="teacher-detail-card">
         <div className="detail-card-header">
           <div>
@@ -303,7 +378,8 @@ function getReportStatusClass(status) {
                     <td className="report-description">{report.description || "-"}</td>
                     <td>
                       {report.attachment ? (
-                        <a href={getAttachmentUrl(report.attachment)}
+                        <a
+                          href={getAttachmentUrl(report.attachment)}
                           target="_blank"
                           rel="noreferrer"
                           className="attachment-link"
@@ -315,7 +391,8 @@ function getReportStatusClass(status) {
                       )}
                     </td>
                     <td>
-                      <span className={`status-badge ${getReportStatusClass(
+                      <span
+                        className={`status-badge ${getReportStatusClass(
                           report.status
                         )}`}
                       >
@@ -330,24 +407,21 @@ function getReportStatusClass(status) {
         )}
       </div>
 
-          {/* TEACHER VERIFICATION */}
+      {/* TEACHER VERIFICATION */}
       <div className="teacher-verification-card">
         <div>
           <h2>Teacher Verification</h2>
-          <p>Verify this student's profile and internship
-            information after reviewing the submitted details.
+          <p>
+            Verify this student&apos;s profile and internship information after reviewing the submitted details.
           </p>
         </div>
         {student?.teacherVerified ? (
-          <button className="verified-button" disabled
-          >
+          <button className="verified-button" disabled>
             ✓ Student Verified
           </button>
         ) : (
           <button className="verify-button" onClick={handleVerify} disabled={verifying}>
-            {verifying
-              ? "Verifying..."
-              : "Verify Student"}
+            {verifying ? "Verifying..." : "Verify Student"}
           </button>
         )}
       </div>
@@ -355,124 +429,57 @@ function getReportStatusClass(status) {
   );
 }
 
-  //  HELPER FUNCTIONS
-/* PROFILE PHOTO URL */
+// HELPER FUNCTIONS
 function getProfilePhotoUrl(photo) {
-  if (!photo) {
-    return null;
-  }
+  if (!photo) return null;
+  if (photo.startsWith("http://") || photo.startsWith("https://")) return photo;
 
-  // Already a complete URL
-  if (
-    photo.startsWith("http://") ||
-    photo.startsWith("https://")
-  ) {
-    return photo;
-  }
+  let cleanPath = photo.replace(/\\/g, "/").replace(/^\/+/, "");
+  cleanPath = cleanPath.replace(/^server\/uploads\//, "").replace(/^uploads\//, "");
 
-  // Normalize Windows paths
-  let cleanPath = photo
-    .replace(/\\/g, "/")
-    .replace(/^\/+/, "");
-
-  // Remove unnecessary prefixes
-  cleanPath = cleanPath
-    .replace(/^server\/uploads\//, "")
-    .replace(/^uploads\//, "");
-
-  // If database contains:
-  // profile/filename.jpg
   if (cleanPath.startsWith("profile/")) {
     return `http://localhost:5000/uploads/${cleanPath}`;
   }
-
-  // If database contains:
-  // profilePhotos/filename.jpg
   if (cleanPath.startsWith("profilePhotos/")) {
     return `http://localhost:5000/uploads/${cleanPath}`;
   }
-
-  // If database contains only:
-  // filename.jpg
   return `http://localhost:5000/uploads/profile/${cleanPath}`;
 }
 
-/* FORMAT LABEL */
 function formatLabel(key) {
   return key
     .replace(/([A-Z])/g, " $1")
-    .replace(/^./, (str) =>
-      str.toUpperCase()
-    );
+    .replace(/^./, (str) => str.toUpperCase());
 }
 
-/* FORMAT VALUE */
 function formatValue(value = "") {
-  if (
-    value === null ||
-    value === undefined ||
-    value === ""
-  ) {
-    return "-";
-  }
-
-  if (typeof value === "boolean") {
-    return value ? "Yes" : "No";
-  }
-
+  if (value === null || value === undefined || value === "") return "-";
+  if (typeof value === "boolean") return value ? "Yes" : "No";
   if (typeof value === "object") {
-    if (Array.isArray(value)) {
-      return value.join(", ");
-    }
+    if (Array.isArray(value)) return value.join(", ");
     return JSON.stringify(value);
   }
 
   const stringValue = value.toString();
-
-  // Convert ISO date to YYYY-MM-DD
-  // Example:
-  // 2003-09-04T00:00:00.000Z
-  // becomes:
-  // 2003-09-04
-  if (
-    /^\d{4}-\d{2}-\d{2}T/.test(stringValue)
-  ) {
+  if (/^\d{4}-\d{2}-\d{2}T/.test(stringValue)) {
     return stringValue.substring(0, 10);
   }
   return stringValue;
 }
 
-/* FORMAT DATE */
 function formatDate(date) {
-  if (!date) {
-    return "-";
-  }
-
-  return new Date(date).toLocaleDateString(
-    "en-IN",
-    {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }
-  );
+  if (!date) return "-";
+  return new Date(date).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
-/* ATTACHMENT URL */
 function getAttachmentUrl(attachment) {
-  if (!attachment) {
-    return "#";
-  }
+  if (!attachment) return "#";
+  if (attachment.startsWith("http://") || attachment.startsWith("https://")) return attachment;
 
-  // Already a complete URL
-  if (
-    attachment.startsWith("http://") ||
-    attachment.startsWith("https://")
-  ) {
-    return attachment;
-  }
-
-  // Handle old Windows filesystem paths
   if (
     attachment.includes(":\\") ||
     attachment.includes(":/") ||
@@ -482,12 +489,9 @@ function getAttachmentUrl(attachment) {
     return `http://localhost:5000/uploads/reports/${filename}`;
   }
 
-  // New database format:
-  // uploads/reports/filename.pdf
   if (attachment.startsWith("uploads/")) {
     return `http://localhost:5000/${attachment}`;
   }
 
-  // If database contains only the filename
   return `http://localhost:5000/uploads/reports/${attachment}`;
 }

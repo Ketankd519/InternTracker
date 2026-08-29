@@ -57,7 +57,14 @@ const managerSchema = new mongoose.Schema(
         remark: {
           type: String,
           required: true,
-          trim: true,
+        },
+        isDismissed: {
+          type: Boolean,
+          default: false,
+        },
+        dismissedAt: {
+          type: Date,
+          default: null,
         },
         createdAt: {
           type: Date,

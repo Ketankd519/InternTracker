@@ -8,8 +8,9 @@ const Teacher = require("../models/Teacher");
 // GET /api/teacher/dashboard
 const getTeacherDashboard = async (req, res) => {
   try {
-    // Current logged-in teacher
-    const teacher = await User.findById(req.user._id).select("name email role");
+    // Current logged-in teacher from users collection
+    const teacher = await User.findById(req.user._id)
+        .select("name email role isDeleted deletionReason deletedAt");
 
     if (!teacher) {
       return res.status(404).json({
@@ -18,36 +19,12 @@ const getTeacherDashboard = async (req, res) => {
       });
     }
 
-    // GET TEACHER PROFILE
-    // We need teacher.teacherId because Student collection
-    // stores the teacher's unique teacherId, not MongoDB _id.
-    const teacherProfile = await Teacher.findOne({
-      user: req.user._id,
-    }).select("teacherId warnings");
+    // 1. TOTAL STUDENTS ON PORTAL
+    const totalStudents = await User.countDocuments({ role: "student" });
 
-    if (!teacherProfile) {
-      return res.status(404).json({
-        success: false,
-        message: "Teacher profile not found",
-      });
-    }
-
-    // TOTAL STUDENTS
-    // User collection where role = student
-    const totalStudents = await User.countDocuments({
-      role: "student",
-    });
-
-    // ACTIVE STUDENTS
-    // Include students having internship status:
-    // pending, ongoing, completed
-    // Exclude:
-    // rejected
-    // no internship
+    // 2. ACTIVE STUDENTS ON PORTAL
     const activeInternships = await Internship.find({
-      status: {
-        $in: ["pending", "ongoing", "completed"],
-      },
+      status: { $in: ["pending", "ongoing", "completed"] },
     }).select("student");
 
     const activeStudentIds = [
@@ -57,11 +34,9 @@ const getTeacherDashboard = async (req, res) => {
           .map((item) => item.student.toString())
       ),
     ];
-
     const activeStudents = activeStudentIds.length;
 
-    // COMPLETED STUDENTS
-    // Internship status = completed
+    // 3. COMPLETED STUDENTS ON PORTAL
     const completedInternships = await Internship.find({
       status: "completed",
     }).select("student");
@@ -73,53 +48,63 @@ const getTeacherDashboard = async (req, res) => {
           .map((item) => item.student.toString())
       ),
     ];
-
     const completedStudents = completedStudentIds.length;
 
-    // STUDENTS ASSIGNED TO CURRENT TEACHER
-    const assignedStudents = await Student.find({
-      teacherId: teacherProfile.teacherId,
-    }).select("_id");
+    // 4. FIND TEACHER PROFILE (Graceful handle if new registration)
+    const teacherProfile = await Teacher.findOne({
+      user: req.user._id,
+    }).select("teacherId warnings");
 
-    const assignedStudentIds = assignedStudents.map(
-      (student) => student._id
-    );
+    let assignedStudentsCount = 0;
+    let completedAssignedStudents = 0;
+    let activeWarnings = [];
 
-    const assignedStudentsCount = assignedStudentIds.length;
+    if (teacherProfile) {
+      // Filter non-dismissed warnings
+      activeWarnings = (teacherProfile.warnings || []).filter(
+        (w) => !w.isDismissed
+      );
 
-    // COMPLETED STUDENTS OF CURRENT TEACHER
-    const completedAssignedStudents =
-      await Internship.countDocuments({
-        student: {
-          $in: assignedStudentIds,
-        },
-        status: "completed",
-      });
+      // Assigned Students to this teacher
+      const assignedStudents = await Student.find({
+        teacherId: teacherProfile.teacherId,
+      }).select("_id");
+
+      const assignedStudentIds = assignedStudents.map((s) => s._id);
+      assignedStudentsCount = assignedStudentIds.length;
+
+      // Completed students of this teacher
+      if (assignedStudentIds.length > 0) {
+        completedAssignedStudents = await Internship.countDocuments({
+          student: { $in: assignedStudentIds },
+          status: "completed",
+        });
+      }
+    }
 
     res.status(200).json({
       success: true,
-
+      profileExists: Boolean(teacherProfile),
       teacher: {
         id: teacher._id,
         name: teacher.name,
         email: teacher.email,
-        teacherId: teacherProfile.teacherId,
-        warnings: teacherProfile.warnings || [],  
+        teacherId: teacherProfile?.teacherId || "Not Created",
+        warnings: activeWarnings,
+        isDeleted: teacher.isDeleted || false,
+        deletionReason: teacher.deletionReason || "",
+        deletedAt: teacher.deletedAt || null,
       },
-
       statistics: {
         totalStudents,
         activeStudents,
         completedStudents,
-
-        // NEW
         assignedStudents: assignedStudentsCount,
         completedAssignedStudents,
       },
     });
   } catch (error) {
     console.error("Teacher Dashboard Error:", error);
-
     res.status(500).json({
       success: false,
       message: "Failed to load teacher dashboard",
@@ -128,8 +113,8 @@ const getTeacherDashboard = async (req, res) => {
   }
 };
 
-// TEACHER DISMISS / DELETE WARNING
-// DELETE /api/teacher/warnings/:warningId
+// TEACHER DISMISS WARNING (SOFT DISMISSAL)
+// DELETE or PUT /api/teacher/warnings/:warningId
 const deleteTeacherWarning = async (req, res) => {
   try {
     const { warningId } = req.params;
@@ -142,19 +127,26 @@ const deleteTeacherWarning = async (req, res) => {
       });
     }
 
-    teacher.warnings = teacher.warnings.filter(
-      (w) => w._id.toString() !== warningId
-    );
+    // Find the specific warning and mark it as dismissed
+    const warning = teacher.warnings.id(warningId);
+    if (!warning) {
+      return res.status(404).json({
+        success: false,
+        message: "Warning not found",
+      });
+    }
+
+    warning.isDismissed = true;
+    warning.dismissedAt = new Date();
 
     await teacher.save();
 
     res.status(200).json({
       success: true,
-      message: "Warning dismissed successfully",
-      warnings: teacher.warnings,
+      message: "Warning dismissed from dashboard successfully",
     });
   } catch (error) {
-    console.error("Delete Warning Error:", error);
+    console.error("Dismiss Warning Error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to dismiss warning",
@@ -227,6 +219,7 @@ const getTeacherStudents = async (req, res) => {
         studentId: student._id,
         name: user.name,
         email: user.email,
+        rollNo: student.rollNo || student.rollNumber || "-",
         companyName: internship
           ? internship.companyName
           : "Not Assigned",
@@ -273,18 +266,28 @@ const getTeacherStudentDetails = async (req, res) => {
   try {
     const { studentId } = req.params;
 
-    // Student
-    const student = await Student.findById(studentId).lean();
+    if (!studentId) {
+      return res.status(400).json({
+        success: false,
+        message: "Student ID is required",
+      });
+    }
+
+    // 1. Find Student by _id or by linked user ObjectId
+    const student = await Student.findOne({
+      $or: [{ _id: studentId }, { user: studentId }],
+    }).lean();
 
     if (!student) {
       return res.status(404).json({
         success: false,
-        message: "Student not found",
+        message: "Student profile not found",
       });
     }
 
-    // User
-    const user = await User.findById(student.user)
+    // 2. Find User with deletion audit fields
+    const userId = student.user?._id || student.user;
+    const user = await User.findById(userId)
       .select("-password")
       .lean();
 
@@ -295,30 +298,36 @@ const getTeacherStudentDetails = async (req, res) => {
       });
     }
 
-    // Internship
+    // 3. Find Internship
     const internship = await Internship.findOne({
-      student: student._id,
+      $or: [
+        { student: student._id },
+        { studentId: student._id },
+        ...(userId ? [{ user: userId }, { userId: userId }] : []),
+      ],
     }).lean();
 
-    // Weekly Reports
+    // 4. Find Weekly Reports
     const weeklyReports = await WeeklyReport.find({
-      student: student._id,
+      $or: [
+        { student: student._id },
+        { studentId: student._id },
+        ...(userId ? [{ user: userId }, { userId: userId }] : []),
+      ],
     })
       .sort({ weekNumber: 1 })
       .lean();
 
-    // Current Week
+    // Current Week calculation
     let currentWeek = 0;
-
     if (weeklyReports.length > 0) {
       currentWeek = Math.max(
         ...weeklyReports.map((report) => report.weekNumber || 0)
       );
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-
       student: {
         user,
         student,
@@ -330,9 +339,9 @@ const getTeacherStudentDetails = async (req, res) => {
   } catch (error) {
     console.error("Get Student Details Error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Failed to fetch student details",
+      message: "Failed to load student details",
       error: error.message,
     });
   }
@@ -537,6 +546,9 @@ const createTeacherProfile = async (req, res) => {
     const sequenceNumber = String(sequence).padStart(3, "0");
     const teacherId = `${courseCode}${currentYear}${sequenceNumber}${departmentCode}`;
 
+    // Extract signature path from uploaded file (matching updateTeacherProfile)
+    const signature = req.file ? `signatures/${req.file.filename}` : "";
+
     const teacher = await Teacher.create({
       user: req.user._id,
       name: user.name,
@@ -546,6 +558,7 @@ const createTeacherProfile = async (req, res) => {
       mobileNo: mobileNo?.trim() || "",
       experience: experience?.trim() || "",
       collegeName: collegeName.trim(),
+      signature,
     });
 
     res.status(201).json({

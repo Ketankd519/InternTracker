@@ -46,7 +46,7 @@ export default function Navbar() {
             </Link>
 
             <Link to="/teacher/student-certificates">
-              <button>Student Certificates</button>
+              <button>Certificates</button>
             </Link>
           </>
         )}
@@ -60,7 +60,7 @@ export default function Navbar() {
             </Link>
 
             <Link to="/manager/student-certificates">
-              <button>Student Certificates</button>
+              <button>Certificates</button>
             </Link>
           </>
         )}

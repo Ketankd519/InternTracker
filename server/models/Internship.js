@@ -79,6 +79,14 @@ const internshipSchema = new mongoose.Schema(
       enum: ["pending", "ongoing", "completed", "rejected"],
       default: "pending",
     },
+    rejectionReason: {
+      type: String,
+      default: '',
+    },
+    rejectedAt: {
+      type: Date,
+      default: null,
+    },
 
     // Manager Verification
     // Manager verifies the student's internship

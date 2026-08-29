@@ -78,7 +78,7 @@ exports.getAllManagers = async (req, res) => {
 exports.getManagerProfile = async (req, res) => {
   try {
     const manager = await Manager.findById(req.params.id)
-      .populate("user", "name email role")
+      .populate("user", "name email role isDeleted deletionReason deletedAt")
       .lean();
 
     if (!manager) {
@@ -241,14 +241,16 @@ exports.deleteManager = async (req, res) => {
     const userId = manager.user;
 
     // Remove manager profile
-    await Manager.findByIdAndDelete(manager._id);
+    await Manager.findByIdAndDelete(req.params.id);
 
     // Update user record with audit remark
     if (userId) {
       await User.findByIdAndUpdate(userId, {
-        isDeleted: true,
-        deletionReason: deletionReason.trim(),
-        deletedAt: new Date(),
+        $set: {
+          isDeleted: true,
+          deletionReason: deletionReason.trim(),
+          deletedAt: new Date(),
+        },
       });
     }
 

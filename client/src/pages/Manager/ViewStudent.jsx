@@ -66,9 +66,9 @@ export default function ManagerViewStudent() {
   if (error) {
     return (
       <div className="manager-page">
-        <button className="manager-back-btn" onClick={() =>
-            navigate("/manager/approvals")
-          }
+        <button
+          className="manager-back-btn"
+          onClick={() => navigate("/manager/approvals")}
         >
           ← Back to Approvals
         </button>
@@ -86,24 +86,25 @@ export default function ManagerViewStudent() {
 
   // PROFILE PHOTO
   const profilePhoto = getProfilePhotoUrl(student?.profilePhoto);
+
   return (
     <div className="manager-page">
-
-          {/* BACK BUTTON */}
-      <button  className="manager-back-btn" onClick={() =>
-          navigate("/manager/approvals")
-        }
+      {/* BACK BUTTON */}
+      <button
+        className="manager-back-btn"
+        onClick={() => navigate("/manager/approvals")}
       >
         ← Back to Approvals
       </button>
 
-          {/* PROFILE HEADER */}
+      {/* PROFILE HEADER */}
       <div className="manager-student-profile-header">
-
         {/* PROFILE PHOTO */}
         <div className="manager-student-profile-photo-wrapper">
           {profilePhoto ? (
-            <img src={profilePhoto} alt={`${user?.name || "Student"} profile`}
+            <img
+              src={profilePhoto}
+              alt={`${user?.name || "Student"} profile`}
               className="manager-student-profile-photo"
               onError={(e) => {
                 console.error("Manager Profile Image Failed:", profilePhoto);
@@ -117,10 +118,10 @@ export default function ManagerViewStudent() {
           ) : null}
 
           {/* DEFAULT AVATAR */}
-          <div className="manager-student-profile-placeholder"
-            style={{display: profilePhoto
-                ? "none"
-                : "flex",
+          <div
+            className="manager-student-profile-placeholder"
+            style={{
+              display: profilePhoto ? "none" : "flex",
             }}
           >
             👨‍🎓
@@ -150,7 +151,78 @@ export default function ManagerViewStudent() {
         </div>
       </div>
 
-          {/* PAGE HEADER */}
+      {/* ================= ADMIN DELETION & RESET AUDIT NOTICE ================= */}
+      {user?.isDeleted && user?.deletionReason && (
+        <div
+          style={{
+            background: "#fff5f5",
+            border: "1px solid #feb2b2",
+            borderLeft: "5px solid #e53e3e",
+            borderRadius: "12px",
+            padding: "18px 22px",
+            marginBottom: "24px",
+            boxShadow: "0 2px 8px rgba(229, 62, 62, 0.08)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "8px",
+            }}
+          >
+            <span style={{ fontSize: "20px" }}>⚠️</span>
+            <h3
+              style={{
+                margin: 0,
+                color: "#9b2c2c",
+                fontSize: "16px",
+                fontWeight: "700",
+              }}
+            >
+              Admin Audit / Record Reset History
+            </h3>
+          </div>
+          <p
+            style={{
+              margin: "0 0 8px 0",
+              color: "#2d3748",
+              fontSize: "14px",
+              lineHeight: "1.5",
+            }}
+          >
+            <strong>Deletion Reason:</strong> {user.deletionReason}
+          </p>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "24px",
+              color: "#718096",
+              fontSize: "12.5px",
+            }}
+          >
+            <span>
+              <strong>isDeleted:</strong> {user.isDeleted ? "true (Reset by Admin)" : "false"}
+            </span>
+            <span>
+              <strong>Deleted At:</strong>{" "}
+              {user.deletedAt
+                ? new Date(user.deletedAt).toLocaleDateString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "-"}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* PAGE HEADER */}
       <div className="manager-page-header">
         <div>
           <h1>Student Profile</h1>
@@ -158,7 +230,7 @@ export default function ManagerViewStudent() {
         </div>
       </div>
 
-          {/* ACCOUNT INFORMATION */}
+      {/* ACCOUNT INFORMATION */}
       <div className="manager-detail-card">
         <div className="manager-detail-header">
           <h2>Account Information</h2>
@@ -179,7 +251,7 @@ export default function ManagerViewStudent() {
         </div>
       </div>
 
-          {/* STUDENT INFORMATION */}
+      {/* STUDENT INFORMATION */}
       <div className="manager-detail-card">
         <div className="manager-detail-header">
           <h2>Student Information</h2>
@@ -198,19 +270,18 @@ export default function ManagerViewStudent() {
                   "profilePhoto",
                 ].includes(key)
             )
-            .map(
-              ([key, value]) => (
-                <div className="manager-detail-item" key={key}>
-                  <label>{formatLabel(key)}</label>
-                  <p>{formatValue(value, key)}</p>
-                </div>
-              )
-            )}
+            .map(([key, value]) => (
+              <div className="manager-detail-item" key={key}>
+                <label>{formatLabel(key)}</label>
+                <p>{formatValue(value, key)}</p>
+              </div>
+            ))}
 
-            {/* Teacher Verification */}
+          {/* Teacher Verification */}
           <div className="manager-detail-item">
             <label>Teacher Verification</label>
-            <p>{student?.teacherVerified ? (
+            <p>
+              {student?.teacherVerified ? (
                 <span className="manager-verified-badge">
                   ✓ Verified
                 </span>
@@ -224,12 +295,10 @@ export default function ManagerViewStudent() {
         </div>
       </div>
 
-          {/* INTERNSHIP INFORMATION */}
+      {/* INTERNSHIP INFORMATION */}
       <div className="manager-detail-card">
         <div className="manager-detail-header">
-          <h2>
-            Internship Information
-          </h2>
+          <h2>Internship Information</h2>
         </div>
         {!internship ? (
           <div className="manager-empty-details">
@@ -237,9 +306,7 @@ export default function ManagerViewStudent() {
           </div>
         ) : (
           <div className="manager-detail-grid">
-            {Object.entries(
-              internship
-            )
+            {Object.entries(internship)
               .filter(
                 ([key]) =>
                   ![
@@ -250,52 +317,49 @@ export default function ManagerViewStudent() {
                     "updatedAt",
                   ].includes(key)
               )
-              .map(
-                ([key, value]) => (
-                  <div className="manager-detail-item"
-                    key={key}
-                  >
-                    <label>{formatLabel(key)}</label>
-                    <p>{formatValue(value, key)}</p>
-                  </div>
-                )
-              )}
+              .map(([key, value]) => (
+                <div className="manager-detail-item" key={key}>
+                  <label>{formatLabel(key)}</label>
+                  <p>{formatValue(value, key)}</p>
+                </div>
+              ))}
 
             {/* Manager Verification */}
-          <div className="manager-detail-item">
-            <label>Manager Verification</label>
-            <p>{internship?.managerVerified ? (
-                <span className="manager-verified-badge">
-                  ✓ Verified
-                </span>
-              ) : (
-                <span className="manager-not-verified-badge">
-                  Not Verified
-                </span>
-              )}
-            </p>
-          </div>
+            <div className="manager-detail-item">
+              <label>Manager Verification</label>
+              <p>
+                {internship?.managerVerified ? (
+                  <span className="manager-verified-badge">
+                    ✓ Verified
+                  </span>
+                ) : (
+                  <span className="manager-not-verified-badge">
+                    Not Verified
+                  </span>
+                )}
+              </p>
+            </div>
           </div>
         )}
       </div>
 
-          {/* MANAGER VERIFICATION */}
+      {/* MANAGER VERIFICATION */}
       <div className="manager-verification-card">
         <div>
           <h2>Manager Verification</h2>
-          <p>Verify this student's internship information after reviewing the submitted details.</p>
+          <p>Verify this student&apos;s internship information after reviewing the submitted details.</p>
         </div>
         {internship?.managerVerified ? (
           <button className="manager-verified-button" disabled>
             ✓ Internship Verified
           </button>
         ) : (
-          <button className="manager-verify-button" onClick={handleVerify}
+          <button
+            className="manager-verify-button"
+            onClick={handleVerify}
             disabled={verifying || !internship}
           >
-            {verifying
-              ? "Verifying..."
-              : "Verify Internship"}
+            {verifying ? "Verifying..." : "Verify Internship"}
           </button>
         )}
       </div>
@@ -310,8 +374,7 @@ function getProfilePhotoUrl(photo) {
   }
 
   // Convert Windows path to normal URL path
-  let cleanPhoto = photo
-    .replace(/\\/g, "/");
+  let cleanPhoto = photo.replace(/\\/g, "/");
 
   // Complete URL
   if (
@@ -322,32 +385,27 @@ function getProfilePhotoUrl(photo) {
   }
 
   // Remove leading slash
-  cleanPhoto = cleanPhoto.replace(/^\/+/,"");
+  cleanPhoto = cleanPhoto.replace(/^\/+/, "");
 
-  // If database contains:
-  // uploads/profile/filename.jpg
-  if (cleanPhoto.startsWith("uploads/")
-  ) {
+  // If database contains: uploads/profile/filename.jpg
+  if (cleanPhoto.startsWith("uploads/")) {
     return `http://localhost:5000/${cleanPhoto}`;
   }
 
-  // If database contains:
-  // profile/filename.jpg
-  if (cleanPhoto.startsWith("profile/")
-  ) {
+  // If database contains: profile/filename.jpg
+  if (cleanPhoto.startsWith("profile/")) {
     return `http://localhost:5000/uploads/${cleanPhoto}`;
   }
 
-  // If database contains only:
-  // filename.jpg
+  // If database contains only: filename.jpg
   return `http://localhost:5000/uploads/profile/${cleanPhoto}`;
 }
 
 // FORMAT LABEL
 function formatLabel(key) {
   return key
-    .replace(/([A-Z])/g," $1")
-    .replace(/^./,(str) => str.toUpperCase());
+    .replace(/([A-Z])/g, " $1")
+    .replace(/^./, (str) => str.toUpperCase());
 }
 
 // FORMAT VALUE
@@ -363,9 +421,7 @@ function formatValue(value, key = "") {
 
   // BOOLEAN
   if (typeof value === "boolean") {
-    return value
-      ? "Yes"
-      : "No";
+    return value ? "Yes" : "No";
   }
 
   // OBJECT / ARRAY
@@ -411,17 +467,13 @@ function formatDate(date) {
     return "-";
   }
   const parsedDate = new Date(date);
-  if (Number.isNaN(parsedDate.getTime())
-  ) {
+  if (Number.isNaN(parsedDate.getTime())) {
     return "-";
   }
 
-  return parsedDate.toLocaleDateString(
-    "en-IN",
-    {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }
-  );
+  return parsedDate.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }

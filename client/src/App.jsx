@@ -46,6 +46,7 @@ import AdminTeachers from "./pages/Admin/Teachers";
 import AdminViewTeacher from "./pages/Admin/ViewTeacher";
 import AdminManagers from "./pages/Admin/Managers";
 import AdminViewManager from "./pages/Admin/ViewManager";
+import AdminCertificates from "./pages/Admin/Certificate";
 
 import './App.css';
 
@@ -104,6 +105,7 @@ function App() {
               <Route path="teachers/:teacherId" element={<AdminViewTeacher />} />
               <Route path="managers" element={<AdminManagers />} />
               <Route path="managers/:managerId" element={<AdminViewManager />} />
+              <Route path="/admin/certificates" element={<AdminCertificates />} />
             </Route>
           </Route>
           

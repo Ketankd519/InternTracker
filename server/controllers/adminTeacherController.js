@@ -69,7 +69,7 @@ exports.getAllTeachers = async (req, res) => {
 exports.getTeacherProfile = async (req, res) => {
   try {
     const teacher = await Teacher.findById(req.params.id)
-      .populate("user", "name email role")
+      .populate("user", "name email role isDeleted deletionReason deletedAt")
       .lean();
 
     if (!teacher) {
@@ -197,14 +197,16 @@ exports.deleteTeacher = async (req, res) => {
     const userId = teacher.user;
 
     // Remove teacher profile
-    await Teacher.findByIdAndDelete(teacher._id);
+    await Teacher.findByIdAndDelete(req.params.id);
 
     // Mark user with deletion remark
     if (userId) {
       await User.findByIdAndUpdate(userId, {
-        isDeleted: true,
-        deletionReason: deletionReason.trim(),
-        deletedAt: new Date(),
+       $set: {
+          isDeleted: true,
+          deletionReason: deletionReason.trim(),
+          deletedAt: new Date(),
+        },
       });
     }
 

@@ -4,6 +4,9 @@ const router = express.Router();
 // Middleware
 const { protect, adminOnly } = require("../middleware/authMiddleware");
 
+// Certificates
+const { getAllCertificates } = require("../controllers/adminCertificateController");
+
 // 1. Dashboard Controller
 const { getDashboardStats } = require("../controllers/adminController");
 
@@ -69,4 +72,6 @@ router.post("/managers/:id/warning", issueManagerWarning);
 router.delete("/managers/:id/warning/:warningId", deleteManagerWarning);
 router.delete("/managers/:id", deleteManager);
 
+// Add this route in adminRoutes.js:
+router.get("/certificates", protect, adminOnly, getAllCertificates);
 module.exports = router;
